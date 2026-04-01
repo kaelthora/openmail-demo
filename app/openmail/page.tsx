@@ -2322,7 +2322,7 @@ Best regards,
   }, [selectedMail?.id, selectedMail?.intent]);
 
   const mailReplyHintStrings = aiAssistEnabled ? getSuggestions(selectedMail) : [];
-  const isAutoReady = selectedMail?.confidence > 0.95;
+  const isAutoReady = (selectedMail?.confidence ?? 0) > 0.95;
 
   function selectSuggestion(index: number) {
     cancelReplyTyping();
