@@ -102,7 +102,8 @@ async function appendToSentMailbox(
   try {
     await client.connect();
     const boxes: MailboxListEntry[] = [];
-    for await (const box of client.list()) {
+    const list = await client.list();
+    for (const box of list) {
       boxes.push(box as MailboxListEntry);
     }
     const mailbox = pickSentMailbox(boxes);
