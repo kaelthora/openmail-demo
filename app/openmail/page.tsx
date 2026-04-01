@@ -4325,12 +4325,12 @@ Best regards,
                 type="button"
                 className="button magnetic-ui button-liquid px-3 py-2 text-[11px] uppercase weave-focus flex items-center justify-center gap-2"
                 onClick={() => void connectAccount("auto")}
-                disabled={accountConnectStep === "loading"}
+                disabled={false}
               >
                 <OpenMailIcon name="sync" size={14} alt="" />
                 Connect
               </button>
-              {accountConnectStep === "loading" ? (
+              {false ? (
                 <div className="text-[11px] opacity-80 animate-pulse">{accountConnectHint}</div>
               ) : null}
               {accountConnectError ? (
@@ -4526,7 +4526,7 @@ Best regards,
                   type="button"
                   className="button magnetic-ui button-liquid px-3 py-2 text-[11px] uppercase weave-focus flex items-center gap-2"
                   onClick={() => void connectAccount("manual")}
-                  disabled={accountConnectStep === "loading" || !isAccountConfigured(accountDraft)}
+                  disabled={false || !isAccountConfigured(accountDraft)}
                 >
                   <OpenMailIcon name="sync" size={14} alt="" />
                   Connect manually
