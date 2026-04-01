@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <defs>
+    <linearGradient id="draftGrad" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="currentColor" stop-opacity="1" />
+      <stop offset="1" stop-color="currentColor" stop-opacity="0.92" />
+    </linearGradient>
+    <radialGradient id="draftLight" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(11 10) rotate(90) scale(8 10)">
+      <stop offset="0" stop-color="currentColor" stop-opacity="1" />
+      <stop offset="1" stop-color="currentColor" stop-opacity="0.9" />
+    </radialGradient>
+    <filter id="draftGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.1" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  <path d="M4 4h16v16H4z" fill="url(#draftLight)" opacity="0.92" />
+  <path d="M4 4h16v16H4z" stroke="url(#draftGrad)" stroke-width="2.6" opacity="0.95" filter="url(#draftGlow)" />
+  <path d="M4 4h16v16H4z" stroke="url(#draftGrad)" stroke-width="2.2" opacity="0.96" />
+  <path d="M8 16l8-8" stroke="url(#draftGrad)" stroke-width="2.2" opacity="0.96" />
+  <path d="M8 16l8-8" stroke="url(#draftLight)" stroke-width="1.3" opacity="0.92" />
+</svg>

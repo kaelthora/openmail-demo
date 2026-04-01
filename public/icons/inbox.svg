@@ -1,0 +1,36 @@
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="icon">
+  <defs>
+    <!-- Gradient principal -->
+    <linearGradient id="iconGradient" x1="0" y1="0" x2="24" y2="24">
+      <stop offset="0%" stop-color="var(--icon-color)" />
+      <stop offset="100%" stop-color="var(--icon-color-soft)" />
+    </linearGradient>
+
+    <!-- Glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Backplate (lisibilité) -->
+  <rect x="2" y="2" width="20" height="20" rx="6"
+        fill="rgba(255,255,255,0.04)"
+        stroke="rgba(255,255,255,0.08)" />
+
+  <!-- Icône -->
+  <path d="M4 7L12 13L20 7" 
+        stroke="url(#iconGradient)" 
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        filter="url(#glow)" />
+
+  <rect x="4" y="7" width="16" height="10" rx="3"
+        stroke="url(#iconGradient)"
+        stroke-width="2"
+        filter="url(#glow)" />
+</svg>
