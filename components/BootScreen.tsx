@@ -17,10 +17,9 @@ export default function BootScreen({ onFinish }: { onFinish: () => void }) {
 
   return (
     <div className={`boot-screen ${fade ? "fade-out" : ""}`}>
-      <img src="/openmail-bg.png" className="boot-image" />
+      <img src="/openmail-bg.png" className="boot-image" alt="" />
       <div className="boot-overlay" />
 
-      {/* 💥 LIGHT SWEEP */}
       <div className="boot-sweep" />
     </div>
   );

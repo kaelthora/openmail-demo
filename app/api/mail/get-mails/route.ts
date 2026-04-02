@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ImapFlow } from "imapflow";
-import { simpleParser } from "mailparser";
+import { formatByteSize } from "@/lib/formatBytes";
+import { parseMimeSource } from "@/lib/mailparserParse";
 import {
   type OpenMailAccountProfile,
   isAccountConfigured,
@@ -103,21 +104,21 @@ export async function GET(request: Request) {
       internalDate: true,
     })) {
       if (!msg.source || !msg.envelope) continue;
-      let textBody = "";
-      let preview = "";
-      try {
-        const parsed = await simpleParser(msg.source);
-        textBody =
-          typeof parsed.text === "string"
-            ? parsed.text
-            : parsed.html
-              ? String(parsed.html).replace(/<[^>]+>/g, " ").slice(0, 20000)
-              : "";
-        preview = textBody.replace(/\s+/g, " ").trim().slice(0, 220);
-      } catch {
-        textBody = "";
-        preview = "";
-      }
+      const buf = Buffer.isBuffer(msg.source)
+        ? msg.source
+        : Buffer.from(String(msg.source), "utf8");
+      const parsed = await parseMimeSource(buf);
+      const textBody = parsed.text;
+      const preview = textBody.replace(/\s+/g, " ").trim().slice(0, 220);
+      const attachmentItems =
+        parsed.attachments.length > 0
+          ? parsed.attachments.map((a, i) => ({
+              id: `imap-${folder}-${msg.uid}-att-${i}`,
+              name: a.filename,
+              sizeBytes: a.size,
+              sizeLabel: formatByteSize(a.size),
+            }))
+          : undefined;
 
       const fromAddr = msg.envelope.from?.[0];
       const title =
@@ -125,13 +126,14 @@ export async function GET(request: Request) {
           ? String(fromAddr.name)
           : fromAddr?.address ?? "Unknown";
 
+      const subj = msg.envelope.subject?.trim() || "(no subject)";
       out.push({
         id: `imap-${folder}-${msg.uid}`,
         title,
         sender: fromAddr?.address,
-        subject: msg.envelope.subject?.trim() || "(no subject)",
-        preview: preview || "(no subject)",
-        content: textBody || preview || "(no subject)",
+        subject: subj,
+        preview: preview || subj,
+        content: textBody || preview || subj,
         aiPreview: "Mailbox message",
         confidence: 70,
         needsReply: false,
@@ -142,6 +144,7 @@ export async function GET(request: Request) {
         rfc822MessageId: msg.envelope.messageId?.replace(/^<|>$/g, "") ?? undefined,
         x: 20 + (out.length % 5) * 15,
         y: 20 + (out.length % 4) * 12,
+        ...(attachmentItems ? { attachments: attachmentItems } : {}),
       });
     }
 

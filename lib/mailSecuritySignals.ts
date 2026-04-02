@@ -5,12 +5,17 @@
 
 export type SecurityLevel = "safe" | "suspicious" | "high_risk";
 
+/** Synced / processed AI risk for the whole message — gates links & attachments */
+export type MailAiRiskBand = "high" | "medium" | "safe";
+
 export type MailSecurityInput = {
   sender?: string;
   title?: string;
   subject?: string;
   preview?: string;
   content?: string;
+  /** When set, tightens link and attachment handling (high = block, medium = sandbox) */
+  mailAiRisk?: MailAiRiskBand;
 };
 
 export type SecuritySignals = {

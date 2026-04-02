@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ImapFlow } from "imapflow";
-import { simpleParser } from "mailparser";
+import { formatByteSize } from "@/lib/formatBytes";
+import { parseMimeSource } from "@/lib/mailparserParse";
 import {
   type OpenMailAccountProfile,
   isAccountConfigured,
@@ -106,21 +107,21 @@ export async function POST(request: Request) {
     })) {
       if (!msg.source || !msg.envelope) continue;
 
-      let textBody = "";
-      let preview = "";
-      try {
-        const parsed = await simpleParser(msg.source);
-        textBody =
-          typeof parsed.text === "string"
-            ? parsed.text
-            : parsed.html
-              ? String(parsed.html).replace(/<[^>]+>/g, " ").slice(0, 20000)
-              : "";
-        preview = textBody.replace(/\s+/g, " ").trim().slice(0, 220);
-      } catch {
-        textBody = "";
-        preview = "";
-      }
+      const buf = Buffer.isBuffer(msg.source)
+        ? msg.source
+        : Buffer.from(String(msg.source), "utf8");
+      const parsed = await parseMimeSource(buf);
+      const textBody = parsed.text;
+      const preview = textBody.replace(/\s+/g, " ").trim().slice(0, 220);
+      const attachmentItems =
+        parsed.attachments.length > 0
+          ? parsed.attachments.map((a, i) => ({
+              id: `imap-${msg.uid}-att-${i}`,
+              name: a.filename,
+              sizeBytes: a.size,
+              sizeLabel: formatByteSize(a.size),
+            }))
+          : undefined;
 
       const fromAddr = msg.envelope.from?.[0];
       const title =
@@ -152,6 +153,7 @@ export async function POST(request: Request) {
         rfc822MessageId: messageId,
         x: 20 + (out.length % 5) * 15,
         y: 20 + (out.length % 4) * 12,
+        ...(attachmentItems ? { attachments: attachmentItems } : {}),
       };
 
       out.push(item);

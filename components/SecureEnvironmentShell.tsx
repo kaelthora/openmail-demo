@@ -19,11 +19,14 @@ export function SecureEnvironmentShell({
   children,
   className,
   sandboxMode,
+  showDefaultHeader = true,
 }: {
   children: ReactNode;
   className?: string;
   /** When set, adjusts chrome copy and styling tier for link/file sandboxes. */
   sandboxMode?: SandboxMode;
+  /** When false, only the fullscreen shell + children render (e.g. SecureViewer supplies its own labels). */
+  showDefaultHeader?: boolean;
 }) {
   const mode = sandboxMode ?? "normal";
   return (
@@ -39,21 +42,23 @@ export function SecureEnvironmentShell({
       <div className="secure-environment-bg" aria-hidden />
       <div className="secure-environment-pattern" aria-hidden />
       <div className="secure-environment-center">
-        <header className="secure-environment-header">
-          <div className="secure-environment-brand">
-            <div className="secure-environment-label">
-              <span className="secure-environment-label-live" aria-hidden />
-              <span className="secure-environment-label-text">
-                AI Secure Environment
-              </span>
+        {showDefaultHeader ? (
+          <header className="secure-environment-header">
+            <div className="secure-environment-brand">
+              <div className="secure-environment-label">
+                <span className="secure-environment-label-live" aria-hidden />
+                <span className="secure-environment-label-text">
+                  AI Secure Environment
+                </span>
+              </div>
+              <p className="secure-environment-subline">{SANDBOX_SUBLINE[mode]}</p>
             </div>
-            <p className="secure-environment-subline">{SANDBOX_SUBLINE[mode]}</p>
-          </div>
-          <div className="secure-environment-status" role="status">
-            <span className="secure-environment-status-dot" aria-hidden />
-            {SANDBOX_STATUS[mode]}
-          </div>
-        </header>
+            <div className="secure-environment-status" role="status">
+              <span className="secure-environment-status-dot" aria-hidden />
+              {SANDBOX_STATUS[mode]}
+            </div>
+          </header>
+        ) : null}
         {children}
       </div>
     </div>

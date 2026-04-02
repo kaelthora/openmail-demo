@@ -1,12 +1,23 @@
 "use client";
 
 import { useMemo, type MouseEvent } from "react";
-import { useOpenmailSecurity } from "@/app/openmail/openmailSecurityContext";
+import {
+  useOpenmailSecurity,
+  type UnifiedLinkTier,
+} from "@/app/openmail/openmailSecurityContext";
+import { RiskBadge } from "@/app/openmail/components/security/RiskBadge";
+import type { SecurityRiskLevel } from "@/app/openmail/components/security/types";
 import type { MailSecurityInput } from "@/lib/mailSecuritySignals";
 
 type Part = { type: "text" | "url"; value: string };
 
 const URL_RE = /(https?:\/\/[^\s<>"')]+|www\.[^\s<>"')]+)/gi;
+
+function linkTierToRisk(tier: UnifiedLinkTier): SecurityRiskLevel {
+  if (tier === "blocked") return "dangerous";
+  if (tier === "suspicious") return "suspicious";
+  return "safe";
+}
 
 function parseContentWithLinks(text: string): Part[] {
   const parts: Part[] = [];
@@ -52,11 +63,13 @@ export function EmailBodyWithLinks({
       subject: mail.subject,
       preview: mail.preview,
       content: mail.content,
+      mailAiRisk: mail.mailAiRisk,
     }),
     [mail]
   );
 
   const parts = useMemo(() => parseContentWithLinks(content), [content]);
+  const linksBlockedByMail = mail.mailAiRisk === "high";
 
   function tierClass(url: string): string {
     const t = linkDisplayTier(url, securityInput);
@@ -72,14 +85,27 @@ export function EmailBodyWithLinks({
           <button
             key={i}
             type="button"
-            className={`mail-body-link${tierClass(p.value)}`}
+            disabled={linksBlockedByMail}
+            title={
+              linksBlockedByMail
+                ? "Links disabled — this message is flagged high risk."
+                : undefined
+            }
+            className={`mail-body-link mail-body-link--with-badge${tierClass(p.value)}${
+              linksBlockedByMail ? " mail-body-link--mail-risk-high" : ""
+            }`}
             onClick={(e: MouseEvent<HTMLButtonElement>) => {
               e.preventDefault();
               e.stopPropagation();
+              if (linksBlockedByMail) return;
               void handleLinkClick(p.value, securityInput, mailId);
             }}
           >
-            {p.value}
+            <RiskBadge
+              level={linkTierToRisk(linkDisplayTier(p.value, securityInput))}
+              size="sm"
+            />
+            <span className="mail-body-link-text">{p.value}</span>
           </button>
         )
       )}

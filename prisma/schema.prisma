@@ -1,0 +1,47 @@
+// Prisma field `from` is reserved — `mailFrom` maps to SQLite column `from`.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/** Saved mailbox (IMAP/SMTP). Credentials stored as JSON for sync/send. */
+model Account {
+  id         String   @id @default(cuid())
+  email      String
+  provider   String?
+  imapConfig Json
+  smtpConfig Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  emails     Email[]
+}
+
+model Email {
+  id        String    @id @default(cuid())
+  /** Stable hash of subject + from + date (+ optional account scope) for idempotent sync */
+  dedupeKey String    @unique
+  subject   String?
+  mailFrom  String?   @map("from")
+  body      String?
+  bodyHtml  String?
+  /** JSON [{ filename, type, size }] — metadata only */
+  attachments Json?
+  date      DateTime?
+  risk      String?
+  summary   String?
+  /** reply | ignore | escalate — from analyzeEmail */
+  action    String?
+  reason    String?
+  /** JSON string[] of reply suggestions */
+  suggestions Json?
+  createdAt DateTime  @default(now())
+  /** Null = legacy / env-based inbox before multi-account */
+  accountId String?
+  account   Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  @@index([accountId])
+}

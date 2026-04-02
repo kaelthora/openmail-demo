@@ -58,3 +58,18 @@ export function classifyDemoLinkUrl(url: string): DemoLinkTier {
 
   return "suspicious";
 }
+
+/** Short AI-style explanation for security modals (demo tiering). */
+export function demoLinkExplanation(url: string, tier: DemoLinkTier): string {
+  if (tier === "safe") {
+    return "AI classifies this destination as low risk. Open it only inside the secure environment.";
+  }
+  if (tier === "blocked") {
+    const host = hostOf(url);
+    if (host?.includes("wallet") || host?.includes("drain") || host?.includes("eth-rescue")) {
+      return "Possible crypto phishing or wallet-drainer pattern. Connection is not allowed.";
+    }
+    return "This URL matches phishing, malware, or impersonation patterns. Opening it is blocked.";
+  }
+  return "The hostname or path shows impersonation or low-trust signals. Proceed only in isolated secure mode if you must.";
+}

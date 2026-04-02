@@ -2,6 +2,15 @@ import type { SecurityLevel as MailSecurityLevel } from "@/lib/mailSecuritySigna
 
 export type MailFolder = "inbox" | "sent" | "drafts";
 
+/** AI analysis persisted from sync (`analyzeEmail`) — drives CORE when present */
+export type SyncedAiAnalysis = {
+  risk: "high" | "medium" | "safe";
+  summary: string;
+  reason: string | null;
+  action: "reply" | "ignore" | "escalate" | null;
+  suggestions: string[];
+};
+
 export type MailItem = {
   id: string;
   title: string;
@@ -33,6 +42,7 @@ export type MailItem = {
     name: string;
     sizeLabel?: string;
     sizeBytes?: number;
+    mimeType?: string;
     /** Demo/static: skip async scan; drive modals directly */
     riskLevel?: "safe" | "suspicious" | "blocked";
   }>;
@@ -45,6 +55,12 @@ export type MailItem = {
   };
   /** Demo: keep high_risk mail visible in main inbox (e.g. crypto trap) */
   demoAlwaysShowInInbox?: boolean;
+  /** Link-defense UI: force quarantine classification on next process */
+  linkQuarantine?: boolean;
+  /** From DB email sync — CORE panel prefers this over local heuristics */
+  syncedAi?: SyncedAiAnalysis;
+  /** DB mailbox owner; undefined for client-only / demo mail */
+  accountId?: string | null;
 };
 
 export type ProcessedMail = MailItem & {

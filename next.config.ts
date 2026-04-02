@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["imapflow", "mailparser", "nodemailer"],
+  serverExternalPackages: [
+    "@prisma/client",
+    "imapflow",
+    "mailparser",
+    "nodemailer",
+  ],
 };
 
 export default nextConfig;

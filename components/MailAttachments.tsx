@@ -2,10 +2,27 @@
 
 import { useCallback, type MouseEvent } from "react";
 import { useOpenmailSecurity } from "@/app/openmail/openmailSecurityContext";
+import { RiskBadge } from "@/app/openmail/components/security/RiskBadge";
+import { attachmentBadgeWithMailRisk } from "@/lib/mailContentSecurity";
+import { analyzeFileAttachment } from "@/lib/fileSafety";
 import type { MailSecurityInput } from "@/lib/mailSecuritySignals";
 import type { MailAttachmentItem } from "@/lib/mailAttachmentItem";
+import type { SecurityRiskLevel } from "@/app/openmail/components/security/types";
 
 export type { MailAttachmentItem } from "@/lib/mailAttachmentItem";
+
+function attachmentRiskBadgeLevel(
+  att: MailAttachmentItem,
+  mail: MailSecurityInput
+): SecurityRiskLevel {
+  if (att.riskLevel === "blocked") return "dangerous";
+  if (att.riskLevel === "suspicious") return "suspicious";
+  if (att.riskLevel === "safe") return "safe";
+  const v = analyzeFileAttachment(att.name, mail).verdict;
+  if (v === "dangerous") return "dangerous";
+  if (v === "suspicious") return "suspicious";
+  return "safe";
+}
 
 export function MailAttachments({
   mail,
@@ -33,45 +50,56 @@ export function MailAttachments({
 
   if (!attachments.length) return null;
 
+  const mailBlocksAttachments = securityInput.mailAiRisk === "high";
+
   return (
     <div className="mail-attachments" aria-label="Attachments">
       <div className="mail-attachments-label">Attachments</div>
       <ul className="mail-attachments-list">
         {attachments.map((att) => {
           const blocked = isAttachmentBlocked(att.id);
+          const baseBadge = attachmentRiskBadgeLevel(att, securityInput);
+          const badgeLevel = attachmentBadgeWithMailRisk(
+            baseBadge,
+            securityInput.mailAiRisk
+          );
+          const riskBtnClass =
+            badgeLevel === "dangerous"
+              ? " mail-attachment-btn--risk-blocked"
+              : badgeLevel === "suspicious"
+                ? " mail-attachment-btn--risk-suspicious"
+                : att.riskLevel === "safe"
+                  ? " mail-attachment-btn--risk-safe"
+                  : "";
+          const hardBlocked = blocked || mailBlocksAttachments;
           return (
             <li
               key={att.id}
               className={`mail-attachments-item${
-                blocked ? " mail-attachments-item--blocked" : ""
+                hardBlocked ? " mail-attachments-item--blocked" : ""
               }`}
             >
               <button
                 type="button"
                 className={`mail-attachment-btn${
-                  blocked ? " mail-attachment-btn--blocked" : ""
-                }${
-                  att.riskLevel === "suspicious"
-                    ? " mail-attachment-btn--risk-suspicious"
-                    : att.riskLevel === "blocked"
-                      ? " mail-attachment-btn--risk-blocked"
-                      : att.riskLevel === "safe"
-                        ? " mail-attachment-btn--risk-safe"
-                        : ""
-                }`}
+                  hardBlocked ? " mail-attachment-btn--blocked" : ""
+                }${riskBtnClass}`}
                 onClick={(e) => onClick(e, att)}
-                disabled={analyzingAttachmentId !== null || blocked}
+                disabled={analyzingAttachmentId !== null || hardBlocked}
                 title={
-                  blocked
-                    ? "Blocked — cannot open this attachment"
+                  hardBlocked
+                    ? mailBlocksAttachments
+                      ? "Attachments blocked — message flagged high risk"
+                      : "Blocked — cannot open this attachment"
                     : undefined
                 }
                 aria-label={
-                  blocked
+                  hardBlocked
                     ? `${att.name} — Blocked`
                     : `Open attachment ${att.name}`
                 }
               >
+                <RiskBadge level={badgeLevel} size="sm" />
                 <span className="mail-attachment-icon" aria-hidden>
                   {blocked ? "⚠️" : "📎"}
                 </span>

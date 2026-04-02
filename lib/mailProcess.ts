@@ -81,6 +81,33 @@ export function processMails(inputMails: MailItem[]): ProcessedMail[] {
     let securityAiSubline = security.securityAiSubline;
     let securityWhyBullets = security.whyBullets;
 
+    if (
+      mail.syncedAi &&
+      !(OPENMAIL_DEMO_MODE && mail.demoClassification)
+    ) {
+      const sa = mail.syncedAi;
+      if (sa.risk === "high") {
+        securityLevel = "high_risk";
+        securityRiskScore = Math.max(securityRiskScore, 86);
+      } else if (sa.risk === "medium") {
+        securityLevel = "suspicious";
+        securityRiskScore = Math.max(securityRiskScore, 58);
+      } else {
+        securityLevel = "safe";
+        securityRiskScore = Math.min(securityRiskScore, 32);
+      }
+      const sum = sa.summary.trim();
+      const reas = sa.reason?.trim() ?? "";
+      if (sum) securityAiSubline = sum;
+      if (reas) securityReason = reas;
+      let bullets: string[] = [];
+      if (reas) bullets.push(reas);
+      if (sum && sum !== reas) bullets.push(sum);
+      if (bullets.length === 0 && sum) bullets.push(sum);
+      if (bullets.length === 0) bullets = [...securityWhyBullets];
+      securityWhyBullets = bullets.slice(0, 5);
+    }
+
     if (OPENMAIL_DEMO_MODE && mail.demoClassification) {
       const dc = mail.demoClassification;
       securityRiskScore = dc.score;
@@ -109,6 +136,18 @@ export function processMails(inputMails: MailItem[]): ProcessedMail[] {
           "Standard handling",
         ];
       }
+    }
+
+    if (mail.linkQuarantine) {
+      securityLevel = "high_risk";
+      securityRiskScore = Math.max(securityRiskScore, 95);
+      securityReason = "Malicious link blocked — AI quarantine";
+      securityAiSubline = "";
+      securityWhyBullets = [
+        "Outbound link blocked before connection",
+        "Message moved to Quarantine",
+        "SOC notified (simulated)",
+      ];
     }
 
     const base = {

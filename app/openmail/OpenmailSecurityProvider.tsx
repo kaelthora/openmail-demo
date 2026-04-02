@@ -3,15 +3,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { analyzeLinkUrl, analyzeLinkUrlAsync } from "@/lib/linkSafety";
 import { analyzeFileAttachmentAsync } from "@/lib/fileSafety";
-import { classifyDemoLinkUrl, type DemoLinkTier } from "@/lib/demoLinkHeuristics";
+import {
+  classifyDemoLinkUrl,
+  demoLinkExplanation,
+  type DemoLinkTier,
+} from "@/lib/demoLinkHeuristics";
+import { linkTierWithMailRisk } from "@/lib/mailContentSecurity";
 import type { MailSecurityInput } from "@/lib/mailSecuritySignals";
 import type { MailAttachmentItem } from "@/lib/mailAttachmentItem";
 import type { SandboxMode } from "@/lib/sandboxModes";
+import { SecurityModal, type SecurityModalProps } from "./components/security/SecurityModal";
 import {
   OpenmailSecurityContext,
   type OpenmailSecurityContextValue,
   type UnifiedLinkTier,
 } from "./openmailSecurityContext";
+import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
 
 function mapVerdictToTier(
   verdict: "safe" | "suspicious" | "dangerous"
@@ -25,26 +32,16 @@ function demoTierToUnified(t: DemoLinkTier): UnifiedLinkTier {
   return t;
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function simulateFileOpen(fileName: string): void {
-  const w = globalThis.open("", "_blank", "noopener,noreferrer");
-  if (!w) return;
-  w.document.title = fileName;
-  w.document.body.innerHTML = `<pre style="font-family:system-ui,sans-serif;padding:24px;line-height:1.5;background:#0f172a;color:#e2e8f0;margin:0">Verified safe — preview:\n\n<strong>${escapeHtml(
-    fileName
-  )}</strong></pre>`;
-}
-
-function openSecureFileMode(fileName: string, mode: SandboxMode): void {
-  const path = `/openmail/safe-file?name=${encodeURIComponent(fileName)}&mode=${encodeURIComponent(mode)}`;
-  globalThis.open(path, "_blank", "noopener,noreferrer");
+function openSecureFileMode(
+  fileName: string,
+  mode: SandboxMode,
+  mimeType?: string
+): void {
+  const q = new URLSearchParams();
+  q.set("name", fileName);
+  q.set("mode", mode);
+  if (mimeType?.trim()) q.set("type", mimeType.trim());
+  globalThis.open(`/openmail/safe-file?${q.toString()}`, "_blank", "noopener,noreferrer");
 }
 
 function openLinkSandbox(url: string, mode: SandboxMode): void {
@@ -53,9 +50,9 @@ function openLinkSandbox(url: string, mode: SandboxMode): void {
 }
 
 type LinkModalState =
-  | { tier: "safe"; url: string; mailId: string }
-  | { tier: "suspicious"; url: string; mailId: string }
-  | { tier: "blocked"; url: string; mailId: string };
+  | { tier: "safe"; url: string; mailId: string; reason: string }
+  | { tier: "suspicious"; url: string; mailId: string; reason: string }
+  | { tier: "blocked"; url: string; mailId: string; reason: string };
 
 type AttachmentModalState =
   | {
@@ -68,7 +65,101 @@ type AttachmentModalState =
       kind: "blocked";
       att: MailAttachmentItem;
       name: string;
+      reason: string;
     };
+
+function linkModalToSecurityModal(
+  m: LinkModalState,
+  onDismissSafe: () => void,
+  onOpenSecure: (mode: SandboxMode) => void,
+  onAckBlocked: () => void,
+  safeTierSandboxMode: SandboxMode
+): SecurityModalProps {
+  if (m.tier === "safe") {
+    return {
+      open: true,
+      variant: "risk",
+      severity: "safe",
+      title: "Safe link",
+      reason:
+        m.reason ||
+        "AI classifies this destination as low risk. Open it only in the secure environment.",
+      detail: m.url,
+      role: "dialog",
+      primaryAction: {
+        label: "Open in secure environment",
+        onClick: () => {
+          onOpenSecure(safeTierSandboxMode);
+          onDismissSafe();
+        },
+      },
+      secondaryAction: { label: "Cancel", onClick: onDismissSafe },
+      onBackdropClick: onDismissSafe,
+    };
+  }
+  if (m.tier === "suspicious") {
+    return {
+      open: true,
+      variant: "risk",
+      severity: "suspicious",
+      title: "Suspicious link",
+      reason:
+        m.reason ||
+        "This link shows suspicious signals. Confirm you trust the destination.",
+      detail: m.url,
+      role: "alertdialog",
+      primaryAction: {
+        label: "Open in secure mode",
+        onClick: () => {
+          onOpenSecure("isolated");
+          onDismissSafe();
+        },
+      },
+      secondaryAction: { label: "Cancel", onClick: onDismissSafe },
+      onBackdropClick: onDismissSafe,
+    };
+  }
+  return {
+    open: true,
+    variant: "risk",
+    severity: "dangerous",
+    title: "Link blocked",
+    reason:
+      m.reason ||
+      "This URL cannot be opened — phishing, impersonation, or policy violation.",
+    detail: m.url,
+    role: "alertdialog",
+    primaryAction: { label: "OK", onClick: onAckBlocked },
+    secondaryAction: null,
+    onBackdropClick: onAckBlocked,
+  };
+}
+
+function attachmentSafeModal(
+  fileName: string,
+  onDismiss: () => void,
+  onSecure: () => void
+): SecurityModalProps {
+  return {
+    open: true,
+    variant: "risk",
+    severity: "safe",
+    title: "Safe file",
+    reason:
+      "AI classifies this attachment as safe. It will not open directly — use the secure environment only.",
+    detail: fileName,
+    role: "dialog",
+    primaryAction: {
+      label: "Open in secure environment",
+      onClick: () => {
+        onSecure();
+        onDismiss();
+      },
+    },
+    secondaryAction: { label: "Cancel", onClick: onDismiss },
+    onBackdropClick: onDismiss,
+  };
+}
 
 export { useOpenmailSecurity } from "./openmailSecurityContext";
 
@@ -84,9 +175,10 @@ export function OpenmailSecurityProvider({
   onMaliciousLinkDetected?: () => void;
 }) {
   const [linkModal, setLinkModal] = useState<LinkModalState | null>(null);
-  const [attachmentSafeName, setAttachmentSafeName] = useState<string | null>(
-    null
-  );
+  const [attachmentSafeTarget, setAttachmentSafeTarget] = useState<{
+    name: string;
+    mimeType?: string;
+  } | null>(null);
   const [attachmentModal, setAttachmentModal] =
     useState<AttachmentModalState | null>(null);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
@@ -97,6 +189,7 @@ export function OpenmailSecurityProvider({
     () => new Set()
   );
   const mountedRef = useRef(true);
+  const { security: secPrefs } = useOpenmailPreferences();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -107,34 +200,77 @@ export function OpenmailSecurityProvider({
 
   const linkDisplayTierForMail = useCallback(
     (url: string, mail: MailSecurityInput): UnifiedLinkTier => {
-      if (demoMode) return demoTierToUnified(classifyDemoLinkUrl(url));
-      return mapVerdictToTier(analyzeLinkUrl(url, mail).verdict);
+      const base: UnifiedLinkTier = demoMode
+        ? demoTierToUnified(classifyDemoLinkUrl(url))
+        : mapVerdictToTier(analyzeLinkUrl(url, mail).verdict);
+      return linkTierWithMailRisk(base, mail.mailAiRisk);
     },
     [demoMode]
   );
 
   const handleLinkClick = useCallback(
     async (url: string, mail: MailSecurityInput, mailId: string) => {
+      if (mail.mailAiRisk === "high") {
+        onMaliciousLinkDetected?.();
+        setLinkModal({
+          tier: "blocked",
+          url,
+          mailId,
+          reason:
+            "This message is flagged high risk. Links are blocked to protect your account.",
+        });
+        return;
+      }
+
+      if (mail.mailAiRisk === "medium") {
+        setLinkModal({
+          tier: "suspicious",
+          url,
+          mailId,
+          reason:
+            "This message is flagged medium risk. Open the destination only in the secure sandbox if you trust it.",
+        });
+        return;
+      }
+
       let tier: UnifiedLinkTier;
+      let reason: string;
+
       if (demoMode) {
-        tier = demoTierToUnified(classifyDemoLinkUrl(url));
+        const demoTier = classifyDemoLinkUrl(url);
+        tier = demoTierToUnified(demoTier);
+        reason = demoLinkExplanation(url, demoTier);
       } else {
         const result = await analyzeLinkUrlAsync(url, mail);
         tier = mapVerdictToTier(result.verdict);
+        reason =
+          result.reason ||
+          (tier === "safe"
+            ? "AI classifies this destination as low risk. Open it only in the secure environment."
+            : tier === "suspicious"
+              ? "This link shows suspicious signals."
+              : "This URL cannot be opened.");
+      }
+
+      if (secPrefs.sensitivity === "strict" && tier === "suspicious") {
+        tier = "blocked";
+        reason =
+          reason ||
+          "Strict security is on — this link is treated as blocked.";
       }
 
       if (tier === "safe") {
-        setLinkModal({ tier: "safe", url, mailId });
+        setLinkModal({ tier: "safe", url, mailId, reason });
         return;
       }
       if (tier === "suspicious") {
-        setLinkModal({ tier: "suspicious", url, mailId });
+        setLinkModal({ tier: "suspicious", url, mailId, reason });
         return;
       }
       onMaliciousLinkDetected?.();
-      setLinkModal({ tier: "blocked", url, mailId });
+      setLinkModal({ tier: "blocked", url, mailId, reason });
     },
-    [demoMode, onMaliciousLinkDetected]
+    [demoMode, onMaliciousLinkDetected, secPrefs.sensitivity]
   );
 
   const acknowledgeBlockedLink = useCallback(() => {
@@ -156,40 +292,66 @@ export function OpenmailSecurityProvider({
     });
   }, []);
 
-  const overrideBlockedAttachmentSandbox = useCallback(() => {
-    setAttachmentModal((m) => {
-      if (m?.kind === "blocked") {
-        const name = m.name;
-        queueMicrotask(() => openSecureFileMode(name, "restricted"));
-      }
-      return null;
-    });
-  }, []);
-
   const handleAttachmentClick = useCallback(
     async (att: MailAttachmentItem, mail: MailSecurityInput) => {
       setAttachmentModal(null);
-      setAttachmentSafeName(null);
+      setAttachmentSafeTarget(null);
+
+      const blockedReason =
+        "This file was blocked: possible phishing, impersonation, or an unsafe type detected by AI.";
+
+      if (mail.mailAiRisk === "high") {
+        setAttachmentModal({
+          kind: "blocked",
+          att,
+          name: att.name,
+          reason:
+            "This message is flagged high risk. Attachments are blocked until the thread is verified.",
+        });
+        return;
+      }
+
+      if (mail.mailAiRisk === "medium") {
+        setAttachmentModal({
+          kind: "suspicious",
+          att,
+          name: att.name,
+          reason:
+            "This message is flagged medium risk. Open files only in isolated secure mode if you trust the sender.",
+        });
+        return;
+      }
 
       if (att.riskLevel) {
         if (att.riskLevel === "safe") {
-          setAttachmentSafeName(att.name);
+          setAttachmentSafeTarget({ name: att.name, mimeType: att.mimeType });
           return;
         }
         if (att.riskLevel === "suspicious") {
-          setAttachmentModal({
-            kind: "suspicious",
-            att,
-            name: att.name,
-            reason:
-              "This file does not match a typical trusted pattern. Use the isolated viewer only.",
-          });
+          if (secPrefs.blockRiskyAttachments) {
+            setAttachmentModal({
+              kind: "blocked",
+              att,
+              name: att.name,
+              reason:
+                "Blocked by your security settings — risky attachments are not allowed.",
+            });
+          } else {
+            setAttachmentModal({
+              kind: "suspicious",
+              att,
+              name: att.name,
+              reason:
+                "This file does not match a typical trusted pattern. Use isolated secure mode only if you must open it.",
+            });
+          }
           return;
         }
         setAttachmentModal({
           kind: "blocked",
           att,
           name: att.name,
+          reason: blockedReason,
         });
         return;
       }
@@ -205,19 +367,31 @@ export function OpenmailSecurityProvider({
         if (!mountedRef.current) return;
         setScanningFile(null);
         if (result.verdict === "safe") {
-          setAttachmentSafeName(att.name);
+          setAttachmentSafeTarget({ name: att.name, mimeType: att.mimeType });
         } else if (result.verdict === "suspicious") {
-          setAttachmentModal({
-            kind: "suspicious",
-            att,
-            name: att.name,
-            reason: result.reason,
-          });
+          if (secPrefs.blockRiskyAttachments) {
+            setAttachmentModal({
+              kind: "blocked",
+              att,
+              name: att.name,
+              reason:
+                result.reason ||
+                "Blocked by your security settings — risky attachments are not allowed.",
+            });
+          } else {
+            setAttachmentModal({
+              kind: "suspicious",
+              att,
+              name: att.name,
+              reason: result.reason,
+            });
+          }
         } else {
           setAttachmentModal({
             kind: "blocked",
             att,
             name: att.name,
+            reason: result.reason || blockedReason,
           });
         }
       } catch {
@@ -226,7 +400,7 @@ export function OpenmailSecurityProvider({
         if (mountedRef.current) setAnalyzingId(null);
       }
     },
-    []
+    [secPrefs.blockRiskyAttachments]
   );
 
   const isAttachmentBlocked = useCallback(
@@ -253,334 +427,103 @@ export function OpenmailSecurityProvider({
     ]
   );
 
+  const dismissLink = useCallback(() => setLinkModal(null), []);
+
+  const safeLinkSandboxMode: SandboxMode = secPrefs.forceSandboxLinks
+    ? "isolated"
+    : "normal";
+
+  const linkSecurityModal: SecurityModalProps | null = linkModal
+    ? linkModalToSecurityModal(
+        linkModal,
+        dismissLink,
+        (mode) => openLinkSandbox(linkModal.url, mode),
+        acknowledgeBlockedLink,
+        safeLinkSandboxMode
+      )
+    : null;
+
+  const attachmentSuspiciousModal: SecurityModalProps | null =
+    attachmentModal?.kind === "suspicious"
+      ? {
+          open: true,
+          variant: "risk",
+          severity: "suspicious",
+          title: "Suspicious file",
+          reason: attachmentModal.reason,
+          detail: attachmentModal.name,
+          role: "alertdialog",
+          primaryAction: {
+            label: "Open in secure mode",
+            onClick: () => {
+              openSecureFileMode(
+                attachmentModal.name,
+                "isolated",
+                attachmentModal.att.mimeType
+              );
+              setAttachmentModal(null);
+            },
+          },
+          secondaryAction: {
+            label: "Cancel",
+            onClick: () => setAttachmentModal(null),
+          },
+          onBackdropClick: () => setAttachmentModal(null),
+        }
+      : null;
+
+  const attachmentBlockedModal: SecurityModalProps | null =
+    attachmentModal?.kind === "blocked"
+      ? {
+          open: true,
+          variant: "risk",
+          severity: "dangerous",
+          title: "File blocked",
+          reason: attachmentModal.reason,
+          detail: attachmentModal.name,
+          role: "alertdialog",
+          primaryAction: {
+            label: "OK",
+            onClick: closeAttachmentBlocked,
+          },
+          secondaryAction: null,
+          onBackdropClick: closeAttachmentBlocked,
+        }
+      : null;
+
+  const safeFileSandboxMode: SandboxMode = secPrefs.forceSandboxLinks
+    ? "isolated"
+    : "normal";
+
+  const safeAttachmentModal: SecurityModalProps | null = attachmentSafeTarget
+    ? attachmentSafeModal(
+        attachmentSafeTarget.name,
+        () => setAttachmentSafeTarget(null),
+        () =>
+          openSecureFileMode(
+            attachmentSafeTarget.name,
+            safeFileSandboxMode,
+            attachmentSafeTarget.mimeType
+          )
+      )
+    : null;
+
+  const scanningModal: SecurityModalProps | null = scanningFile
+    ? { open: true, variant: "scanning", fileName: scanningFile.name }
+    : null;
+
   return (
     <OpenmailSecurityContext.Provider value={value}>
       {children}
 
-      {scanningFile ? (
-        <>
-          <div className="link-safety-backdrop" aria-hidden />
-          <div
-            role="status"
-            aria-live="polite"
-            aria-busy="true"
-            className="link-safety-modal glass-panel glass-depth-2 attachment-scan-modal openmail-security-modal-root"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="attachment-scan-modal-inner">
-              <p className="attachment-scan-title">Scanning file…</p>
-              <p className="attachment-scan-sub" title={scanningFile.name}>
-                {scanningFile.name.length > 48
-                  ? `${scanningFile.name.slice(0, 46)}…`
-                  : scanningFile.name}
-              </p>
-              <div className="attachment-scan-progress" aria-hidden>
-                <div className="attachment-scan-progress-bar" />
-              </div>
-            </div>
-          </div>
-        </>
+      {scanningModal ? <SecurityModal {...scanningModal} /> : null}
+      {linkSecurityModal ? <SecurityModal {...linkSecurityModal} /> : null}
+      {safeAttachmentModal ? <SecurityModal {...safeAttachmentModal} /> : null}
+      {attachmentSuspiciousModal ? (
+        <SecurityModal {...attachmentSuspiciousModal} />
       ) : null}
-
-      {linkModal?.tier === "safe" ? (
-        <>
-          <div
-            className="link-safety-backdrop link-safety-backdrop--risk-safe"
-            aria-hidden
-            onClick={() => setLinkModal(null)}
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="unified-link-safe-title"
-            className="link-safety-modal glass-panel glass-depth-2 link-safety-modal--risk-safe openmail-security-modal-root"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="openmail-safe-link-indicator" aria-hidden />
-            <h3 id="unified-link-safe-title" className="link-safety-title">
-              Safe link
-            </h3>
-            <p className="link-safety-reason text-[12px] text-white/75 leading-relaxed">
-              AI classifies this destination as low risk. You can open it directly or review in a
-              standard sandbox.
-            </p>
-            <p className="link-safety-url" title={linkModal.url}>
-              {linkModal.url.length > 72
-                ? `${linkModal.url.slice(0, 70)}…`
-                : linkModal.url}
-            </p>
-            <div className="link-safety-actions link-safety-actions--stack">
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--primary button magnetic-ui button-liquid"
-                onClick={() => {
-                  globalThis.open(linkModal.url, "_blank", "noopener,noreferrer");
-                  setLinkModal(null);
-                }}
-              >
-                Open link
-              </button>
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secure button magnetic-ui button-liquid"
-                onClick={() => {
-                  openLinkSandbox(linkModal.url, "normal");
-                  setLinkModal(null);
-                }}
-              >
-                Open in sandbox (optional)
-              </button>
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secondary button magnetic-ui button-liquid"
-                onClick={() => setLinkModal(null)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </>
-      ) : null}
-
-      {linkModal?.tier === "suspicious" ? (
-        <>
-          <div
-            className="link-safety-backdrop link-safety-backdrop--demo-suspicious"
-            aria-hidden
-            onClick={() => setLinkModal(null)}
-          />
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="unified-link-suspicious-title"
-            className="link-safety-modal glass-panel glass-depth-2 link-safety-modal--demo-suspicious openmail-security-modal-root"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 id="unified-link-suspicious-title" className="link-safety-title">
-              Potential risk detected
-            </h3>
-            <p className="link-safety-reason text-[12px] text-white/75 leading-relaxed">
-              AI recommends an isolated review before any navigation.
-            </p>
-            <p className="link-safety-url" title={linkModal.url}>
-              {linkModal.url.length > 72
-                ? `${linkModal.url.slice(0, 70)}…`
-                : linkModal.url}
-            </p>
-            <div className="link-safety-actions link-safety-actions--stack">
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secure button magnetic-ui button-liquid"
-                onClick={() => {
-                  openLinkSandbox(linkModal.url, "isolated");
-                  setLinkModal(null);
-                }}
-              >
-                Open in secure sandbox
-              </button>
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secondary button magnetic-ui button-liquid"
-                onClick={() => setLinkModal(null)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </>
-      ) : null}
-
-      {linkModal?.tier === "blocked" ? (
-        <>
-          <div
-            className="link-safety-backdrop link-safety-backdrop--demo-blocked"
-            aria-hidden
-            onClick={() => setLinkModal(null)}
-          />
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="unified-link-blocked-title"
-            className="link-safety-modal glass-panel glass-depth-2 link-safety-modal--demo-blocked openmail-security-modal-root"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 id="unified-link-blocked-title" className="link-safety-title">
-              Threat blocked
-            </h3>
-            <p className="link-safety-reason text-[12px] text-white/80 leading-relaxed">
-              This content has been prevented from executing.
-            </p>
-            <p className="link-safety-url" title={linkModal.url}>
-              {linkModal.url.length > 72
-                ? `${linkModal.url.slice(0, 70)}…`
-                : linkModal.url}
-            </p>
-            <div className="link-safety-actions link-safety-actions--stack">
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--primary button magnetic-ui button-liquid"
-                onClick={acknowledgeBlockedLink}
-              >
-                OK
-              </button>
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secondary button magnetic-ui button-liquid text-[10px]"
-                onClick={() => {
-                  openLinkSandbox(linkModal.url, "restricted");
-                  setLinkModal(null);
-                }}
-              >
-                Override in sandbox (advanced)
-              </button>
-            </div>
-          </div>
-        </>
-      ) : null}
-
-      {attachmentSafeName ? (
-        <>
-          <div
-            className="link-safety-backdrop"
-            aria-hidden
-            onClick={() => setAttachmentSafeName(null)}
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            className="link-safety-modal glass-panel glass-depth-2 link-safety-modal--risk-safe openmail-security-modal-root"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="openmail-safe-link-indicator" aria-hidden />
-            <h3 className="link-safety-title">Safe file</h3>
-            <p className="link-safety-reason">
-              AI classifies this attachment as safe. Open a preview or use the standard sandbox.
-            </p>
-            <p className="link-safety-url" title={attachmentSafeName}>
-              {attachmentSafeName.length > 72
-                ? `${attachmentSafeName.slice(0, 70)}…`
-                : attachmentSafeName}
-            </p>
-            <div className="link-safety-actions link-safety-actions--stack">
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--primary button magnetic-ui button-liquid"
-                onClick={() => {
-                  simulateFileOpen(attachmentSafeName);
-                  setAttachmentSafeName(null);
-                }}
-              >
-                Open preview
-              </button>
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secure button magnetic-ui button-liquid"
-                onClick={() => {
-                  openSecureFileMode(attachmentSafeName, "normal");
-                  setAttachmentSafeName(null);
-                }}
-              >
-                Open in sandbox (optional)
-              </button>
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secondary button magnetic-ui button-liquid"
-                onClick={() => setAttachmentSafeName(null)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </>
-      ) : null}
-
-      {attachmentModal?.kind === "suspicious" ? (
-        <>
-          <div
-            className="link-safety-backdrop link-safety-backdrop--attachment-risk"
-            aria-hidden
-            onClick={() => setAttachmentModal(null)}
-          />
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            className="link-safety-modal glass-panel glass-depth-2 link-safety-modal--suspicious attachment-risk-modal attachment-risk-modal--suspicious openmail-security-modal-root"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="link-safety-title attachment-risk-modal-title">
-              Potential risk detected
-            </h3>
-            <p className="link-safety-reason">{attachmentModal.reason}</p>
-            <p className="link-safety-url" title={attachmentModal.name}>
-              {attachmentModal.name.length > 72
-                ? `${attachmentModal.name.slice(0, 70)}…`
-                : attachmentModal.name}
-            </p>
-            <div className="link-safety-actions link-safety-actions--stack">
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secure button magnetic-ui button-liquid"
-                onClick={() => {
-                  openSecureFileMode(attachmentModal.name, "isolated");
-                  setAttachmentModal(null);
-                }}
-              >
-                Open in secure sandbox
-              </button>
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secondary button magnetic-ui button-liquid"
-                onClick={() => setAttachmentModal(null)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </>
-      ) : null}
-
-      {attachmentModal?.kind === "blocked" ? (
-        <>
-          <div
-            className="link-safety-backdrop link-safety-backdrop--attachment-risk"
-            aria-hidden
-            onClick={closeAttachmentBlocked}
-          />
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            className="link-safety-modal glass-panel glass-depth-2 link-safety-modal--dangerous attachment-risk-modal attachment-risk-modal--dangerous openmail-security-modal-root"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="link-safety-title attachment-risk-modal-title">
-              Threat blocked
-            </h3>
-            <p className="link-safety-reason">
-              This content has been prevented from executing.
-            </p>
-            <p className="link-safety-url" title={attachmentModal.name}>
-              {attachmentModal.name.length > 72
-                ? `${attachmentModal.name.slice(0, 70)}…`
-                : attachmentModal.name}
-            </p>
-            <div className="link-safety-actions link-safety-actions--stack">
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--primary button magnetic-ui button-liquid"
-                onClick={closeAttachmentBlocked}
-              >
-                OK
-              </button>
-              <button
-                type="button"
-                className="link-safety-btn link-safety-btn--secondary button magnetic-ui button-liquid text-[10px]"
-                onClick={overrideBlockedAttachmentSandbox}
-              >
-                Override in sandbox (advanced)
-              </button>
-            </div>
-          </div>
-        </>
+      {attachmentBlockedModal ? (
+        <SecurityModal {...attachmentBlockedModal} />
       ) : null}
     </OpenmailSecurityContext.Provider>
   );
