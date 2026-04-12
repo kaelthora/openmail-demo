@@ -53,7 +53,7 @@ export type MailStoreValue = {
   serverMailAccounts: ServerMailAccountSummary[];
   inboxScope: ServerInboxScope;
   setInboxScopePersist: (scope: ServerInboxScope) => void;
-  /** POST `/api/emails/sync` for the active `inboxScope`, or `accountId` when provided. */
+  /** POST `/api/emails/sync` after `GET /api/mail/fetch` for the active `inboxScope`, or `accountId` when provided. */
   syncServerInbox: (opts?: {
     accountId?: ServerInboxScope;
   }) => Promise<{ ok: boolean; error?: string }>;
@@ -139,7 +139,10 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         scope === "legacy"
           ? "?legacy=1"
           : `?accountId=${encodeURIComponent(scope)}`;
-      const res = await fetch(`/api/emails${q}`, { cache: "no-store", signal });
+      const res = await fetch(`/api/mail/fetch${q}`, {
+        cache: "no-store",
+        signal,
+      });
       const data = (await res.json()) as {
         emails?: EmailListItem[];
         error?: string;

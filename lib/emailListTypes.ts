@@ -5,7 +5,7 @@ export type EmailAttachmentRow = {
   size: number;
 };
 
-/** Shape of each item in `GET /api/emails` → `{ emails }`. */
+/** Shape of each item in `GET /api/mail/fetch` → `{ emails }`. */
 export type EmailListItem = {
   id: string;
   subject: string | null;

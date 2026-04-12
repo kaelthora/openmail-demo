@@ -89,7 +89,7 @@ function parseSyncedAi(e: EmailListItem): SyncedAiAnalysis | undefined {
   };
 }
 
-/** Maps `GET /api/emails` rows into `MailItem` for the OpenMail UI. */
+/** Maps inbox API list rows (`/api/mail/fetch`) into `MailItem` for the OpenMail UI. */
 export function emailApiItemToMailItem(e: EmailListItem): MailItem {
   const { title, sender } = parseFromDisplay(e.from);
   const subject = e.subject?.trim() || "(no subject)";

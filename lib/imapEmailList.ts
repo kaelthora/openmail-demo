@@ -29,7 +29,7 @@ function attachmentsToRows(
 }
 
 /**
- * Maps IMAP-fetched messages to `EmailListItem` for `GET /api/emails` (no database).
+ * Maps IMAP-fetched messages to `EmailListItem` for `GET /api/mail/fetch` (no database).
  */
 export function fetchedEmailsToEmailListItems(
   fetched: FetchedEmail[],

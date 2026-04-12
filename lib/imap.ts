@@ -55,11 +55,8 @@ function imapFlowOptionsFromConfig(imap: ImapAccountConfig) {
 
 /** Shared client options for long-lived watch + one-shot fetch. */
 export function createEnvImapClient(): ImapFlow {
-  const user = process.env.EMAIL_USER?.trim();
-  const pass = process.env.EMAIL_PASS?.trim();
-  if (!user || !pass) {
-    throw new Error("Missing required environment variable: EMAIL_USER / EMAIL_PASS");
-  }
+  const user = requireLegacyImapUser();
+  const pass = requireLegacyImapPass();
   return guardImapFlowClient(
     new ImapFlow({
       host: GMAIL_IMAP_HOST,
@@ -128,10 +125,22 @@ export type FetchedEmail = {
   attachments: ParsedAttachmentMeta[];
 };
 
-function requireEnv(name: string): string {
-  const v = process.env[name]?.trim();
+function requireLegacyImapUser(): string {
+  const v = process.env.EMAIL_USER?.trim();
   if (!v) {
-    throw new Error(`Missing required environment variable: ${name}`);
+    throw new Error(
+      "EMAIL_USER is not configured. Set EMAIL_USER (and EMAIL_PASS) for the legacy Gmail IMAP inbox, or connect a saved account with IMAP credentials."
+    );
+  }
+  return v;
+}
+
+function requireLegacyImapPass(): string {
+  const v = process.env.EMAIL_PASS?.trim();
+  if (!v) {
+    throw new Error(
+      "EMAIL_PASS is not configured. Set EMAIL_PASS for the legacy Gmail IMAP inbox, or connect a saved account."
+    );
   }
   return v;
 }
@@ -288,13 +297,11 @@ export async function fetchEmailsWithImap(
 }
 
 export async function fetchEmails(): Promise<FetchedEmail[]> {
-  requireEnv("EMAIL_USER");
-  requireEnv("EMAIL_PASS");
   const imap: ImapAccountConfig = {
     host: GMAIL_IMAP_HOST,
     port: GMAIL_IMAP_PORT,
-    username: requireEnv("EMAIL_USER"),
-    password: requireEnv("EMAIL_PASS"),
+    username: requireLegacyImapUser(),
+    password: requireLegacyImapPass(),
     security: "ssl",
   };
   return fetchEmailsWithImap(imap);
