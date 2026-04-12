@@ -7,8 +7,9 @@ import { parseMimeSource, type ParsedAttachmentMeta } from "@/lib/mailparserPars
 const GMAIL_IMAP_HOST = "imap.gmail.com";
 const GMAIL_IMAP_PORT = 993;
 export const GMAIL_INBOX_PATH = "INBOX";
-/** Latest N messages per INBOX sync (Gmail IMAP). */
-const FETCH_LIMIT = 10;
+/** Latest N messages per INBOX fetch (list + sync). */
+export const IMAP_INBOX_FETCH_LIMIT = 20;
+const FETCH_LIMIT = IMAP_INBOX_FETCH_LIMIT;
 
 const IMAP_CONN_MS = 60_000;
 const IMAP_GREET_MS = 25_000;

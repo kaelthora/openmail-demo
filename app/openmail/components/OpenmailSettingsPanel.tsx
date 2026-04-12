@@ -307,6 +307,8 @@ function SettingsAccountsServer({
   settingsOpen: boolean;
   accountsActive: boolean;
 }) {
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
   const toast = useOpenmailToast();
   const {
     serverMailAccounts,
@@ -333,6 +335,55 @@ function SettingsAccountsServer({
   const [removeBusy, setRemoveBusy] = useState<string | null>(null);
   const [syncBusy, setSyncBusy] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const lbl = isLight
+    ? "mb-1 block text-[10px] font-medium text-[#555]"
+    : "mb-1 block text-[10px] text-[color:var(--text-soft)]";
+  const lblSection = isLight
+    ? "mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#555]"
+    : "mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-soft)]";
+  const accountsInput = isLight
+    ? "w-full rounded-lg border border-[rgba(0,0,0,0.08)] bg-white px-3 py-2 text-[13px] text-[#1a1a1a] shadow-none outline-none transition-[border-color,box-shadow] placeholder:text-neutral-400 focus:border-[rgba(0,0,0,0.16)] focus:shadow-[0_0_0_3px_rgba(100,116,139,0.08)] focus:outline-none"
+    : fieldInputClass;
+  const warnLegacy = isLight
+    ? "rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-950"
+    : "rounded-lg border border-amber-500/25 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-100/90";
+  const emptyBox = isLight
+    ? "rounded-xl border border-dashed border-black/15 bg-white px-3.5 py-6 text-center text-[12px] text-[#555]"
+    : "rounded-xl border border-dashed border-white/[0.1] bg-[#0a0a0a] px-3.5 py-6 text-center text-[12px] text-[color:var(--text-soft)]";
+  const accountCard = isLight
+    ? "rounded-xl border border-black/[0.08] bg-white px-4 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
+    : "rounded-xl border border-white/[0.08] bg-[#0c0c0c] px-4 py-4";
+  const accountMetaLbl = isLight
+    ? "text-[10px] font-semibold uppercase tracking-[0.12em] text-[#555]"
+    : "text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-soft)]";
+  const accountDivider = isLight ? "border-black/[0.08]" : "border-white/[0.06]";
+  const btnSecondary = isLight
+    ? "rounded-lg border border-black/10 bg-white px-2.5 py-1.5 text-[11px] font-medium text-[#1a1a1a] transition-colors hover:border-black/18 hover:bg-[#f6f7f9] disabled:cursor-not-allowed disabled:opacity-50"
+    : "rounded-lg border border-white/[0.1] bg-[#141414] px-2.5 py-1.5 text-[11px] font-medium text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 disabled:cursor-not-allowed disabled:opacity-40";
+  const btnDanger = isLight
+    ? "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-[11px] font-medium text-red-800 transition-colors hover:border-red-300 hover:bg-red-100 disabled:opacity-45"
+    : "rounded-lg border border-red-500/25 bg-red-500/5 px-2.5 py-1.5 text-[11px] font-medium text-red-200/90 transition-colors hover:border-red-500/40 disabled:opacity-45";
+  const formCard = isLight
+    ? "rounded-xl border border-black/[0.08] bg-[#f3f4f6] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
+    : "rounded-xl border border-white/[0.08] bg-[#0a0a0a] p-4";
+  const segBtn = "flex-1 rounded-lg border px-3 py-2 text-[11px] font-medium transition-colors duration-200";
+  const segActive = isLight
+    ? `${segBtn} border-[var(--openmail-border-accent-strong)] bg-[var(--accent-soft)] font-semibold text-[#1a1a1a] shadow-sm`
+    : `${segBtn} border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)]`;
+  const segIdle = isLight
+    ? `${segBtn} border-black/10 bg-white text-[#555] hover:border-black/15 hover:bg-[#fafafa]`
+    : `${segBtn} border-white/[0.08] bg-[#0c0c0c] text-[color:var(--text-soft)] hover:border-white/[0.12] hover:text-[var(--text-main)]`;
+  const formErrBox = isLight
+    ? "mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-900"
+    : "mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-200/95";
+  const connectPrimary = isLight
+    ? "w-full rounded-lg border border-[var(--accent)]/50 bg-gradient-to-b from-[var(--accent-soft)] to-slate-200/40 py-2.5 text-[13px] font-semibold text-[#161616] shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-[filter,opacity] hover:brightness-[1.03] disabled:cursor-not-allowed disabled:opacity-50"
+    : "w-full rounded-lg border border-[var(--accent)]/45 bg-[var(--accent-soft)] py-2.5 text-[13px] font-semibold text-[var(--text-main)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40";
+  const manualSep = isLight ? "border-t border-black/[0.08]" : "border-t border-white/[0.06]";
+  const hintQuick = isLight
+    ? "mb-3 text-[11px] leading-relaxed text-[#555]"
+    : "mb-3 text-[11px] leading-relaxed text-[color:var(--text-soft)]";
 
   useEffect(() => {
     if (!settingsOpen || !accountsActive) return;
@@ -533,7 +584,7 @@ function SettingsAccountsServer({
   return (
     <div className="space-y-5">
       {inboxScope === "legacy" ? (
-        <div className="rounded-lg border border-amber-500/25 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-100/90">
+        <div className={warnLegacy}>
           Inbox scope is <span className="font-semibold">Environment (legacy)</span>
           — the sidebar selector and saved mailboxes below are separate. Choose
           an account to read Prisma-backed mail for that mailbox.
@@ -542,7 +593,7 @@ function SettingsAccountsServer({
 
       <div className="space-y-2">
         {serverMailAccounts.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-white/[0.1] bg-[#0a0a0a]/60 px-3.5 py-6 text-center text-[12px] text-[color:var(--text-soft)]">
+          <p className={emptyBox}>
             No saved mailboxes yet. Connect one below—Quick uses Thunderbird
             autodiscover when your provider supports it.
           </p>
@@ -552,14 +603,11 @@ function SettingsAccountsServer({
           const smtpH = a.smtp?.host ?? "—";
           const active = inboxScope === a.id;
           return (
-            <div
-              key={a.id}
-              className="rounded-xl border border-white/[0.08] bg-[#0c0c0c]/90 px-4 py-4"
-            >
+            <div key={a.id} className={accountCard}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1 space-y-3">
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                    <div className={accountMetaLbl}>
                       Email
                     </div>
                     <div className="mt-1.5 break-all text-[14px] font-medium leading-snug text-[var(--text-main)]">
@@ -567,31 +615,47 @@ function SettingsAccountsServer({
                     </div>
                   </div>
                   {a.provider ? (
-                    <p className="text-[12px] text-[color:var(--text-soft)]">
+                    <p
+                      className={
+                        isLight ? "text-[12px] text-[#555]" : "text-[12px] text-[color:var(--text-soft)]"
+                      }
+                    >
                       Provider: {a.provider}
                     </p>
                   ) : null}
-                  <div className="border-t border-white/[0.06] pt-3">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                  <div className={`border-t pt-3 ${accountDivider}`}>
+                    <div className={accountMetaLbl}>
                       IMAP / SMTP
                     </div>
-                    <div className="mt-2 space-y-1 font-mono text-[11px] leading-relaxed text-[color:var(--text-soft)]">
+                    <div
+                      className={
+                        isLight
+                          ? "mt-2 space-y-1 font-mono text-[11px] leading-relaxed text-[#555]"
+                          : "mt-2 space-y-1 font-mono text-[11px] leading-relaxed text-[color:var(--text-soft)]"
+                      }
+                    >
                       <div>IMAP: {imapH}</div>
                       <div>SMTP: {smtpH}</div>
                     </div>
                   </div>
                 </div>
                 {active ? (
-                  <span className="shrink-0 rounded-md border border-[var(--accent)]/40 bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-main)]">
+                  <span
+                    className={
+                      isLight
+                        ? "shrink-0 rounded-md border border-[var(--accent)]/40 bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#1a1a1a]"
+                        : "shrink-0 rounded-md border border-[var(--accent)]/40 bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-main)]"
+                    }
+                  >
                     Active inbox
                   </span>
                 ) : null}
               </div>
-              <div className="mt-4 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
+              <div className={`mt-4 flex flex-wrap gap-2 border-t pt-4 ${accountDivider}`}>
                 <button
                   type="button"
                   disabled={active}
-                  className="rounded-lg border border-white/[0.1] bg-[#141414] px-2.5 py-1.5 text-[11px] font-medium text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 disabled:cursor-not-allowed disabled:opacity-35"
+                  className={btnSecondary}
                   onClick={() => void handleUseInbox(a.id)}
                 >
                   Use for inbox
@@ -599,7 +663,7 @@ function SettingsAccountsServer({
                 <button
                   type="button"
                   disabled={syncBusy === a.id}
-                  className="rounded-lg border border-white/[0.1] bg-[#141414] px-2.5 py-1.5 text-[11px] font-medium text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 disabled:opacity-45"
+                  className={btnSecondary}
                   onClick={() => void handlePull(a.id)}
                 >
                   {syncBusy === a.id ? "Syncing…" : "Sync now"}
@@ -607,7 +671,7 @@ function SettingsAccountsServer({
                 <button
                   type="button"
                   disabled={removeBusy === a.id}
-                  className="rounded-lg border border-red-500/25 bg-red-500/5 px-2.5 py-1.5 text-[11px] font-medium text-red-200/90 transition-colors hover:border-red-500/40 disabled:opacity-45"
+                  className={btnDanger}
                   onClick={() => void handleRemove(a.id)}
                 >
                   {removeBusy === a.id ? "Removing…" : "Remove"}
@@ -618,37 +682,37 @@ function SettingsAccountsServer({
         })}
       </div>
 
-      <div className="rounded-xl border border-white/[0.08] bg-[#0a0a0a]/80 p-4">
+      <div className={formCard}>
         <div className="mb-3 flex gap-2">
           <button
             type="button"
-            className={`${segClass} flex-1 ${addMode === "quick" ? segOn : segOff}`}
+            className={addMode === "quick" ? segActive : segIdle}
             onClick={() => setAddMode("quick")}
           >
             Quick connect
           </button>
           <button
             type="button"
-            className={`${segClass} flex-1 ${addMode === "manual" ? segOn : segOff}`}
+            className={addMode === "manual" ? segActive : segIdle}
             onClick={() => setAddMode("manual")}
           >
             Manual
           </button>
         </div>
-        <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+        <div className={lblSection}>
           Add mailbox
         </div>
         {formError ? (
-          <p className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-200/95">
+          <p className={formErrBox}>
             {formError}
           </p>
         ) : null}
         <label className="mb-2 block">
-          <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+          <span className={lbl}>
             Email
           </span>
           <input
-            className={fieldInputClass}
+            className={accountsInput}
             value={addEmail}
             onChange={(e) => setAddEmail(e.target.value)}
             placeholder="name@domain.com"
@@ -656,11 +720,11 @@ function SettingsAccountsServer({
           />
         </label>
         <label className="mb-2 block">
-          <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+          <span className={lbl}>
             Password
           </span>
           <input
-            className={fieldInputClass}
+            className={accountsInput}
             type="password"
             value={addPassword}
             onChange={(e) => setAddPassword(e.target.value)}
@@ -668,13 +732,13 @@ function SettingsAccountsServer({
           />
         </label>
         {addMode === "manual" ? (
-          <div className="mb-2 space-y-3 border-t border-white/[0.06] pt-3">
+          <div className={`mb-2 space-y-3 pt-3 ${manualSep}`}>
             <label className="block">
-              <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+              <span className={lbl}>
                 IMAP host
               </span>
               <input
-                className={fieldInputClass}
+                className={accountsInput}
                 value={addImap}
                 onChange={(e) => setAddImap(e.target.value)}
                 placeholder="imap.example.com"
@@ -682,11 +746,11 @@ function SettingsAccountsServer({
             </label>
             <div className="flex gap-2">
               <label className="block flex-1">
-                <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+                <span className={lbl}>
                   IMAP port
                 </span>
                 <input
-                  className={fieldInputClass}
+                  className={accountsInput}
                   inputMode="numeric"
                   value={imapPort}
                   onChange={(e) =>
@@ -695,11 +759,11 @@ function SettingsAccountsServer({
                 />
               </label>
               <label className="block w-[120px] shrink-0">
-                <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+                <span className={lbl}>
                   Security
                 </span>
                 <select
-                  className={fieldInputClass}
+                  className={accountsInput}
                   value={imapSec}
                   onChange={(e) =>
                     setImapSec(e.target.value as MailTransportSecurity)
@@ -714,22 +778,22 @@ function SettingsAccountsServer({
               </label>
             </div>
             <label className="block">
-              <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+              <span className={lbl}>
                 IMAP username (optional)
               </span>
               <input
-                className={fieldInputClass}
+                className={accountsInput}
                 value={imapUser}
                 onChange={(e) => setImapUser(e.target.value)}
                 placeholder="Defaults to email"
               />
             </label>
             <label className="block">
-              <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+              <span className={lbl}>
                 SMTP host
               </span>
               <input
-                className={fieldInputClass}
+                className={accountsInput}
                 value={addSmtp}
                 onChange={(e) => setAddSmtp(e.target.value)}
                 placeholder="smtp.example.com"
@@ -737,11 +801,11 @@ function SettingsAccountsServer({
             </label>
             <div className="flex gap-2">
               <label className="block flex-1">
-                <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+                <span className={lbl}>
                   SMTP port
                 </span>
                 <input
-                  className={fieldInputClass}
+                  className={accountsInput}
                   inputMode="numeric"
                   value={smtpPort}
                   onChange={(e) =>
@@ -750,11 +814,11 @@ function SettingsAccountsServer({
                 />
               </label>
               <label className="block w-[120px] shrink-0">
-                <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+                <span className={lbl}>
                   Security
                 </span>
                 <select
-                  className={fieldInputClass}
+                  className={accountsInput}
                   value={smtpSec}
                   onChange={(e) =>
                     setSmtpSec(e.target.value as MailTransportSecurity)
@@ -769,11 +833,11 @@ function SettingsAccountsServer({
               </label>
             </div>
             <label className="block">
-              <span className="mb-1 block text-[10px] text-[color:var(--text-soft)]">
+              <span className={lbl}>
                 SMTP username (optional)
               </span>
               <input
-                className={fieldInputClass}
+                className={accountsInput}
                 value={smtpUser}
                 onChange={(e) => setSmtpUser(e.target.value)}
                 placeholder="Defaults to email"
@@ -781,7 +845,7 @@ function SettingsAccountsServer({
             </label>
           </div>
         ) : (
-          <p className="mb-3 text-[11px] leading-relaxed text-[color:var(--text-soft)]">
+          <p className={hintQuick}>
             Uses public autodiscover for your domain, then verifies IMAP and
             SMTP before saving.
           </p>
@@ -789,7 +853,7 @@ function SettingsAccountsServer({
         <button
           type="button"
           disabled={connectBusy || !canSubmit}
-          className="w-full rounded-lg border border-[var(--accent)]/45 bg-[var(--accent-soft)] py-2.5 text-[13px] font-semibold text-[var(--text-main)] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+          className={connectPrimary}
           onClick={() => void handleConnect()}
         >
           {connectBusy ? "Verifying & saving…" : "Connect and save"}
