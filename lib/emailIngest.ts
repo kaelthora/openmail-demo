@@ -2,6 +2,7 @@ import { analyzeEmail } from "@/lib/ai";
 import { prisma } from "@/lib/db";
 import { emailDedupeKey } from "@/lib/emailDedupe";
 import type { FetchedEmail } from "@/lib/imap";
+import { resolveMailIsoDateString } from "@/lib/mailDateIso";
 import { emitMailRealtime } from "@/lib/mailRealtimeHub";
 
 export type IngestEmailOptions = {
@@ -29,7 +30,7 @@ export async function ingestFetchedEmails(
     body: e.body.length > 0 ? e.body : null,
     bodyHtml: e.bodyHtml && e.bodyHtml.length > 0 ? e.bodyHtml : null,
     attachments: e.attachments,
-    date: e.date ? new Date(e.date) : null,
+    date: new Date(resolveMailIsoDateString(e.date, new Date())),
   }));
 
   return prisma.$transaction(async (tx) => {
@@ -44,29 +45,42 @@ export async function ingestFetchedEmails(
 
     const toInsert = await Promise.all(
       fresh.map(async (row) => {
+        const bodyForAi = row.body?.trim()
+          ? row.body
+          : row.bodyHtml?.trim()
+            ? row.bodyHtml
+            : "";
         const a = await analyzeEmail({
           subject: row.subject,
-          body: row.body ?? "",
+          body: bodyForAi,
           attachments: row.attachments.map((x) => ({
             filename: x.filename,
             type: x.type,
             size: x.size,
           })),
         });
+        const bodyStored =
+          row.body && row.body.length > 0
+            ? row.body
+            : row.bodyHtml && row.bodyHtml.length > 0
+              ? row.bodyHtml
+              : null;
         return {
           dedupeKey: row.dedupeKey,
           subject: row.subject,
           mailFrom: row.mailFrom,
-          body: row.body,
-          bodyHtml: row.bodyHtml,
+          body: bodyStored,
           date: row.date,
           attachments: row.attachments.length > 0 ? row.attachments : undefined,
-          accountId,
           risk: a.risk,
           summary: a.summary,
           action: a.action,
           reason: a.reason,
           suggestions: a.suggestions,
+          intent: a.intent,
+          intentUrgency: a.intentUrgency,
+          intentConfidence: a.intentConfidence,
+          accountId: accountId ?? null,
         };
       })
     );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { SecurityRiskLevel } from "./types";
 
 const PANEL: Record<
@@ -12,13 +13,18 @@ const PANEL: Record<
     backdropTint: "bg-emerald-950/20",
   },
   suspicious: {
-    border: "border-amber-500/30",
-    glow: "[box-shadow:0_0_52px_rgba(251,191,36,0.22),0_0_90px_rgba(245,158,11,0.08),inset_0_1px_0_rgba(255,255,255,0.06)]",
+    border: "border-orange-500/70",
+    glow: "[box-shadow:0_0_48px_rgba(249,115,22,0.42),0_0_88px_rgba(234,88,12,0.18),inset_0_1px_0_rgba(255,255,255,0.07)]",
+    backdropTint: "bg-orange-950/30",
+  },
+  trusted_flagged: {
+    border: "border-amber-500/35",
+    glow: "[box-shadow:0_0_48px_rgba(245,158,11,0.2),0_0_80px_rgba(180,83,9,0.08),inset_0_1px_0_rgba(255,255,255,0.06)]",
     backdropTint: "bg-amber-950/25",
   },
   dangerous: {
-    border: "border-red-500/40",
-    glow: "[box-shadow:0_0_56px_rgba(248,113,113,0.38),0_0_100px_rgba(239,68,68,0.12),inset_0_1px_0_rgba(255,255,255,0.05)]",
+    border: "border-red-500/70",
+    glow: "[box-shadow:0_0_56px_rgba(248,113,113,0.42),0_0_100px_rgba(239,68,68,0.14),inset_0_1px_0_rgba(255,255,255,0.06)]",
     backdropTint: "bg-red-950/30",
   },
 };
@@ -31,6 +37,16 @@ const BTN_SECURE =
 
 const BTN_SECONDARY =
   "rounded-xl border border-white/[0.08] bg-transparent px-4 py-2.5 text-sm font-medium text-white/55 transition-colors duration-200 hover:border-white/[0.12] hover:bg-white/[0.04] hover:text-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/20";
+
+/** Primary for mail open gate — high risk (destructive proceed). */
+const BTN_MAIL_GATE_HIGH_PRIMARY =
+  "rounded-xl border border-red-400/55 bg-gradient-to-b from-red-600 to-red-700 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_28px_rgba(239,68,68,0.42)] transition-[filter,box-shadow] duration-150 hover:from-red-500 hover:to-red-600 hover:shadow-[0_0_36px_rgba(239,68,68,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400/55";
+
+/** Primary for mail open gate — medium risk. */
+const BTN_MAIL_GATE_MEDIUM_PRIMARY =
+  "rounded-xl border border-orange-400/50 bg-gradient-to-b from-orange-600 to-orange-700 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_26px_rgba(249,115,22,0.38)] transition-[filter,box-shadow] duration-150 hover:from-orange-500 hover:to-orange-600 hover:shadow-[0_0_34px_rgba(249,115,22,0.48)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400/50";
+
+const RISK_OVERLAY = "bg-black/60 backdrop-blur-sm";
 
 export type SecurityModalProps =
   | {
@@ -47,10 +63,115 @@ export type SecurityModalProps =
     }
   | {
       open: true;
+      variant: "mailRiskGate";
+      /** High = stop wall; medium = warning. */
+      tier: "high" | "medium";
+      onConfirm: () => void;
+      onCancel: () => void;
+    }
+  | {
+      open: true;
       variant: "scanning";
       fileName: string;
     }
   | { open: false };
+
+function MailRiskGateModal({
+  tier,
+  onConfirm,
+  onCancel,
+}: {
+  tier: "high" | "medium";
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const isHigh = tier === "high";
+
+  useEffect(() => {
+    cancelRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
+  const panelSkin = isHigh
+    ? "border-2 border-red-500 [box-shadow:0_0_56px_rgba(248,113,113,0.45),0_0_100px_rgba(239,68,68,0.15),inset_0_1px_0_rgba(255,255,255,0.06)]"
+    : "border-2 border-orange-500 [box-shadow:0_0_48px_rgba(249,115,22,0.42),0_0_88px_rgba(234,88,12,0.2),inset_0_1px_0_rgba(255,255,255,0.07)]";
+
+  return (
+    <>
+      <div
+        className={`fixed inset-0 z-[100] ${RISK_OVERLAY}`}
+        aria-hidden
+        onClick={onCancel}
+      />
+      <div
+        className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
+      >
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="openmail-mail-risk-title"
+          className={`openmail-risk-modal-panel pointer-events-auto w-[min(92vw,440px)] rounded-2xl border bg-[rgba(10,12,14,0.96)] p-6 backdrop-blur-xl ${panelSkin}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-3 flex flex-col items-center gap-2 text-center">
+            <span
+              className={`text-2xl leading-none ${isHigh ? "drop-shadow-[0_0_12px_rgba(239,68,68,0.55)]" : "drop-shadow-[0_0_12px_rgba(249,115,22,0.45)]"}`}
+              aria-hidden
+            >
+              ⚠️
+            </span>
+            <h2
+              id="openmail-mail-risk-title"
+              className="text-base font-semibold tracking-tight text-white/95"
+            >
+              {isHigh ? "High risk detected" : "Elevated risk"}
+            </h2>
+          </div>
+          {isHigh ? (
+            <div className="space-y-3 text-center text-[13px] leading-relaxed text-white/80">
+              <p>This message is considered dangerous.</p>
+              <p>It may involve fraud, impersonation, or data theft.</p>
+              <p className="text-white/90">Opening it is not recommended.</p>
+            </div>
+          ) : (
+            <div className="space-y-3 text-center text-[13px] leading-relaxed text-white/80">
+              <p>This message presents potential risk.</p>
+              <p>The sender or content cannot be fully trusted.</p>
+              <p className="text-orange-100/90">
+                Proceed only if you recognize and expect this message.
+              </p>
+            </div>
+          )}
+          <div className="mt-6 flex flex-col gap-2">
+            <button
+              type="button"
+              className={isHigh ? BTN_MAIL_GATE_HIGH_PRIMARY : BTN_MAIL_GATE_MEDIUM_PRIMARY}
+              onClick={onConfirm}
+            >
+              {isHigh ? "Open anyway (unsafe)" : "Open safely"}
+            </button>
+            <button
+              ref={cancelRef}
+              type="button"
+              className={BTN_SECONDARY}
+              onClick={onCancel}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
 
 export function SecurityModal(props: SecurityModalProps) {
   if (!props.open) return null;
@@ -59,7 +180,7 @@ export function SecurityModal(props: SecurityModalProps) {
     return (
       <>
         <div
-          className="fixed inset-0 z-[100] backdrop-blur-md bg-black/45"
+          className="fixed inset-0 z-[100] backdrop-blur-sm bg-black/60"
           aria-hidden
         />
         <div
@@ -91,6 +212,16 @@ export function SecurityModal(props: SecurityModalProps) {
     );
   }
 
+  if (props.variant === "mailRiskGate") {
+    return (
+      <MailRiskGateModal
+        tier={props.tier}
+        onConfirm={props.onConfirm}
+        onCancel={props.onCancel}
+      />
+    );
+  }
+
   const { severity, title, reason, detail, role, primaryAction, secondaryAction, onBackdropClick } =
     props;
   const skin = PANEL[severity];
@@ -98,7 +229,7 @@ export function SecurityModal(props: SecurityModalProps) {
   return (
     <>
       <div
-        className={`fixed inset-0 z-[100] backdrop-blur-md ${skin.backdropTint} bg-black/40 ${onBackdropClick ? "cursor-pointer" : ""}`}
+        className={`fixed inset-0 z-[100] ${RISK_OVERLAY} ${onBackdropClick ? "cursor-pointer" : ""}`}
         aria-hidden
         onClick={onBackdropClick}
       />

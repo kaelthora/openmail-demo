@@ -121,6 +121,8 @@ export function MailListEmptyState({
   onRefresh,
   refreshing,
   showRefresh,
+  emptyTitle,
+  emptyDetail,
 }: {
   isFiltered: boolean;
   folderLabel: string;
@@ -128,6 +130,10 @@ export function MailListEmptyState({
   onRefresh?: () => void | Promise<void>;
   refreshing?: boolean;
   showRefresh?: boolean;
+  /** Overrides default “No matches” heading when list is filtered empty */
+  emptyTitle?: string;
+  /** Overrides default filtered empty subline */
+  emptyDetail?: string;
 }) {
   return (
     <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 px-3 py-10 text-center">
@@ -154,11 +160,13 @@ export function MailListEmptyState({
       </div>
       <div className="max-w-[260px] space-y-1">
         <p className="text-sm font-semibold text-[var(--text-main)]">
-          {isFiltered ? "No matches" : `${folderLabel} is empty`}
+          {isFiltered
+            ? emptyTitle ?? "No matches"
+            : `${folderLabel} is empty`}
         </p>
         <p className="text-xs leading-relaxed text-[color:var(--text-soft)]">
           {isFiltered
-            ? "Try another search or clear filters."
+            ? emptyDetail ?? "Try another search or clear filters."
             : inboxEmptyHintDb && folderLabel === "Inbox"
               ? "Pull the latest messages from your mail source, or confirm your database and IMAP settings."
               : "You are all caught up. New messages will appear here when they arrive."}

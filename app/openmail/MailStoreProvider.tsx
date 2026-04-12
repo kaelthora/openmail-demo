@@ -12,7 +12,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
-import type { MailItem } from "@/lib/mailTypes";
+import type { MailItem, OpenmailSmartFolderId } from "@/lib/mailTypes";
 import type { OpenMailAccountProfile } from "@/lib/mailAccountConfig";
 import { isAccountConfigured } from "@/lib/mailAccountConfig";
 import {
@@ -24,6 +24,9 @@ import type { EmailListItem } from "@/lib/emailListTypes";
 import { emailApiItemToMailItem } from "@/lib/mapEmailApiToMailItem";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
 import { OPENMAIL_DEMO_MAIL_ITEMS } from "@/lib/openmailDemoMails";
+import { guardianEvaluate } from "@/lib/guardianEngine";
+import { useGuardianIntercept } from "./GuardianInterceptProvider";
+import { useGuardianTrace } from "./GuardianTraceProvider";
 import type {
   ServerInboxScope,
   ServerMailAccountSummary,
@@ -43,13 +46,21 @@ export type MailStoreValue = {
   mailsFetchError: string | null;
   refreshMailsFromApi: (opts?: {
     silent?: boolean;
+    /** When set, load this inbox without waiting for `inboxScope` state (e.g. Settings). */
+    accountId?: ServerInboxScope;
   }) => Promise<{ ok: boolean; error?: string }>;
   /** Prisma-backed mailboxes */
   serverMailAccounts: ServerMailAccountSummary[];
   inboxScope: ServerInboxScope;
   setInboxScopePersist: (scope: ServerInboxScope) => void;
-  /** POST `/api/emails/sync` for the active `inboxScope` */
-  syncServerInbox: () => Promise<{ ok: boolean; error?: string }>;
+  /** POST `/api/emails/sync` for the active `inboxScope`, or `accountId` when provided. */
+  syncServerInbox: (opts?: {
+    accountId?: ServerInboxScope;
+  }) => Promise<{ ok: boolean; error?: string }>;
+  /** Reload `/api/accounts` (e.g. after add/remove in Settings). */
+  refreshServerAccounts: () => Promise<{ ok: boolean; error?: string }>;
+  /** DELETE Prisma account, refresh list, and fix `inboxScope` if it pointed at the row. */
+  removeServerAccount: (id: string) => Promise<{ ok: boolean; error?: string }>;
   account: OpenMailAccountProfile | null;
   accountHydrated: boolean;
   accountConnected: boolean;
@@ -61,13 +72,30 @@ export type MailStoreValue = {
   clearSyncError: () => void;
   markMailRead: (id: string) => void;
   softDeleteMail: (id: string) => void;
-  sendReplyMail: (id: string, replyBody: string) => Promise<void>;
+  archiveMail: (id: string) => void;
+  unarchiveMail: (id: string) => void;
+  /** Apply smart-folder routing (archive, tag, or keep inbox). */
+  moveMailToSmartFolder: (id: string, target: OpenmailSmartFolderId) => void;
+  dismissSmartFolderSuggestion: (id: string) => void;
+  sendReplyMail: (
+    id: string,
+    replyBody: string,
+    opts?: { guardianAuto?: boolean }
+  ) => Promise<{ imapReadOnly: boolean }>;
+  /** New message: POST `/api/emails/send`, then append a local Sent item. */
+  sendComposeMail: (draft: {
+    to: string;
+    subject: string;
+    body: string;
+  }) => Promise<{ imapReadOnly: boolean }>;
   mockScheduleMail: (id: string) => void;
 };
 
 const MailStoreContext = createContext<MailStoreValue | null>(null);
 
 export default function MailStoreProvider({ children }: { children: ReactNode }) {
+  const { record: recordGuardianTrace } = useGuardianTrace();
+  const { present: presentGuardianIntercept } = useGuardianIntercept();
   const [mails, setMails] = useState<MailItem[]>([]);
   const [selectedMailId, setSelectedMailId] = useState("");
   const [mailsHydrated] = useState(true);
@@ -85,19 +113,33 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   const mailsRef = useRef(mails);
   mailsRef.current = mails;
 
-  const refreshMailsFromApi = useCallback(async (opts?: { silent?: boolean }) => {
+  /** Latest silent inbox fetch — superseded requests abort so UI never flashes stale data. */
+  const silentInboxFetchRef = useRef<AbortController | null>(null);
+  /** Coalesce burst `new_mail` events to one refresh per animation frame (instant vs fixed delay). */
+  const sseInboxRefreshRafRef = useRef<number | null>(null);
+
+  const refreshMailsFromApi = useCallback(async (opts?: {
+    silent?: boolean;
+    accountId?: ServerInboxScope;
+  }) => {
     if (OPENMAIL_DEMO_MODE) return { ok: true };
     const silent = opts?.silent === true;
     if (!silent) {
       setMailsFetchError(null);
       setMailsLoading(true);
+    } else {
+      silentInboxFetchRef.current?.abort();
+      const ac = new AbortController();
+      silentInboxFetchRef.current = ac;
     }
+    const signal = silent ? silentInboxFetchRef.current?.signal : undefined;
     try {
+      const scope = opts?.accountId ?? inboxScope;
       const q =
-        inboxScope === "legacy"
+        scope === "legacy"
           ? "?legacy=1"
-          : `?accountId=${encodeURIComponent(inboxScope)}`;
-      const res = await fetch(`/api/emails${q}`, { cache: "no-store" });
+          : `?accountId=${encodeURIComponent(scope)}`;
+      const res = await fetch(`/api/emails${q}`, { cache: "no-store", signal });
       const data = (await res.json()) as {
         emails?: EmailListItem[];
         error?: string;
@@ -119,6 +161,12 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       });
       return { ok: true };
     } catch (e) {
+      const aborted =
+        (e instanceof DOMException && e.name === "AbortError") ||
+        (e instanceof Error && e.name === "AbortError");
+      if (silent && aborted) {
+        return { ok: true };
+      }
       const msg = e instanceof Error ? e.message : "Could not load messages";
       if (!silent) setMailsFetchError(msg);
       return { ok: false, error: msg };
@@ -136,11 +184,13 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     setInboxScope(scope);
   }, []);
 
-  const syncServerInbox = useCallback(async () => {
+  const syncServerInbox = useCallback(async (opts?: {
+    accountId?: ServerInboxScope;
+  }) => {
     if (OPENMAIL_DEMO_MODE) return { ok: true };
     try {
-      const body =
-        inboxScope === "legacy" ? {} : { accountId: inboxScope };
+      const scope = opts?.accountId ?? inboxScope;
+      const body = scope === "legacy" ? {} : { accountId: scope };
       const res = await fetch("/api/emails/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -155,6 +205,58 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       return { ok: false, error: "Could not reach sync endpoint" };
     }
   }, [inboxScope]);
+
+  const refreshServerAccounts = useCallback(async () => {
+    if (OPENMAIL_DEMO_MODE) return { ok: true };
+    try {
+      const r = await fetch("/api/accounts", { cache: "no-store" });
+      const j = (await r.json()) as {
+        accounts?: ServerMailAccountSummary[];
+        error?: string;
+      };
+      if (!r.ok) {
+        const msg = j.error || "Could not load accounts";
+        return { ok: false, error: msg };
+      }
+      setServerMailAccounts(j.accounts ?? []);
+      return { ok: true };
+    } catch {
+      return { ok: false, error: "Could not load accounts" };
+    }
+  }, []);
+
+  const removeServerAccount = useCallback(
+    async (id: string) => {
+      if (OPENMAIL_DEMO_MODE) return { ok: true };
+      try {
+        const res = await fetch(`/api/accounts/${encodeURIComponent(id)}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) {
+          const j = (await res.json().catch(() => ({}))) as { error?: string };
+          return { ok: false, error: j.error || "Could not remove account" };
+        }
+        const r2 = await fetch("/api/accounts", { cache: "no-store" });
+        const j2 = (await r2.json()) as {
+          accounts?: ServerMailAccountSummary[];
+        };
+        const list = j2.accounts ?? [];
+        setServerMailAccounts(list);
+        let next: ServerInboxScope;
+        if (inboxScope === id) next = list[0]?.id ?? "legacy";
+        else if (inboxScope === "legacy") next = "legacy";
+        else
+          next = list.some((x) => x.id === inboxScope)
+            ? inboxScope
+            : list[0]?.id ?? "legacy";
+        setInboxScopePersist(next);
+        return { ok: true };
+      } catch {
+        return { ok: false, error: "Could not remove account" };
+      }
+    },
+    [inboxScope, setInboxScopePersist]
+  );
 
   /** Clean boot: demo seeds static inbox; otherwise resolve inbox scope then list loads via effect. */
   useEffect(() => {
@@ -201,21 +303,43 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     void refreshMailsFromApi();
   }, [inboxScope, refreshMailsFromApi]);
 
-  /** Server push when IMAP watcher ingests new mail (SSE). */
+  /** Server push when IMAP watcher ingests new mail (SSE). Ingest already ran analyzeEmail; rAF-coalesced silent fetch runs full client pipeline same frame. */
   useEffect(() => {
     if (OPENMAIL_DEMO_MODE) return;
     const es = new EventSource("/api/emails/events");
     es.onmessage = (ev) => {
       try {
-        const data = JSON.parse(ev.data as string) as { type?: string; inserted?: number };
+        const data = JSON.parse(ev.data as string) as {
+          type?: string;
+          inserted?: number;
+          ids?: unknown;
+        };
         if (data.type === "new_mail" && (data.inserted ?? 0) > 0) {
-          void refreshMailsFromApi({ silent: true });
+          const ids = Array.isArray(data.ids)
+            ? data.ids.filter((x): x is string => typeof x === "string" && x.trim().length > 0)
+            : [];
+          if (typeof window !== "undefined" && ids.length > 0) {
+            window.dispatchEvent(new CustomEvent("openmail-new-mail", { detail: { ids } }));
+          }
+          if (sseInboxRefreshRafRef.current != null) {
+            cancelAnimationFrame(sseInboxRefreshRafRef.current);
+          }
+          sseInboxRefreshRafRef.current = requestAnimationFrame(() => {
+            sseInboxRefreshRafRef.current = null;
+            void refreshMailsFromApi({ silent: true });
+          });
         }
       } catch {
         /* ignore malformed */
       }
     };
-    return () => es.close();
+    return () => {
+      es.close();
+      if (sseInboxRefreshRafRef.current != null) {
+        cancelAnimationFrame(sseInboxRefreshRafRef.current);
+        sseInboxRefreshRafRef.current = null;
+      }
+    };
   }, [refreshMailsFromApi]);
 
   const accountConnected = isAccountConfigured(account);
@@ -249,6 +373,63 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
 
   const softDeleteMail = useCallback((id: string) => {
     setMails((prev) => prev.map((m) => (m.id === id ? { ...m, deleted: true } : m)));
+  }, []);
+
+  const archiveMail = useCallback((id: string) => {
+    setMails((prev) =>
+      prev.map((m) =>
+        m.id === id ? { ...m, archived: true, read: true } : m
+      )
+    );
+  }, []);
+
+  const unarchiveMail = useCallback((id: string) => {
+    setMails((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, archived: false } : m))
+    );
+  }, []);
+
+  const moveMailToSmartFolder = useCallback(
+    (id: string, target: OpenmailSmartFolderId) => {
+      setMails((prev) =>
+        prev.map((m) => {
+          if (m.id !== id) return m;
+          if (target === "archive") {
+            return {
+              ...m,
+              archived: true,
+              read: true,
+              openmailFolderSuggestDismissed: true,
+              openmailSmartFolderTag: undefined,
+            };
+          }
+          if (target === "inbox") {
+            return {
+              ...m,
+              archived: false,
+              openmailSmartFolderTag: undefined,
+              openmailFolderSuggestDismissed: true,
+            };
+          }
+          return {
+            ...m,
+            archived: false,
+            openmailSmartFolderTag: target,
+            openmailFolderSuggestDismissed: true,
+            read: true,
+          };
+        })
+      );
+    },
+    []
+  );
+
+  const dismissSmartFolderSuggestion = useCallback((id: string) => {
+    setMails((prev) =>
+      prev.map((m) =>
+        m.id === id ? { ...m, openmailFolderSuggestDismissed: true } : m
+      )
+    );
   }, []);
 
   const syncFromImap = useCallback(async () => {
@@ -299,11 +480,17 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   }, [account]);
 
   const sendReplyMail = useCallback(
-    async (id: string, replyBody: string) => {
+    async (
+      id: string,
+      replyBody: string,
+      opts?: { guardianAuto?: boolean }
+    ) => {
       const demoSender = "you@openmail.demo";
       const trimmed = replyBody.trim();
       const src = mailsRef.current.find((m) => m.id === id);
-      if (!src) return;
+      if (!src) {
+        throw new Error("Message not found");
+      }
 
       const to =
         extractEmail(src.sender ?? "") ||
@@ -318,10 +505,38 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         ? src.subject
         : `Re: ${src.subject}`;
 
+      const gReply = guardianEvaluate("send_email", {
+        to,
+        subject,
+        body: trimmed || " ",
+      });
+      recordGuardianTrace(gReply, "client:send_reply");
+      if (gReply.decision === "block") {
+        await presentGuardianIntercept({
+          kind: "send_email",
+          decision: "block",
+          result: gReply,
+          detail: to,
+        });
+        throw new Error(gReply.reason);
+      }
+      if (gReply.decision === "warn") {
+        const out = await presentGuardianIntercept({
+          kind: "send_email",
+          decision: "warn",
+          result: gReply,
+          detail: to,
+        });
+        if (out === "cancel" || out === "sandbox") {
+          throw new Error("Send cancelled");
+        }
+      }
+
       const sendOverNetwork =
         !OPENMAIL_DEMO_MODE || isAccountConfigured(account);
+      let imapReadOnly = true;
       if (sendOverNetwork) {
-        const payload: Record<string, string> = {
+        const payload: Record<string, string | boolean> = {
           to,
           subject,
           body: trimmed || " ",
@@ -329,13 +544,20 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         if (inboxScope !== "legacy") {
           payload.accountId = inboxScope;
         }
+        if (gReply.decision === "warn") {
+          payload.guardianWarnAcknowledged = true;
+        }
         const res = await fetch("/api/emails/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
 
-        let data: { success?: boolean; error?: string } = {};
+        let data: {
+          success?: boolean;
+          error?: string;
+          imapReadOnly?: boolean;
+        } = {};
         try {
           data = (await res.json()) as typeof data;
         } catch {
@@ -344,6 +566,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         if (!res.ok || data.success !== true) {
           throw new Error(data.error || "Send failed");
         }
+        imapReadOnly = data.imapReadOnly === true;
       }
 
       const sentId = `sent-${Date.now()}`;
@@ -367,6 +590,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         date: new Date().toISOString(),
         x: 50,
         y: 40,
+        ...(opts?.guardianAuto ? { openmailAutoSentByAi: true } : {}),
       };
 
       setMails((prev) =>
@@ -374,8 +598,116 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
           .map((m) => (m.id === id ? { ...m, read: true, needsReply: false } : m))
           .concat(sent)
       );
+      return { imapReadOnly };
     },
-    [account, inboxScope]
+    [account, inboxScope, presentGuardianIntercept, recordGuardianTrace]
+  );
+
+  const sendComposeMail = useCallback(
+    async (draft: { to: string; subject: string; body: string }) => {
+      const demoSender = "you@openmail.demo";
+      const rawTo = draft.to.trim();
+      const to =
+        extractEmail(rawTo) ||
+        rawTo;
+      if (!to.includes("@")) {
+        throw new Error("Recipient must include a valid email address");
+      }
+
+      const subject = draft.subject.trim() || "(no subject)";
+      const trimmed = draft.body.trim();
+
+      const gNew = guardianEvaluate("send_email", {
+        to,
+        subject,
+        body: trimmed || " ",
+      });
+      recordGuardianTrace(gNew, "client:send_compose");
+      if (gNew.decision === "block") {
+        await presentGuardianIntercept({
+          kind: "send_email",
+          decision: "block",
+          result: gNew,
+          detail: to,
+        });
+        throw new Error(gNew.reason);
+      }
+      if (gNew.decision === "warn") {
+        const out = await presentGuardianIntercept({
+          kind: "send_email",
+          decision: "warn",
+          result: gNew,
+          detail: to,
+        });
+        if (out === "cancel" || out === "sandbox") {
+          throw new Error("Send cancelled");
+        }
+      }
+
+      const sendOverNetwork =
+        !OPENMAIL_DEMO_MODE || isAccountConfigured(account);
+      let imapReadOnly = true;
+      if (sendOverNetwork) {
+        const payload: Record<string, string | boolean> = {
+          to,
+          subject,
+          body: trimmed || " ",
+        };
+        if (inboxScope !== "legacy") {
+          payload.accountId = inboxScope;
+        }
+        if (gNew.decision === "warn") {
+          payload.guardianWarnAcknowledged = true;
+        }
+        const res = await fetch("/api/emails/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        let data: {
+          success?: boolean;
+          error?: string;
+          imapReadOnly?: boolean;
+        } = {};
+        try {
+          data = (await res.json()) as typeof data;
+        } catch {
+          throw new Error("Invalid response from server");
+        }
+        if (!res.ok || data.success !== true) {
+          throw new Error(data.error || "Send failed");
+        }
+        imapReadOnly = data.imapReadOnly === true;
+      }
+
+      const sentId = `sent-${Date.now()}`;
+      const preview =
+        trimmed.length > 120 ? `${trimmed.slice(0, 117)}...` : trimmed || "(empty)";
+      const sent: MailItem = {
+        id: sentId,
+        folder: "sent",
+        read: true,
+        title: "You",
+        sender: isAccountConfigured(account)
+          ? account!.email.trim()
+          : demoSender,
+        subject,
+        preview,
+        content: trimmed || "(no body)",
+        aiPreview: "Sent message",
+        confidence: 50,
+        needsReply: false,
+        deleted: false,
+        date: new Date().toISOString(),
+        x: 50,
+        y: 40,
+      };
+
+      setMails((prev) => prev.concat(sent));
+      return { imapReadOnly };
+    },
+    [account, inboxScope, presentGuardianIntercept, recordGuardianTrace]
   );
 
   const mockScheduleMail = useCallback((id: string) => {
@@ -398,6 +730,8 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       inboxScope,
       setInboxScopePersist,
       syncServerInbox,
+      refreshServerAccounts,
+      removeServerAccount,
       account,
       accountHydrated,
       accountConnected,
@@ -409,7 +743,12 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       clearSyncError,
       markMailRead,
       softDeleteMail,
+      archiveMail,
+      unarchiveMail,
+      moveMailToSmartFolder,
+      dismissSmartFolderSuggestion,
       sendReplyMail,
+      sendComposeMail,
       mockScheduleMail,
     }),
     [
@@ -423,6 +762,8 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       inboxScope,
       setInboxScopePersist,
       syncServerInbox,
+      refreshServerAccounts,
+      removeServerAccount,
       account,
       accountHydrated,
       accountConnected,
@@ -434,7 +775,12 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       clearSyncError,
       markMailRead,
       softDeleteMail,
+      archiveMail,
+      unarchiveMail,
+      moveMailToSmartFolder,
+      dismissSmartFolderSuggestion,
       sendReplyMail,
+      sendComposeMail,
       mockScheduleMail,
     ]
   );

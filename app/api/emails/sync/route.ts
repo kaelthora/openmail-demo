@@ -34,14 +34,32 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
+      console.info(
+        `[openmail][IMAP] emails/sync: connecting accountId=${accountId} host=${imap.host}:${imap.port} secure=${imap.port === 993 || imap.security === "ssl"}`
+      );
       const fetched = await fetchEmailsWithImap(imap);
+      console.info(
+        `[openmail][IMAP] emails/sync: connection OK — fetched ${fetched.length} message(s) from INBOX`
+      );
       const { inserted } = await ingestFetchedEmails(fetched, { accountId });
-      return NextResponse.json({ success: true, count: inserted });
+      console.info(
+        `[openmail][IMAP] emails/sync: inserted ${inserted} new row(s) into database (accountId=${accountId})`
+      );
+      return NextResponse.json({ success: true, count: inserted, fetched: fetched.length });
     }
 
+    console.info(
+      `[openmail][IMAP] emails/sync: legacy mode — Gmail imap.gmail.com:993 (EMAIL_USER / EMAIL_PASS)`
+    );
     const fetched = await fetchEmails();
+    console.info(
+      `[openmail][IMAP] emails/sync: connection OK — fetched ${fetched.length} message(s) from INBOX`
+    );
     const { inserted } = await ingestFetchedEmails(fetched, { accountId: null });
-    return NextResponse.json({ success: true, count: inserted });
+    console.info(
+      `[openmail][IMAP] emails/sync: inserted ${inserted} new row(s) into database (legacy inbox)`
+    );
+    return NextResponse.json({ success: true, count: inserted, fetched: fetched.length });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Sync failed";
     const status = message.includes("Missing required environment variable")

@@ -50,12 +50,31 @@ function parseSyncedAi(e: EmailListItem): SyncedAiAnalysis | undefined {
     (s): s is string => typeof s === "string" && s.trim().length > 0
   );
 
+  const intentOk =
+    e.intent === "reply" ||
+    e.intent === "ignore" ||
+    e.intent === "escalate" ||
+    e.intent === "review"
+      ? e.intent
+      : null;
+  const urgencyOk =
+    e.intentUrgency === "low" ||
+    e.intentUrgency === "medium" ||
+    e.intentUrgency === "high"
+      ? e.intentUrgency
+      : null;
+  const confOk =
+    typeof e.intentConfidence === "number" && Number.isFinite(e.intentConfidence)
+      ? Math.min(1, Math.max(0, e.intentConfidence))
+      : null;
+
   const hasPayload =
     riskOk != null ||
     summary.length > 0 ||
     reason != null ||
     suggestions.length > 0 ||
-    actionOk != null;
+    actionOk != null ||
+    intentOk != null;
   if (!hasPayload) return undefined;
 
   return {
@@ -64,6 +83,9 @@ function parseSyncedAi(e: EmailListItem): SyncedAiAnalysis | undefined {
     reason,
     action: actionOk,
     suggestions,
+    ...(intentOk ? { intent: intentOk } : {}),
+    ...(urgencyOk ? { intentUrgency: urgencyOk } : {}),
+    ...(confOk != null ? { intentConfidence: confOk } : {}),
   };
 }
 
@@ -77,6 +99,12 @@ export function emailApiItemToMailItem(e: EmailListItem): MailItem {
 
   const attachmentItems = mapStoredAttachments(e.id, e.attachments);
 
+  const ic =
+    typeof e.intentConfidence === "number" && Number.isFinite(e.intentConfidence)
+      ? Math.min(1, Math.max(0, e.intentConfidence))
+      : null;
+  const listConfidence = ic != null ? Math.round(ic * 100) : 72;
+
   return {
     id: e.id,
     title,
@@ -85,8 +113,11 @@ export function emailApiItemToMailItem(e: EmailListItem): MailItem {
     preview: truncateBodyPreview(body),
     content: body,
     aiPreview: e.summary?.trim() || "Synced message",
-    confidence: 72,
-    needsReply: e.action === "reply",
+    confidence: listConfidence,
+    needsReply:
+      e.intent === "reply" ||
+      e.intent === "review" ||
+      (e.intent == null && e.action === "reply"),
     deleted: false,
     folder: "inbox",
     read: true,

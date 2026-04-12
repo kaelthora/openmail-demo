@@ -2,45 +2,182 @@
 
 import { useRouter } from "next/navigation";
 
+const featureLines = [
+  "Detects intent",
+  "Flags risk",
+  "Suggests actions",
+  "Blocks threats",
+];
+
 export default function Page() {
   const router = useRouter();
 
+  const go = () => router.push("/openmail");
+
   return (
-    <div className="relative min-h-screen w-full bg-black text-white">
+    <div className="openmail-landing flex h-[100dvh] max-h-[100dvh] w-full flex-col overflow-hidden text-white subpixel-antialiased antialiased">
+      {/* Base + premium halo stack */}
       <div
-        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+        className="pointer-events-none fixed inset-0 z-0 bg-[#040508]"
         aria-hidden
-      >
-        <div className="h-[600px] w-[600px] rounded-full bg-blue-500/10 blur-[120px]" />
-      </div>
+      />
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_130%_90%_at_50%_-15%,rgba(59,130,246,0.16),transparent_58%),radial-gradient(ellipse_70%_55%_at_100%_20%,rgba(139,92,246,0.1),transparent_52%),radial-gradient(ellipse_55%_45%_at_0%_80%,rgba(59,130,246,0.06),transparent_50%),linear-gradient(180deg,#05060a_0%,#080a12_42%,#020308_100%)]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_50%_115%,rgba(16,185,129,0.05),transparent_48%)]"
+        aria-hidden
+      />
+      {/* Radial spotlight behind hero card */}
+      <div
+        className="pointer-events-none fixed left-1/2 top-[min(30%,220px)] z-[1] h-[min(52vh,380px)] w-[min(92vw,480px)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.11),rgba(139,92,246,0.06)_45%,transparent_68%)] blur-[52px]"
+        aria-hidden
+      />
+      <div
+        className="openmail-landing-card-halo pointer-events-none fixed left-1/2 top-[min(38%,280px)] z-[1] h-[min(70vmin,440px)] w-[min(92vmin,520px)] -translate-x-1/2 rounded-full blur-[40px]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none fixed left-1/2 top-[min(38%,280px)] z-[1] h-[min(58vmin,360px)] w-[min(72vmin,420px)] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.08)_0%,transparent_68%)] blur-2xl"
+        aria-hidden
+      />
 
-      <div className="home-hero relative z-10 px-6 box-border">
-        <h1 className="title">OpenMail</h1>
-        <p className="subtitle">Your inbox answers before you do.</p>
+      <main className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-4 py-3 sm:px-5 sm:py-4">
+        <div className="openmail-landing-stack flex w-full max-w-[580px] flex-col items-center translate-y-[min(1.5vh,12px)] [@media(max-height:760px)]:translate-y-[min(0.5vh,6px)]">
+          {/* 1 — Hero (glass card only) */}
+          <div className="relative z-[2] w-full">
+            <div className="openmail-landing-glass openmail-landing-glass--hero w-full max-w-[560px] rounded-[20px] px-5 py-5 sm:rounded-[22px] sm:px-8 sm:py-6 max-[560px]:rounded-[18px]">
+              <div className="openmail-landing-fade-stagger relative z-[1] flex flex-col items-center gap-5 text-center [@media(max-height:760px)]:gap-4">
+                <header className="flex flex-col gap-2 sm:gap-2.5">
+                  <h1 className="text-[clamp(1.55rem,3.8vw,2.35rem)] font-semibold leading-[1.1] tracking-[-0.025em] text-white drop-shadow-[0_0_24px_rgba(59,130,246,0.2)]">
+                    OpenMail
+                  </h1>
+                  <p className="mx-auto max-w-[26rem] text-pretty text-[clamp(0.8rem,2.1vw,1.05rem)] leading-[1.45]">
+                    <span className="text-white/72">
+                      Encryption protects data.
+                    </span>
+                    <br />
+                    <span className="font-medium text-white/92">
+                      OpenMail protects decisions you would have gotten wrong.
+                    </span>
+                  </p>
+                </header>
 
-        <div className="preview-badge" role="status">
-          <p>DEMO EXPERIENCE — This is a live preview of OpenMail in development.</p>
-          <p>GMAIL INTEGRATION — Limited to test environment</p>
-          <p>Some features are simulated or in progress.</p>
-          <div className="home-hero-preview-spacer" aria-hidden />
-          <p>You&apos;re exploring the future of email interaction.</p>
-          <p>Core AI is active. Full system coming soon.</p>
+                <div className="relative inline-flex shrink-0">
+                  <div
+                    className="openmail-landing-cta-glow pointer-events-none absolute -inset-7 rounded-full blur-3xl"
+                    aria-hidden
+                  />
+                  <button
+                    type="button"
+                    className="openmail-landing-cta relative rounded-[11px] px-6 py-3 text-[12.5px] font-semibold tracking-[0.06em] text-white sm:px-8 sm:py-3.5 sm:text-[13px] motion-reduce:transition-none"
+                    onClick={go}
+                  >
+                    Enter protected inbox
+                  </button>
+                </div>
+
+                <ul className="space-y-1.5 text-[11px] leading-[1.55] tracking-[0.04em] text-white/58 sm:text-[12px]">
+                  <li>Reads your emails</li>
+                  <li>Understands intent</li>
+                  <li>Prevents mistakes</li>
+                </ul>
+
+                <p className="max-w-[24rem] text-pretty text-[11.5px] leading-[1.5] text-white/72 sm:text-[12.5px]">
+                  Every day, you trust emails you didn&apos;t verify.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 2 — Email philosophy (no card) */}
+          <section
+            className="w-full max-w-[25rem] text-center sm:max-w-[26rem]"
+            aria-labelledby="landing-email-built"
+          >
+            <h2 id="landing-email-built" className="sr-only">
+              How email works today
+            </h2>
+            <div className="space-y-2 text-[11px] leading-[1.62] sm:text-[12px] sm:leading-[1.68]">
+              <p className="text-white/78">
+                Email was built to deliver messages.
+              </p>
+              <p className="text-white/82">Not to evaluate them.</p>
+              <p className="text-white/88">Not to protect you.</p>
+              <p className="font-medium text-white/95">Not to think.</p>
+              <p className="pt-1 text-white/76">So you do it yourself.</p>
+              <p className="text-[10.5px] text-white/58 sm:text-[11.5px]">
+                Fast. Under pressure. With incomplete signals.
+              </p>
+            </div>
+          </section>
+
+          {/* 3 — Product (no card) */}
+          <section
+            className="flex w-full max-w-[23rem] flex-col items-center gap-3 text-center sm:max-w-[24rem] sm:gap-3.5"
+            aria-labelledby="landing-product"
+          >
+            <h2 id="landing-product" className="sr-only">
+              What OpenMail is
+            </h2>
+            <div className="space-y-1.5">
+              <p className="text-[12.5px] font-medium leading-snug text-white/90 sm:text-[13px]">
+                OpenMail is not another email client.
+              </p>
+              <p className="text-[11.5px] leading-[1.55] text-sky-200/88 sm:text-[12.5px]">
+                It&apos;s a decision engine for your inbox.
+              </p>
+            </div>
+            <ul className="w-full space-y-1.5 text-[11.5px] leading-[1.5] text-white/72 sm:text-[12px]">
+              {featureLines.map((line) => (
+                <li key={line} className="flex justify-center gap-2">
+                  <span className="text-white/32" aria-hidden>
+                    •
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* 4 — Demo (anchored glass) */}
+          <div className="relative z-[2] w-full max-w-[460px]">
+            <div
+              className="mb-2 h-px w-full max-w-[10rem] bg-gradient-to-r from-transparent via-white/14 to-transparent sm:mb-2.5 sm:max-w-[12rem]"
+              aria-hidden
+            />
+            <aside
+              className="openmail-landing-glass openmail-landing-glass--demo rounded-[14px] px-4 py-3 text-center sm:rounded-[15px] sm:px-5 sm:py-3.5"
+              aria-label="Demo preview"
+            >
+              <div className="relative z-[1] flex flex-col items-center gap-2 sm:gap-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-sky-300/88 sm:text-[11px]">
+                  🧪 DEMO PREVIEW
+                </p>
+                <p className="max-w-[22rem] text-[10.5px] leading-[1.55] text-white/65 sm:text-[11.5px]">
+                  Live preview · in development · Gmail-optimized. Some features
+                  are simulated; the system is evolving.
+                </p>
+              </div>
+            </aside>
+          </div>
+
+          {/* 5 — Closing */}
+          <footer className="flex w-full max-w-[26rem] flex-col items-center gap-2.5 pb-1 pt-1 text-center sm:gap-3">
+            <p className="max-w-[24rem] text-pretty text-[clamp(0.85rem,2.2vw,1.05rem)] font-semibold leading-[1.48] tracking-[-0.018em] text-white">
+              You don&apos;t need a better inbox.
+              <br />
+              <span className="font-semibold text-sky-100/96 drop-shadow-[0_0_18px_rgba(56,189,248,0.18)]">
+                You need a system that thinks before you act.
+              </span>
+            </p>
+            <p className="max-w-[22rem] text-pretty text-[10px] leading-[1.5] tracking-[0.02em] text-white/48 sm:text-[11px]">
+              Before you even realize you had to.
+            </p>
+          </footer>
         </div>
-
-        <button
-          type="button"
-          className="cta-enter rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 px-10 py-4 text-lg font-medium text-white shadow-[0_0_40px_rgba(59,130,246,0.4)] transition-transform duration-200 hover:scale-105"
-          onClick={() => router.push("/openmail")}
-        >
-          Enter your inbox
-        </button>
-
-        <div className="feature-list">
-          <p>→ Reads your emails</p>
-          <p>→ Understands intent</p>
-          <p>→ Writes replies instantly</p>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -19,6 +19,16 @@ function linkTierToRisk(tier: UnifiedLinkTier): SecurityRiskLevel {
   return "safe";
 }
 
+function linkButtonTitle(
+  tier: UnifiedLinkTier,
+  linksBlockedByMail: boolean
+): string {
+  if (linksBlockedByMail) return "Blocked for security — link disabled";
+  if (tier === "blocked") return "Blocked for security";
+  if (tier === "suspicious") return "Sandbox only — click to open in isolated sandbox";
+  return "Low risk — click to open";
+}
+
 function parseContentWithLinks(text: string): Part[] {
   const parts: Part[] = [];
   let lastIndex = 0;
@@ -76,6 +86,10 @@ export function EmailBodyWithLinks({
     return ` mail-body-link--risk-${t}`;
   }
 
+  function tierForUrl(url: string): UnifiedLinkTier {
+    return linkDisplayTier(url, securityInput);
+  }
+
   return (
     <div className="mail-body-with-links">
       {parts.map((p, i) =>
@@ -85,24 +99,19 @@ export function EmailBodyWithLinks({
           <button
             key={i}
             type="button"
-            disabled={linksBlockedByMail}
-            title={
-              linksBlockedByMail
-                ? "Links disabled — this message is flagged high risk."
-                : undefined
-            }
+            aria-disabled={linksBlockedByMail}
+            title={linkButtonTitle(tierForUrl(p.value), linksBlockedByMail)}
             className={`mail-body-link mail-body-link--with-badge${tierClass(p.value)}${
               linksBlockedByMail ? " mail-body-link--mail-risk-high" : ""
             }`}
             onClick={(e: MouseEvent<HTMLButtonElement>) => {
               e.preventDefault();
               e.stopPropagation();
-              if (linksBlockedByMail) return;
               void handleLinkClick(p.value, securityInput, mailId);
             }}
           >
             <RiskBadge
-              level={linkTierToRisk(linkDisplayTier(p.value, securityInput))}
+              level={linkTierToRisk(tierForUrl(p.value))}
               size="sm"
             />
             <span className="mail-body-link-text">{p.value}</span>

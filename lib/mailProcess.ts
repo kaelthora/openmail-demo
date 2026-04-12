@@ -106,6 +106,21 @@ export function processMails(inputMails: MailItem[]): ProcessedMail[] {
       if (bullets.length === 0 && sum) bullets.push(sum);
       if (bullets.length === 0) bullets = [...securityWhyBullets];
       securityWhyBullets = bullets.slice(0, 5);
+
+      if (
+        typeof sa.intentConfidence === "number" &&
+        Number.isFinite(sa.intentConfidence)
+      ) {
+        intentConfidence = Math.min(
+          0.99,
+          Math.max(0.05, sa.intentConfidence)
+        );
+      }
+      if (sa.intentUrgency === "high") {
+        priority = "urgent";
+      } else if (sa.intentUrgency === "medium" && priority === "low") {
+        priority = "medium";
+      }
     }
 
     if (OPENMAIL_DEMO_MODE && mail.demoClassification) {

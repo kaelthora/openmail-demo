@@ -1,50 +1,22 @@
 import { NextResponse } from "next/server";
-import { ImapFlow } from "imapflow";
 import { formatByteSize } from "@/lib/formatBytes";
+import {
+  createImapClientFromConfig,
+  imapMailboxCandidates,
+  imapMailboxOpenOptions,
+} from "@/lib/imap";
 import { parseMimeSource } from "@/lib/mailparserParse";
 import {
   type OpenMailAccountProfile,
   isAccountConfigured,
 } from "@/lib/mailAccountConfig";
+import { resolveMailIsoDateString } from "@/lib/mailDateIso";
 import type { MailItem } from "@/lib/mailTypes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_MESSAGES = 20;
-
-function toIso(d: string | Date | undefined): string {
-  if (!d) return new Date().toISOString();
-  if (d instanceof Date) return d.toISOString();
-  const t = Date.parse(d);
-  return Number.isNaN(t) ? new Date().toISOString() : new Date(t).toISOString();
-}
-
-function buildImapOptions(account: OpenMailAccountProfile) {
-  const { imap } = account;
-  const secure = imap.security === "ssl";
-  return {
-    host: imap.host.trim(),
-    port: imap.port,
-    secure,
-    tls: imap.security === "tls" ? {} : undefined,
-    logger: false as const,
-    auth: {
-      user: imap.username.trim(),
-      pass: imap.password,
-    },
-  };
-}
-
-function mailboxCandidatesFor(folder: "inbox" | "sent" | "drafts"): string[] {
-  if (folder === "sent") {
-    return ["Sent", "Sent Items", "Sent Mail", "[Gmail]/Sent Mail", "INBOX.Sent"];
-  }
-  if (folder === "drafts") {
-    return ["Drafts", "[Gmail]/Drafts", "INBOX.Drafts"];
-  }
-  return ["INBOX"];
-}
+const MAX_MESSAGES = 10;
 
 export async function POST(request: Request) {
   let body: { account?: OpenMailAccountProfile; folder?: "inbox" | "sent" | "drafts" };
@@ -63,29 +35,48 @@ export async function POST(request: Request) {
     );
   }
 
-  const client = new ImapFlow(buildImapOptions(account));
+  const client = createImapClientFromConfig(account.imap);
 
   try {
+    console.info(
+      `[openmail][IMAP] imap-sync connect ${account.imap.host}:${account.imap.port} folder=${folder}`
+    );
     await client.connect();
     let openedMailbox: string | null = null;
-    for (const mailboxName of mailboxCandidatesFor(folder)) {
+    const candidates = imapMailboxCandidates(folder, account.imap.host);
+    for (const mailboxName of candidates) {
       try {
-        await client.mailboxOpen(mailboxName);
+        await client.mailboxOpen(mailboxName, imapMailboxOpenOptions());
         openedMailbox = mailboxName;
+        console.info(
+          `[openmail][IMAP] imap-sync opened "${mailboxName}" exists=${client.mailbox ? client.mailbox.exists : "?"}`
+        );
         break;
-      } catch {
-        /* try next candidate */
+      } catch (e) {
+        console.warn(
+          `[openmail][IMAP] imap-sync cannot open "${mailboxName}":`,
+          e instanceof Error ? e.message : e
+        );
       }
     }
     if (!openedMailbox) {
       await client.logout();
-      return NextResponse.json({ messages: [] as MailItem[] });
+      return NextResponse.json(
+        {
+          error:
+            "Could not open mailbox. Verify host/port/security, credentials, and that IMAP is enabled (Gmail: turn on IMAP + use an App Password if 2FA is on).",
+        },
+        { status: 502 }
+      );
     }
 
     const mb = client.mailbox;
     if (!mb) {
       await client.logout();
-      return NextResponse.json({ messages: [] as MailItem[] });
+      return NextResponse.json(
+        { error: "Mailbox open returned no data." },
+        { status: 502 }
+      );
     }
 
     const exists = mb.exists;
@@ -131,7 +122,10 @@ export async function POST(request: Request) {
 
       const subject = msg.envelope.subject?.trim() || "(no subject)";
       const seen = msg.flags?.has("\\Seen") ?? false;
-      const date = toIso(msg.envelope.date ?? msg.internalDate);
+      const date = resolveMailIsoDateString(
+        msg.envelope.date ?? msg.internalDate,
+        new Date()
+      );
 
       const messageId =
         msg.envelope.messageId?.replace(/^<|>$/g, "") ?? undefined;
@@ -163,8 +157,13 @@ export async function POST(request: Request) {
 
     out.reverse();
 
+    console.info(
+      `[openmail][IMAP] imap-sync: fetched ${out.length} message(s) from "${openedMailbox}"`
+    );
+
     return NextResponse.json({ messages: out });
   } catch (e) {
+    console.error("[openmail][IMAP] imap-sync failed:", e);
     try {
       await client.logout();
     } catch {

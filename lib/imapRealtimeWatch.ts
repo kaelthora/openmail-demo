@@ -4,8 +4,9 @@ import { emitMailRealtime } from "@/lib/mailRealtimeHub";
 import {
   createEnvImapClient,
   fetchSequenceRangeFromOpenMailbox,
-  GMAIL_INBOX_PATH,
   imapCredentialsConfigured,
+  imapMailboxCandidates,
+  imapMailboxOpenOptions,
 } from "@/lib/imap";
 
 const g = globalThis as typeof globalThis & {
@@ -55,7 +56,27 @@ async function oneImapSession(): Promise<void> {
   };
 
   await client.connect();
-  await client.mailboxOpen(GMAIL_INBOX_PATH);
+  const inboxPaths = imapMailboxCandidates("inbox", "imap.gmail.com");
+  let openedInbox: string | null = null;
+  for (const p of inboxPaths) {
+    try {
+      await client.mailboxOpen(p, imapMailboxOpenOptions());
+      openedInbox = p;
+      break;
+    } catch (e) {
+      console.warn(
+        `[openmail] IMAP watch: mailboxOpen "${p}":`,
+        e instanceof Error ? e.message : e
+      );
+    }
+  }
+  if (!openedInbox) {
+    console.error(
+      `[openmail] IMAP watch: could not open INBOX (tried ${inboxPaths.join(", ")})`
+    );
+    await safeLogout(client);
+    return;
+  }
   const mb = client.mailbox;
   if (mb === false || !mb.exists) {
     await safeLogout(client);
@@ -83,7 +104,7 @@ async function oneImapSession(): Promise<void> {
     void (async () => {
       try {
         if (!client.usable) return;
-        const st = await client.status(GMAIL_INBOX_PATH, { messages: true });
+        const st = await client.status(openedInbox, { messages: true });
         const cnt = st.messages;
         if (typeof cnt !== "number" || cnt <= lastSeen.current) return;
         enqueue(lastSeen.current + 1, cnt);

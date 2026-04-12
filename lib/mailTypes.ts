@@ -1,6 +1,20 @@
 import type { SecurityLevel as MailSecurityLevel } from "@/lib/mailSecuritySignals";
 
-export type MailFolder = "inbox" | "sent" | "drafts";
+export type MailFolder = "inbox" | "sent" | "drafts" | "spam";
+
+/** Client-only smart buckets (learned routing; Archive maps to `archived`). */
+export type OpenmailSmartFolderId =
+  | "inbox"
+  | "archive"
+  | "promotions"
+  | "updates"
+  | "work"
+  | "personal";
+
+/** Intent engine output (persisted). */
+export type SyncedIntentKind = "reply" | "ignore" | "escalate" | "review";
+
+export type SyncedIntentUrgency = "low" | "medium" | "high";
 
 /** AI analysis persisted from sync (`analyzeEmail`) — drives CORE when present */
 export type SyncedAiAnalysis = {
@@ -9,6 +23,10 @@ export type SyncedAiAnalysis = {
   reason: string | null;
   action: "reply" | "ignore" | "escalate" | null;
   suggestions: string[];
+  /** Intent engine — preferred for preselected CORE action when set */
+  intent?: SyncedIntentKind | null;
+  intentUrgency?: SyncedIntentUrgency | null;
+  intentConfidence?: number | null;
 };
 
 export type MailItem = {
@@ -21,12 +39,16 @@ export type MailItem = {
   confidence: number;
   needsReply: boolean;
   deleted: boolean;
+  /** Client-only: hidden from folder list (quick archive in reading overlay). */
+  archived?: boolean;
   /** Mailbox folder (IMAP-ready mental model) */
   folder: MailFolder;
   /** Read state for inbox UX */
   read?: boolean;
   important?: boolean;
   age?: number;
+  /** Ingest / DB timestamp when distinct from `date` (optional; debug / fallback) */
+  createdAt?: string | Date;
   spam?: boolean;
   priority?: "urgent" | "medium" | "low";
   date?: string;
@@ -59,8 +81,16 @@ export type MailItem = {
   linkQuarantine?: boolean;
   /** From DB email sync — CORE panel prefers this over local heuristics */
   syncedAi?: SyncedAiAnalysis;
+  /** Client-only: auto-resolve prefilled reply (not sent). */
+  openmailAutoReplyDraft?: string;
+  /** Client-only: confirmed smart-folder bucket (non-archive). */
+  openmailSmartFolderTag?: OpenmailSmartFolderId | null;
+  /** Client-only: user hid the smart-folder suggestion row. */
+  openmailFolderSuggestDismissed?: boolean;
   /** DB mailbox owner; undefined for client-only / demo mail */
   accountId?: string | null;
+  /** Client-only: this sent row was created by Guardian auto-response */
+  openmailAutoSentByAi?: boolean;
 };
 
 export type ProcessedMail = MailItem & {

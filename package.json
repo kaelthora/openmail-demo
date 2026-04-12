@@ -22,11 +22,12 @@
     "dist": "npm run build && electron-builder"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.0",
     "imapflow": "^1.2.18",
     "lamejs": "^1.2.1",
+    "lucide-react": "^1.8.0",
     "mailparser": "^3.9.6",
     "matter-js": "^0.20.0",
-    "@prisma/client": "^6.19.0",
     "next": "16.1.6",
     "node-lame": "^2.0.2",
     "nodemailer": "^8.0.4",

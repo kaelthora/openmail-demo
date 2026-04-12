@@ -3,18 +3,19 @@
 import { useCallback, type MouseEvent } from "react";
 import { useOpenmailSecurity } from "@/app/openmail/openmailSecurityContext";
 import { RiskBadge } from "@/app/openmail/components/security/RiskBadge";
-import { attachmentBadgeWithMailRisk } from "@/lib/mailContentSecurity";
+import {
+  attachmentBadgeWithMailRisk,
+  type AttachmentBadgeTier,
+} from "@/lib/mailContentSecurity";
 import { analyzeFileAttachment } from "@/lib/fileSafety";
 import type { MailSecurityInput } from "@/lib/mailSecuritySignals";
 import type { MailAttachmentItem } from "@/lib/mailAttachmentItem";
-import type { SecurityRiskLevel } from "@/app/openmail/components/security/types";
-
 export type { MailAttachmentItem } from "@/lib/mailAttachmentItem";
 
 function attachmentRiskBadgeLevel(
   att: MailAttachmentItem,
   mail: MailSecurityInput
-): SecurityRiskLevel {
+): AttachmentBadgeTier {
   if (att.riskLevel === "blocked") return "dangerous";
   if (att.riskLevel === "suspicious") return "suspicious";
   if (att.riskLevel === "safe") return "safe";
@@ -27,9 +28,11 @@ function attachmentRiskBadgeLevel(
 export function MailAttachments({
   mail,
   attachments,
+  mailId,
 }: {
   mail: MailSecurityInput;
   attachments: MailAttachmentItem[];
+  mailId: string;
 }) {
   const {
     handleAttachmentClick,
@@ -43,14 +46,15 @@ export function MailAttachments({
     (event: MouseEvent<HTMLButtonElement>, att: MailAttachmentItem) => {
       event.preventDefault();
       event.stopPropagation();
-      void handleAttachmentClick(att, securityInput);
+      void handleAttachmentClick(att, securityInput, mailId);
     },
-    [handleAttachmentClick, securityInput]
+    [handleAttachmentClick, securityInput, mailId]
   );
 
   if (!attachments.length) return null;
 
   const mailBlocksAttachments = securityInput.mailAiRisk === "high";
+  const mailSandboxAttachments = securityInput.mailAiRisk === "medium";
 
   return (
     <div className="mail-attachments" aria-label="Attachments">
@@ -72,12 +76,14 @@ export function MailAttachments({
                   ? " mail-attachment-btn--risk-safe"
                   : "";
           const hardBlocked = blocked || mailBlocksAttachments;
+          const buttonDisabled =
+            analyzingAttachmentId !== null || blocked;
           return (
             <li
               key={att.id}
               className={`mail-attachments-item${
                 hardBlocked ? " mail-attachments-item--blocked" : ""
-              }`}
+              }${mailSandboxAttachments && !hardBlocked ? " mail-attachments-item--sandbox-mail" : ""}`}
             >
               <button
                 type="button"
@@ -85,18 +91,22 @@ export function MailAttachments({
                   hardBlocked ? " mail-attachment-btn--blocked" : ""
                 }${riskBtnClass}`}
                 onClick={(e) => onClick(e, att)}
-                disabled={analyzingAttachmentId !== null || hardBlocked}
+                disabled={buttonDisabled}
                 title={
                   hardBlocked
-                    ? mailBlocksAttachments
-                      ? "Attachments blocked — message flagged high risk"
-                      : "Blocked — cannot open this attachment"
-                    : undefined
+                    ? "Blocked for security"
+                    : badgeLevel === "dangerous"
+                      ? "Blocked for security"
+                      : badgeLevel === "suspicious"
+                        ? "Sandbox only — opens in isolated viewer"
+                        : "Low risk — click to open"
                 }
                 aria-label={
-                  hardBlocked
-                    ? `${att.name} — Blocked`
-                    : `Open attachment ${att.name}`
+                  blocked
+                    ? `${att.name} — blocked`
+                    : mailBlocksAttachments
+                      ? `${att.name} — blocked for security`
+                      : `Open attachment ${att.name}`
                 }
               >
                 <RiskBadge level={badgeLevel} size="sm" />

@@ -1,49 +1,22 @@
 import { NextResponse } from "next/server";
-import { ImapFlow } from "imapflow";
 import { formatByteSize } from "@/lib/formatBytes";
+import {
+  createImapClientFromConfig,
+  imapMailboxCandidates,
+  imapMailboxOpenOptions,
+} from "@/lib/imap";
 import { parseMimeSource } from "@/lib/mailparserParse";
 import {
   type OpenMailAccountProfile,
   isAccountConfigured,
 } from "@/lib/mailAccountConfig";
+import { resolveMailIsoDateString } from "@/lib/mailDateIso";
 import type { MailItem } from "@/lib/mailTypes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_MESSAGES = 20;
-
-function toIso(d: string | Date | undefined): string {
-  if (!d) return new Date().toISOString();
-  if (d instanceof Date) return d.toISOString();
-  const t = Date.parse(d);
-  return Number.isNaN(t) ? new Date().toISOString() : new Date(t).toISOString();
-}
-
-function buildImapOptions(account: OpenMailAccountProfile) {
-  const { imap } = account;
-  return {
-    host: imap.host.trim(),
-    port: imap.port,
-    secure: imap.security === "ssl",
-    tls: imap.security === "tls" ? {} : undefined,
-    logger: false as const,
-    auth: {
-      user: imap.username.trim(),
-      pass: imap.password,
-    },
-  };
-}
-
-function mailboxCandidatesFor(folder: "inbox" | "sent" | "drafts"): string[] {
-  if (folder === "sent") {
-    return ["Sent", "Sent Items", "Sent Mail", "[Gmail]/Sent Mail", "INBOX.Sent"];
-  }
-  if (folder === "drafts") {
-    return ["Drafts", "[Gmail]/Drafts", "INBOX.Drafts"];
-  }
-  return ["INBOX"];
-}
+const MAX_MESSAGES = 10;
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -69,26 +42,48 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing or incomplete account configuration" }, { status: 400 });
   }
 
-  const client = new ImapFlow(buildImapOptions(account));
+  const client = createImapClientFromConfig(account.imap);
   try {
+    console.info(
+      `[openmail][IMAP] get-mails connect ${account.imap.host}:${account.imap.port} folder=${folder}`
+    );
     await client.connect();
+    console.info(
+      `[openmail][IMAP] get-mails: TLS connection established to ${account.imap.host}:${account.imap.port}`
+    );
     let openedMailbox: string | null = null;
-    for (const mailboxName of mailboxCandidatesFor(folder)) {
+    for (const mailboxName of imapMailboxCandidates(folder, account.imap.host)) {
       try {
-        await client.mailboxOpen(mailboxName);
+        await client.mailboxOpen(mailboxName, imapMailboxOpenOptions());
         openedMailbox = mailboxName;
         break;
-      } catch {
-        /* try next mailbox */
+      } catch (e) {
+        console.warn(
+          `[openmail][IMAP] get-mails cannot open "${mailboxName}":`,
+          e instanceof Error ? e.message : e
+        );
       }
     }
     if (!openedMailbox) {
       await client.logout();
-      return NextResponse.json({ messages: [] as MailItem[] });
+      return NextResponse.json(
+        {
+          error:
+            "Could not open mailbox. Check IMAP settings and that IMAP is enabled (Gmail: App Password + IMAP on).",
+        },
+        { status: 502 }
+      );
     }
 
     const mb = client.mailbox;
-    if (!mb || !mb.exists) {
+    if (!mb) {
+      await client.logout();
+      return NextResponse.json(
+        { error: "Mailbox open returned no data." },
+        { status: 502 }
+      );
+    }
+    if (!mb.exists) {
       await client.logout();
       return NextResponse.json({ messages: [] as MailItem[] });
     }
@@ -140,7 +135,10 @@ export async function GET(request: Request) {
         deleted: false,
         folder,
         read: msg.flags?.has("\\Seen") ?? false,
-        date: toIso(msg.envelope.date ?? msg.internalDate),
+        date: resolveMailIsoDateString(
+          msg.envelope.date ?? msg.internalDate,
+          new Date()
+        ),
         rfc822MessageId: msg.envelope.messageId?.replace(/^<|>$/g, "") ?? undefined,
         x: 20 + (out.length % 5) * 15,
         y: 20 + (out.length % 4) * 12,
@@ -150,8 +148,12 @@ export async function GET(request: Request) {
 
     await client.logout();
     out.reverse();
+    console.info(
+      `[openmail][IMAP] get-mails: fetched ${out.length} message(s) folder=${folder}`
+    );
     return NextResponse.json({ messages: out });
   } catch (e) {
+    console.error("[openmail][IMAP] get-mails failed:", e);
     try {
       await client.logout();
     } catch {

@@ -1,12 +1,18 @@
 @import "tailwindcss";
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   --bg-main: #0a0a0a;
   --bg-surface: #111111;
   --border: #1f1f1f;
   --accent: #ff3b3b;
   --accent-soft: rgba(255, 59, 59, 0.15);
-  --text-main: #f1f1f1;
+  --text-main: #e5e7eb;
   --text-soft: #7b7b7b;
   --radius: 12px;
   /* OpenMail accent glow tokens (overridden in soft-dark) */
@@ -22,6 +28,57 @@
   --openmail-cta-glow: rgba(255, 59, 59, 0.35);
   --openmail-cta-fill: #ff4d4d;
   --openmail-cta-text: #0a0a0a;
+  /* Surfaces (overridden per theme; used by layout chrome) */
+  --openmail-sidebar-surface: #111111;
+  --openmail-list-outer: #0f0f0f;
+  --openmail-list-inner: #111111;
+  --openmail-ai-chrome: #1a1a1a;
+  --openmail-topnav-bg: rgba(10, 10, 10, 0.6);
+  --openmail-settings-panel-bg: rgba(12, 12, 12, 0.82);
+  --openmail-input-bg: #141414;
+  --openmail-nav-popover-bg: #111111;
+  --openmail-risk-red: #ef4444;
+  --openmail-risk-amber: #f59e0b;
+  --openmail-risk-emerald: #10b981;
+}
+
+/* OpenMail — settings toggles: knob stays inside track (transform, overflow) */
+button.toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+button.toggle .toggle-track {
+  position: relative;
+  display: block;
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+button.toggle .toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  will-change: transform;
+}
+
+button.toggle[aria-checked="true"] .toggle-knob {
+  transform: translateX(18px);
 }
 
 body {
@@ -39,8 +96,12 @@ html[data-openmail-theme="soft-dark"] {
   --border: rgba(255, 255, 255, 0.078);
   --accent: #b07070;
   --accent-soft: rgba(176, 112, 112, 0.1);
-  --text-main: #e8eaed;
+  --text-main: #e5e7eb;
   --text-soft: #9aa3b0;
+  --openmail-sidebar-surface: #161920;
+  --openmail-list-outer: #12151c;
+  --openmail-list-inner: #15181f;
+  --openmail-ai-chrome: #1a1f28;
   --openmail-shadow-accent-xs: rgba(176, 112, 112, 0.045);
   --openmail-shadow-accent-sm: rgba(176, 112, 112, 0.07);
   --openmail-shadow-accent-md: rgba(176, 112, 112, 0.09);
@@ -53,6 +114,12 @@ html[data-openmail-theme="soft-dark"] {
   --openmail-cta-glow: rgba(176, 112, 112, 0.22);
   --openmail-cta-fill: #b88888;
   --openmail-cta-text: #101010;
+  /* Portaled mail hover preview (list row) — dark */
+  --openmail-mail-hover-bg: rgba(14, 14, 16, 0.96);
+  --openmail-mail-hover-border: rgba(255, 255, 255, 0.1);
+  --openmail-mail-hover-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --openmail-mail-hover-divider: rgba(255, 255, 255, 0.06);
 }
 
 html[data-openmail-theme="soft-dark"] body {
@@ -65,8 +132,13 @@ html[data-openmail-theme="soft-dark"] body {
 
 /* OpenMail — layout density + motion (shell chrome; mail list unchanged) */
 :root {
-  --openmail-layout-gap: 1rem;
-  --openmail-sidebar-pad: 1rem;
+  --openmail-layout-gap: 1.125rem;
+  --openmail-sidebar-pad: 1.125rem;
+  /* Default until html[data-openmail-theme] is applied (matches light default) */
+  --openmail-mail-hover-bg: rgba(255, 255, 255, 0.98);
+  --openmail-mail-hover-border: rgba(0, 0, 0, 0.08);
+  --openmail-mail-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --openmail-mail-hover-divider: rgba(0, 0, 0, 0.08);
 }
 
 html[data-openmail-density="compact"] {
@@ -138,6 +210,1010 @@ html[data-openmail-theme="soft-dark"] .core-reply-textarea--suggestion-glow {
     inset 0 0 20px rgba(255, 255, 255, 0.02),
     0 0 26px rgba(176, 112, 112, 0.11),
     0 0 44px rgba(176, 112, 112, 0.045);
+}
+
+/* ========== OpenMail — Soft Intelligence (low visual fatigue; calm accent; red reserved for security UI) ========== */
+html[data-openmail-theme="soft-intelligence"] {
+  --bg-main: #0f1216;
+  --bg-surface: #171b22;
+  --border: rgba(255, 255, 255, 0.055);
+  --accent: #7d9aab;
+  --accent-soft: rgba(125, 154, 171, 0.09);
+  --text-main: #e6eaef;
+  --text-soft: #8f9aa8;
+  --openmail-shadow-accent-xs: rgba(125, 154, 171, 0.028);
+  --openmail-shadow-accent-sm: rgba(125, 154, 171, 0.042);
+  --openmail-shadow-accent-md: rgba(125, 154, 171, 0.055);
+  --openmail-shadow-accent-ring: rgba(125, 154, 171, 0.07);
+  --openmail-border-accent-strong: rgba(125, 154, 171, 0.2);
+  --openmail-panel-inset: rgba(125, 154, 171, 0.08);
+  --openmail-focus-border: rgba(150, 178, 198, 0.32);
+  --openmail-focus-ring: rgba(125, 154, 171, 0.07);
+  --openmail-focus-glow: rgba(125, 154, 171, 0.035);
+  --openmail-cta-glow: rgba(125, 154, 171, 0.12);
+  --openmail-cta-fill: #92aebd;
+  --openmail-cta-text: #0c0f12;
+  --openmail-readable-line-height: 1.68;
+  --openmail-readable-line-height-tight: 1.58;
+}
+
+html[data-openmail-theme="soft-intelligence"] body {
+  background:
+    radial-gradient(circle at 18% 12%, #171c24 0%, #0f1216 58%),
+    radial-gradient(circle at 82% 4%, rgba(0, 0, 0, 0.08) 0%, transparent 52%),
+    radial-gradient(circle at 62% 78%, rgba(125, 154, 171, 0.022) 0%, transparent 46%);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-openmail-theme="soft-intelligence"] .openmail-app {
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+html[data-openmail-theme="soft-intelligence"] .openmail-app p,
+html[data-openmail-theme="soft-intelligence"] .openmail-app li {
+  line-height: var(--openmail-readable-line-height);
+  letter-spacing: 0.011em;
+}
+
+html[data-openmail-theme="soft-intelligence"] .openmail-app .core-reply-decision-surface {
+  line-height: var(--openmail-readable-line-height-tight);
+  letter-spacing: 0.01em;
+}
+
+html[data-openmail-theme="soft-intelligence"] .card {
+  border-color: rgba(255, 255, 255, 0.052);
+}
+
+html[data-openmail-theme="soft-intelligence"] .card:hover {
+  border-color: color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.06));
+  box-shadow: 0 0 10px var(--openmail-shadow-accent-xs);
+}
+
+html[data-openmail-theme="soft-intelligence"] .openmail-toast {
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 10px 28px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+html[data-openmail-theme="soft-intelligence"] .openmail-toast--info {
+  border-color: rgba(125, 154, 171, 0.12);
+}
+
+html[data-openmail-theme="soft-intelligence"] .core-reply-textarea--suggestion-glow {
+  border-color: rgba(140, 168, 188, 0.22) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 0 18px rgba(255, 255, 255, 0.015),
+    0 0 18px rgba(125, 154, 171, 0.06),
+    0 0 32px rgba(125, 154, 171, 0.028);
+}
+
+html[data-openmail-theme="soft-intelligence"] .openmail-app .core-email-risk-mark {
+  background: color-mix(in srgb, #94a3b8 20%, rgba(255, 248, 230, 0.05));
+  box-shadow: 0 0 0 1px color-mix(in srgb, #94a3b8 22%, transparent);
+}
+
+@keyframes openmail-core-risk-flash {
+  0% {
+    filter: brightness(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  45% {
+    filter: brightness(1.1) saturate(1.06);
+    box-shadow: 0 0 36px color-mix(in srgb, var(--accent-glow, var(--accent-soft)) 38%, transparent);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: none;
+  }
+}
+
+@keyframes openmail-core-risk-flash-soft {
+  0% {
+    filter: brightness(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  45% {
+    filter: brightness(1.04) saturate(1.02);
+    box-shadow: 0 0 22px color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: none;
+  }
+}
+
+.openmail-app .core-ai-risk-card--pulse {
+  animation: openmail-core-risk-flash 0.58s ease-out;
+}
+
+html[data-openmail-theme="soft-intelligence"] .openmail-app .core-ai-risk-card--pulse {
+  animation: openmail-core-risk-flash-soft 0.58s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-openmail-theme="soft-intelligence"] .openmail-app .core-ai-risk-card--pulse,
+  html[data-openmail-theme="soft-intelligence-light"] .openmail-app .core-ai-risk-card--pulse,
+  .openmail-app .core-ai-risk-card--pulse {
+    animation: none;
+  }
+}
+
+/* ========== OpenMail — Soft Intelligence Light (premium: layered surfaces, calm contrast) ========== */
+html[data-openmail-theme="soft-intelligence-light"] {
+  --bg-main: #f6f7f9;
+  --bg-surface: #ffffff;
+  --border: rgba(0, 0, 0, 0.06);
+  --accent: #64748b;
+  --accent-soft: rgba(100, 116, 139, 0.12);
+  --text-main: rgba(0, 0, 0, 0.88);
+  --text-soft: rgba(0, 0, 0, 0.6);
+  --openmail-text-tertiary: rgba(0, 0, 0, 0.4);
+  --openmail-secondary-surface: #f1f3f5;
+  --openmail-shadow-accent-xs: rgba(100, 116, 139, 0.06);
+  --openmail-shadow-accent-sm: rgba(100, 116, 139, 0.1);
+  --openmail-shadow-accent-md: rgba(100, 116, 139, 0.14);
+  --openmail-shadow-accent-ring: rgba(100, 116, 139, 0.18);
+  --openmail-border-accent-strong: rgba(100, 116, 139, 0.22);
+  --openmail-panel-inset: rgba(100, 116, 139, 0.08);
+  --openmail-focus-border: rgba(100, 116, 139, 0.35);
+  --openmail-focus-ring: rgba(100, 116, 139, 0.12);
+  --openmail-focus-glow: rgba(100, 116, 139, 0.08);
+  --openmail-cta-glow: rgba(100, 116, 139, 0.2);
+  --openmail-cta-fill: #64748b;
+  --openmail-cta-text: #f8fafc;
+  --openmail-readable-line-height: 1.68;
+  --openmail-readable-line-height-tight: 1.58;
+  --openmail-sidebar-surface: #f1f3f5;
+  --openmail-list-outer: #ffffff;
+  --openmail-list-inner: #ffffff;
+  --openmail-ai-chrome: #ffffff;
+  --openmail-surface-elevated: #ffffff;
+  --openmail-chip-idle: #f1f3f5;
+  --openmail-topnav-bg: rgba(241, 243, 245, 0.88);
+  --openmail-settings-panel-bg: rgba(255, 255, 255, 0.94);
+  --openmail-input-bg: #ffffff;
+  --openmail-nav-popover-bg: rgba(255, 255, 255, 0.98);
+  --openmail-risk-red: #e35d5d;
+  --openmail-risk-amber: #f4a261;
+  --openmail-risk-emerald: #4caf8f;
+  --openmail-card-radius: 12px;
+  --openmail-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --openmail-transition: all 0.15s ease;
+  /* Portaled mail hover preview — light (matches elevated surfaces) */
+  --openmail-mail-hover-bg: rgba(255, 255, 255, 0.98);
+  --openmail-mail-hover-border: rgba(0, 0, 0, 0.08);
+  --openmail-mail-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --openmail-mail-hover-divider: rgba(0, 0, 0, 0.08);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mail list hover preview (portaled under body; inherits theme from html[data-openmail-theme]) */
+.openmail-mail-hover-preview {
+  background: var(--openmail-mail-hover-bg);
+  border: 1px solid var(--openmail-mail-hover-border);
+  box-shadow: var(--openmail-mail-hover-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.openmail-mail-hover-preview-snippet {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--openmail-mail-hover-divider);
+  white-space: pre-wrap;
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app {
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+html[data-openmail-theme="soft-intelligence-light"][data-openmail-density="comfortable"] {
+  --openmail-layout-gap: 1.3rem;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app p,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app li {
+  line-height: var(--openmail-readable-line-height);
+  letter-spacing: 0.01em;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app .core-reply-decision-surface {
+  line-height: var(--openmail-readable-line-height-tight);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card {
+  background: var(--openmail-sidebar-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--openmail-card-radius);
+  box-shadow: var(--openmail-card-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column.card {
+  background: var(--openmail-list-outer) !important;
+  border: 1px solid var(--border);
+  border-radius: var(--openmail-card-radius);
+  box-shadow: var(--openmail-card-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card {
+  background: var(--openmail-ai-chrome) !important;
+  border: 1px solid var(--border);
+  border-radius: var(--openmail-card-radius);
+  box-shadow: var(--openmail-card-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 20px 22px !important;
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-list-surface.card {
+  background: var(--openmail-list-inner);
+  border: 1px solid var(--border);
+  border-radius: var(--openmail-card-radius);
+  box-shadow: var(--openmail-card-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 18px !important;
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="true"] {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  color: var(--text-main) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="false"] {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--text-soft) !important;
+  box-shadow: none;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="false"]:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text-main) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="false"]:hover .openmail-folder-icon {
+  opacity: 0.9 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="true"] .openmail-folder-icon {
+  opacity: 1 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar-select,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar-action {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-list-section-title {
+  margin-bottom: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-list-section-title span {
+  opacity: 0.5;
+  font-weight: 500;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-list-search-input {
+  background: var(--openmail-secondary-surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px;
+  box-shadow: none;
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-list-state-card.card {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-stack {
+  border-top-color: var(--border) !important;
+  margin-top: 0.25rem;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-pane {
+  border-color: var(--border) !important;
+  background: #ffffff !important;
+  border-radius: var(--openmail-card-radius);
+  box-shadow: none;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--idle {
+  background: var(--openmail-chip-idle) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-soft) !important;
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--idle:hover {
+  background: rgba(0, 0, 0, 0.03) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--idle {
+  background: #ffffff !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  box-shadow: none;
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--idle:hover {
+  border-color: var(--border) !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--selected {
+  background: #ffffff !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--best-pick {
+  background: #ffffff !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--best-pick:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-de-secondary-btn {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  background: #f9fafb !important;
+  color: var(--text-main) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-de-secondary-btn:hover {
+  background: #f3f4f6 !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  filter: brightness(1.02);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-de-tertiary-link {
+  text-decoration-color: rgba(0, 0, 0, 0.18);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-de-tertiary-link:hover {
+  text-decoration-color: rgba(0, 0, 0, 0.28);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-topnav {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+  background: var(--openmail-topnav-bg) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-settings-panel {
+  border-left-color: rgba(0, 0, 0, 0.06);
+  background: var(--openmail-settings-panel-bg) !important;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.06);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-footer {
+  background: color-mix(in srgb, var(--openmail-ai-chrome) 92%, transparent) !important;
+  border-top-color: rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list {
+  gap: 10px !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > button.card,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > div.group.card {
+  background: #ffffff !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > button.card:hover,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > div.group.card:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  transform: none;
+}
+
+/* Mail rows: light theme overrides (dark Tailwind defaults neutralized) */
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row.group.card {
+  background: #ffffff !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 12px !important;
+  transform: none !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row.group.card:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Left rail: risk / urgency (4px) — instant scan */
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row.openmail-card-accent--blocked.group.card,
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row.openmail-card-accent--blocked.card {
+  border-left: 4px solid #ef4444 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row.openmail-card-accent--urgent.group.card,
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row.openmail-card-accent--urgent.card {
+  border-left: 4px solid #f59e0b !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row.openmail-card-accent--safe.group.card,
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row.openmail-card-accent--safe.card {
+  border-left: 4px solid #22c55e !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row--selected.group.card {
+  background: rgba(34, 197, 94, 0.05) !important;
+  border: 1px solid var(--border) !important;
+  border-left: 4px solid #22c55e !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+  transform: none !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row--selected.openmail-card-accent--blocked.group.card {
+  background: rgba(254, 226, 226, 0.65) !important;
+  border-left: 4px solid #ef4444 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row--selected.openmail-card-accent--urgent.group.card {
+  background: rgba(254, 243, 199, 0.7) !important;
+  border-left: 4px solid #f59e0b !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row--selected.openmail-card-accent--safe.group.card {
+  background: rgba(220, 252, 231, 0.45) !important;
+  border-left: 4px solid #22c55e !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row--selected.group.card:hover {
+  background: rgba(34, 197, 94, 0.07) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row--selected.openmail-card-accent--blocked.group.card:hover {
+  background: rgba(254, 202, 202, 0.55) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row--selected.openmail-card-accent--urgent.group.card:hover {
+  background: rgba(253, 230, 138, 0.45) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row--selected.openmail-card-accent--safe.group.card:hover {
+  background: rgba(187, 247, 208, 0.5) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-sender {
+  font-weight: 500 !important;
+  color: rgba(0, 0, 0, 0.88) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-time {
+  opacity: 0.5 !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-subject {
+  font-weight: 500 !important;
+  color: rgba(0, 0, 0, 0.88) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-preview {
+  opacity: 0.7 !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row--resolved.group.card {
+  background: rgba(16, 185, 129, 0.06) !important;
+  border-color: rgba(16, 185, 129, 0.22) !important;
+  opacity: 1 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > button.openmail-situation-row.card {
+  background: #ffffff !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+  transform: none !important;
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row.card:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row--selected.card {
+  background: rgba(34, 197, 94, 0.05) !important;
+  border: 1px solid var(--border) !important;
+  border-left: 4px solid #22c55e !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+  transform: none !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row--selected.openmail-card-accent--blocked.card {
+  background: rgba(254, 226, 226, 0.65) !important;
+  border-left: 4px solid #ef4444 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row--selected.openmail-card-accent--urgent.card {
+  background: rgba(254, 243, 199, 0.7) !important;
+  border-left: 4px solid #f59e0b !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row--selected.openmail-card-accent--safe.card {
+  background: rgba(220, 252, 231, 0.45) !important;
+  border-left: 4px solid #22c55e !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .card:hover {
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.05);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-toast {
+  border-color: rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 12px 36px rgba(0, 0, 0, 0.08);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-toast--info {
+  border-color: rgba(100, 116, 139, 0.2);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-reply-textarea--suggestion-glow {
+  border-color: rgba(100, 116, 139, 0.28) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 0 22px rgba(100, 116, 139, 0.1);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] textarea#core-reply-textarea.core-reply-decision-surface {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] textarea#core-reply-textarea[class*="border-emerald"] {
+  background: rgba(16, 185, 129, 0.07) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-signals-box {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-reading-dialog {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--emphasis:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: rgba(0, 0, 0, 0.88) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none;
+  border-radius: 10px;
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--emphasis:not(:disabled):hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  filter: none;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--ready:not(:disabled) {
+  background: linear-gradient(135deg, #4ade80, #22c55e) !important;
+  color: #ffffff !important;
+  border-color: rgba(34, 197, 94, 0.25) !important;
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.2) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--ready:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.25) !important;
+  filter: none;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high .openmail-de-primary-action:hover:not(:disabled),
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium .openmail-de-primary-action:hover:not(:disabled) {
+  filter: brightness(1.04);
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.14),
+    0 0 24px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-list-surface.card,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card {
+  border-radius: var(--openmail-card-radius);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card {
+  border-radius: var(--openmail-card-radius);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-shell {
+  border-radius: var(--openmail-card-radius) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app .core-ai-risk-card--pulse {
+  animation: openmail-core-risk-flash-soft 0.58s ease-out;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high {
+  background: linear-gradient(
+    to right,
+    rgba(255, 80, 80, 0.14),
+    rgba(255, 80, 80, 0.05)
+  ) !important;
+  border-color: color-mix(in srgb, var(--openmail-risk-red) 38%, rgba(0, 0, 0, 0.06)) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high > div.pointer-events-none {
+  opacity: 0.12;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium {
+  background: linear-gradient(
+    to right,
+    rgba(245, 158, 11, 0.14),
+    rgba(245, 158, 11, 0.05)
+  ) !important;
+  border-color: color-mix(in srgb, var(--openmail-risk-amber) 34%, rgba(0, 0, 0, 0.06)) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium > div.pointer-events-none {
+  opacity: 0.12;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe {
+  background: linear-gradient(
+    to right,
+    rgba(76, 175, 143, 0.12),
+    rgba(76, 175, 143, 0.05)
+  ) !important;
+  border-color: color-mix(in srgb, var(--openmail-risk-emerald) 32%, rgba(0, 0, 0, 0.06)) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe > div.pointer-events-none {
+  opacity: 0.1;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-color: rgba(0, 0, 0, 0.07) !important;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.04);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle > div.pointer-events-none {
+  opacity: 0.06 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-action-card {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high .core-ai-risk-action-card h3 {
+  color: #991b1b !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium .core-ai-risk-action-card h3 {
+  color: #b45309 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe .core-ai-risk-action-card h3 {
+  color: #047857 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle .core-ai-risk-action-card h3 {
+  color: var(--text-soft) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-intent-bar {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high button.from-red-500 {
+  border-color: color-mix(in srgb, var(--openmail-risk-red) 45%, transparent) !important;
+  background-image: linear-gradient(to bottom, var(--openmail-risk-red), #c94a4a) !important;
+  color: #fffaf8 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium button.from-amber-500 {
+  border-color: color-mix(in srgb, var(--openmail-risk-amber) 45%, transparent) !important;
+  background-image: linear-gradient(to bottom, var(--openmail-risk-amber), #e08a4e) !important;
+  color: #1a1a1a !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe button.from-emerald-500 {
+  border-color: rgba(34, 197, 94, 0.22) !important;
+  background-image: linear-gradient(135deg, #4ade80, #22c55e) !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.2) !important;
+  transition: var(--openmail-transition) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .core-ai-risk-card--safe
+  button.from-emerald-500:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.25) !important;
+  filter: none;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.toggle[aria-checked="true"] .toggle-track {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent) !important;
+  background: color-mix(in srgb, var(--accent) 22%, #e5e7eb) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.toggle[aria-checked="false"] .toggle-track {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  background: #e5e7eb !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.toggle .toggle-knob {
+  background: #fafafa !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .settings-card {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.92),
+    rgba(248, 250, 252, 0.88)
+  ) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.openmail-theme-choice[data-active="false"] {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-nav-popover {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  background: var(--openmail-nav-popover-bg) !important;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > div.card:not(.group) {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] [aria-labelledby="mail-read-title"] {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow:
+    0 28px 72px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column button[aria-label="Close message"] {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--text-main) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Light theme — status badges: sharp contrast (match dark-mode legibility) */
+html[data-openmail-theme="soft-intelligence-light"] .openmail-status-badge {
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+  border-radius: 6px !important;
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  box-shadow: none !important;
+  line-height: 1.25;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-risk-badge {
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+  border-radius: 6px !important;
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  line-height: 1.25;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-status-badge--blocked {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #ef4444 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-status-badge--safe {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #22c55e !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-status-badge--high-urgency {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #f59e0b !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-status-badge--waiting {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  border: 1px solid #3b82f6 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-status-badge--waiting-reply {
+  background: #ede9fe !important;
+  color: #5b21b6 !important;
+  border: 1px solid #8b5cf6 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-status-badge--meta {
+  background: #f4f4f5 !important;
+  color: rgba(0, 0, 0, 0.72) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] span.openmail-risk-badge[data-risk-level="dangerous"] {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #ef4444 !important;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.3) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] span.openmail-risk-badge[data-risk-level="safe"] {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #22c55e !important;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.3) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] span.openmail-risk-badge[data-risk-level="suspicious"],
+html[data-openmail-theme="soft-intelligence-light"] span.openmail-risk-badge[data-risk-level="trusted_flagged"] {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #f59e0b !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-skeleton-shine {
+  background: linear-gradient(
+    105deg,
+    rgba(0, 0, 0, 0.02) 0%,
+    rgba(0, 0, 0, 0.06) 42%,
+    rgba(0, 0, 0, 0.02) 84%
+  );
+}
+
+.openmail-app .core-email-risk-mark {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 16%, rgba(255, 200, 120, 0.12));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+  padding: 0 0.15em;
+}
+
+.openmail-app .core-email-urgency-mark {
+  border-radius: 3px;
+  background: color-mix(in srgb, #f59e0b 18%, rgba(255, 220, 160, 0.08));
+  box-shadow: 0 0 0 1px color-mix(in srgb, #f59e0b 34%, transparent);
+  padding: 0 0.15em;
+}
+
+.openmail-app .core-email-intent-mark {
+  border-radius: 3px;
+  background: color-mix(in srgb, #38bdf8 14%, rgba(180, 220, 255, 0.06));
+  box-shadow: 0 0 0 1px color-mix(in srgb, #38bdf8 30%, transparent);
+  padding: 0 0.15em;
 }
 
 .card {
@@ -252,70 +1328,238 @@ html[data-openmail-theme="soft-dark"] .core-reply-textarea--suggestion-glow {
   background: rgba(255, 255, 255, 0.06);
 }
 
-/* OpenMail marketing homepage */
-.home-hero {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  text-align: center;
-  gap: 16px;
+/* OpenMail marketing landing (single-screen, premium glass) */
+@keyframes openmail-landing-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.home-hero .title {
-  font-size: 32px;
-  font-weight: 600;
+.openmail-landing-animate {
+  opacity: 0;
+  animation: openmail-landing-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.06s forwards;
 }
 
-.home-hero .subtitle {
-  opacity: 0.7;
+/* Subtle staggered section fades (landing) */
+.openmail-landing-fade-stagger > * {
+  opacity: 0;
+  animation: openmail-landing-in 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.home-hero .preview-badge {
-  margin-top: 16px;
-  padding: 12px 20px;
+.openmail-landing-fade-stagger > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.openmail-landing-fade-stagger > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.openmail-landing-fade-stagger > *:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.openmail-landing-fade-stagger > *:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.openmail-landing-fade-stagger > *:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.openmail-landing-fade-stagger > *:nth-child(6) {
+  animation-delay: 0.3s;
+}
+.openmail-landing-fade-stagger > *:nth-child(7) {
+  animation-delay: 0.35s;
+}
+.openmail-landing-fade-stagger > *:nth-child(8) {
+  animation-delay: 0.4s;
+}
+.openmail-landing-fade-stagger > *:nth-child(9) {
+  animation-delay: 0.45s;
+}
+.openmail-landing-fade-stagger > *:nth-child(10) {
+  animation-delay: 0.5s;
+}
+.openmail-landing-fade-stagger > *:nth-child(11) {
+  animation-delay: 0.55s;
+}
+.openmail-landing-fade-stagger > *:nth-child(12) {
+  animation-delay: 0.6s;
+}
+.openmail-landing-fade-stagger > *:nth-child(13) {
+  animation-delay: 0.65s;
+}
+.openmail-landing-fade-stagger > *:nth-child(14) {
+  animation-delay: 0.7s;
+}
+.openmail-landing-fade-stagger > *:nth-child(15) {
+  animation-delay: 0.75s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .openmail-landing-animate {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .openmail-landing-fade-stagger > * {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+/* Ambient halo behind the glass card (blue / violet) */
+.openmail-landing-card-halo {
+  background: radial-gradient(
+    closest-side,
+    rgba(59, 130, 246, 0.22) 0%,
+    rgba(139, 92, 246, 0.14) 42%,
+    transparent 68%
+  );
+  filter: blur(2px);
+}
+
+/* CTA bloom (sits under button) */
+.openmail-landing-cta-glow {
+  background: radial-gradient(
+    closest-side,
+    rgba(59, 130, 246, 0.28),
+    rgba(139, 92, 246, 0.14) 40%,
+    rgba(16, 185, 129, 0.05) 58%,
+    transparent 72%
+  );
+  opacity: 0.72;
+}
+
+.openmail-landing-cta {
+  background: linear-gradient(
+    175deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.07) 48%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.09),
+    0 0 20px rgba(59, 130, 246, 0.14),
+    0 10px 32px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.openmail-landing-cta:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 32px rgba(59, 130, 246, 0.28),
+    0 0 48px rgba(139, 92, 246, 0.12),
+    0 12px 36px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  filter: brightness(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .openmail-landing-cta:hover {
+    transform: none;
+  }
+}
+
+/* Frosted panel: depth + subtle top sheen */
+.openmail-landing-glass {
+  position: relative;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.035) 38%,
+    rgba(10, 12, 20, 0.52) 100%
+  );
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 22px 70px rgba(0, 0, 0, 0.52),
+    0 0 80px rgba(59, 130, 246, 0.06),
+    0 0 60px rgba(139, 92, 246, 0.04);
+}
+
+.openmail-landing-glass--hero {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(59, 130, 246, 0.04),
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 100px rgba(59, 130, 246, 0.08),
+    0 0 70px rgba(139, 92, 246, 0.05);
+}
+
+.openmail-landing-glass--demo {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    0 0 36px rgba(59, 130, 246, 0.07);
+}
+
+.openmail-landing-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.03) 45%,
+    transparent 62%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.openmail-landing-demo-preview {
   border-radius: 12px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  max-width: min(36rem, 100%);
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 0 32px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(6, 10, 18, 0.45);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35) inset;
 }
 
-.home-hero .preview-badge p {
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.88);
+/* Landing vertical rhythm — single-screen fit */
+.openmail-landing-stack {
+  gap: 0.6875rem;
 }
 
-.home-hero .preview-badge p + p {
-  margin-top: 0.5rem;
+@media (min-width: 640px) {
+  .openmail-landing-stack {
+    gap: 0.8125rem;
+  }
 }
 
-.home-hero .preview-badge .home-hero-preview-spacer {
-  height: 0.75rem;
-  margin: 0;
-  padding: 0;
-  border: none;
-  flex-shrink: 0;
+@media (max-height: 780px) {
+  .openmail-landing-stack {
+    gap: 0.5rem;
+  }
 }
 
-.home-hero .cta-enter {
-  margin-top: 8px;
-}
-
-.home-hero .feature-list {
-  margin-top: 8px;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.home-hero .feature-list p {
-  margin: 0.25rem 0;
+@media (max-height: 700px) {
+  .openmail-landing-stack {
+    gap: 0.375rem;
+  }
 }
 
 /* 🔥 UCC THEME */
@@ -14296,10 +15540,10 @@ body:has(.app-layout[data-theme="light"]) {
   cursor: wait;
 }
 
-/* High mail-level AI risk: links are non-interactive */
-.mail-body-link.mail-body-link--mail-risk-high:disabled {
+/* High mail-level AI risk: link opens “Blocked for security” only */
+.mail-body-link.mail-body-link--mail-risk-high {
   cursor: not-allowed;
-  opacity: 0.72;
+  opacity: 0.82;
 }
 
 .mail-body-link--with-badge {
@@ -14412,13 +15656,24 @@ body:has(.app-layout[data-theme="light"]) {
 }
 
 .mail-attachment-btn--risk-suspicious {
-  border-color: rgba(251, 146, 60, 0.45);
-  box-shadow: 0 0 16px rgba(249, 115, 22, 0.2);
+  border-color: rgba(249, 115, 22, 0.55);
+  box-shadow:
+    0 0 18px rgba(234, 88, 12, 0.28),
+    inset 0 0 0 1px rgba(251, 146, 60, 0.12);
 }
 
 .mail-attachment-btn--risk-blocked {
-  border-color: rgba(248, 113, 113, 0.45);
-  box-shadow: 0 0 18px rgba(239, 68, 68, 0.22);
+  border-color: rgba(248, 113, 113, 0.6);
+  box-shadow:
+    0 0 22px rgba(239, 68, 68, 0.35),
+    inset 0 0 0 1px rgba(248, 113, 113, 0.15);
+}
+
+.mail-attachments-item--sandbox-mail {
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(251, 146, 60, 0.07);
+  outline: 1px solid rgba(249, 115, 22, 0.32);
 }
 
 .mail-attachment-icon {
@@ -14610,10 +15865,258 @@ body:has(.app-layout[data-theme="light"]) {
   animation: core-reply-insert 220ms ease-out;
 }
 
+@keyframes core-reply-ready-pulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 1px rgba(16, 185, 129, 0.12),
+      0 0 0 0 rgba(16, 185, 129, 0);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(16, 185, 129, 0.22),
+      0 0 0 4px rgba(16, 185, 129, 0.08);
+  }
+}
+
+@keyframes core-reply-ready-pulse-soft {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 1px rgba(125, 154, 171, 0.09),
+      0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(125, 154, 171, 0.14),
+      0 0 0 2px rgba(125, 154, 171, 0.035);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .core-reply-insert-anim {
     animation: none;
   }
+}
+
+/* CORE: suggestion list soft entrance (one step ahead) */
+@keyframes core-suggestions-fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.core-suggestions-enter {
+  animation: core-suggestions-fade-rise 0.42s ease-out both;
+}
+
+.core-suggestions-enter .core-suggestion-chip-list > .core-suggestion-chip {
+  opacity: 0;
+  animation: core-suggestions-fade-rise 0.38s ease-out forwards;
+}
+
+.core-suggestions-enter .core-suggestion-chip-list > .core-suggestion-chip:nth-child(1) {
+  animation-delay: 0.02s;
+}
+.core-suggestions-enter .core-suggestion-chip-list > .core-suggestion-chip:nth-child(2) {
+  animation-delay: 0.07s;
+}
+.core-suggestions-enter .core-suggestion-chip-list > .core-suggestion-chip:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.core-suggestions-enter .core-suggestion-chip-list > .core-suggestion-chip:nth-child(4) {
+  animation-delay: 0.17s;
+}
+.core-suggestions-enter .core-suggestion-chip-list > .core-suggestion-chip:nth-child(5) {
+  animation-delay: 0.22s;
+}
+.core-suggestions-enter .core-suggestion-chip-list > .core-suggestion-chip:nth-child(n + 6) {
+  animation-delay: 0.26s;
+}
+
+@keyframes core-suggestion-best-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent),
+      0 0 20px var(--accent-soft),
+      0 0 36px var(--openmail-shadow-accent-sm);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent),
+      0 0 28px var(--accent-soft),
+      0 0 48px var(--openmail-shadow-accent-sm);
+  }
+}
+
+.core-suggestion-chip--best-pick {
+  animation: core-suggestion-best-pulse 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .core-suggestions-enter,
+  .core-suggestions-enter .core-suggestion-chip-list > .core-suggestion-chip {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .core-suggestion-chip--best-pick {
+    animation: none !important;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent),
+      0 0 20px var(--accent-soft) !important;
+  }
+}
+
+html[data-openmail-animations="off"] .core-suggestions-enter,
+html[data-openmail-animations="off"]
+  .core-suggestions-enter
+  .core-suggestion-chip-list
+  > .core-suggestion-chip {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html[data-openmail-animations="off"] .core-suggestion-chip--best-pick {
+  animation: none !important;
+}
+
+/* Subtle “system picked this” pulse on primary draft control */
+@keyframes core-primary-draft-soft-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 18px var(--accent-soft);
+  }
+}
+
+/* CORE: intent signal updated — soft glow pulse on strip + action label */
+@keyframes core-intent-glow-pulse {
+  0% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  35% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
+      0 0 22px var(--accent-soft),
+      0 0 40px var(--openmail-shadow-accent-sm);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes core-action-label-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  40% {
+    filter: brightness(1.12);
+    transform: scale(1.03);
+  }
+}
+
+.core-intent-strip--pulse {
+  animation: core-intent-glow-pulse 780ms ease-out;
+}
+
+.core-action-label--pulse {
+  animation: core-action-label-pulse 780ms ease-out;
+}
+
+/* Memory learning tick — ephemeral label */
+@keyframes core-memory-hint-in-out {
+  0% {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  12% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  78% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(2px);
+  }
+}
+
+.core-memory-adjusted-hint {
+  animation: core-memory-hint-in-out 1.35s ease-out both;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+/* Suggestion chip accepted — smooth confirm */
+@keyframes core-suggestion-accept {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  45% {
+    transform: scale(1.015);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent),
+      0 0 20px var(--accent-soft),
+      0 8px 28px var(--openmail-shadow-accent-sm);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.core-suggestion-chip--accepted {
+  animation: core-suggestion-accept 520ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .core-intent-strip--pulse,
+  .core-action-label--pulse,
+  .core-memory-adjusted-hint,
+  .core-suggestion-chip--accepted {
+    animation: none !important;
+  }
+
+  .core-memory-adjusted-hint {
+    opacity: 0.85;
+    transform: none;
+  }
+}
+
+html[data-openmail-animations="off"] .core-intent-strip--pulse,
+html[data-openmail-animations="off"] .core-action-label--pulse,
+html[data-openmail-animations="off"] .core-memory-adjusted-hint,
+html[data-openmail-animations="off"] .core-suggestion-chip--accepted {
+  animation: none !important;
+}
+
+.core-primary-draft--subtle-ready {
+  animation: core-primary-draft-soft-pulse 2.8s ease-in-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .core-primary-draft--subtle-ready {
+    animation: none;
+  }
+}
+
+html[data-openmail-animations="off"] .core-primary-draft--subtle-ready {
+  animation: none;
 }
 
 /* CORE reply: primary decision surface (gradient + inner depth) */
@@ -14628,6 +16131,12 @@ body:has(.app-layout[data-theme="light"]) {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     inset 0 0 20px rgba(255, 255, 255, 0.03);
+}
+
+/* CORE reply draft: editor-like reading rhythm (overrides theme line-height on .core-reply-decision-surface) */
+.openmail-app textarea#core-reply-textarea.core-reply-decision-surface {
+  line-height: 1.56;
+  letter-spacing: 0.012em;
 }
 
 .core-reply-textarea--suggestion-glow {
@@ -14655,11 +16164,30 @@ body:has(.app-layout[data-theme="light"]) {
   animation: security-modal-scan-slide 1.05s ease-in-out infinite;
 }
 
+@keyframes openmail-risk-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.openmail-risk-modal-panel {
+  animation: openmail-risk-modal-in 120ms ease-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .security-modal-scan-bar {
     animation: none;
     width: 100%;
     opacity: 0.55;
+  }
+
+  .openmail-risk-modal-panel {
+    animation: none;
   }
 }
 
@@ -15346,21 +16874,21 @@ body:has(.app-layout[data-theme="light"]) {
 
 .mail-body-link--risk-suspicious,
 .mail-body-link--demo-suspicious {
-  color: rgba(253, 186, 116, 0.98) !important;
-  text-decoration-color: rgba(251, 146, 60, 0.6);
+  color: rgba(254, 215, 170, 0.98) !important;
+  text-decoration-color: rgba(249, 115, 22, 0.65);
   box-shadow:
-    0 0 14px rgba(249, 115, 22, 0.45),
-    0 0 1px rgba(251, 146, 60, 0.55);
+    0 0 16px rgba(249, 115, 22, 0.5),
+    0 0 1px rgba(234, 88, 12, 0.55);
   border-radius: 3px;
 }
 
 .mail-body-link--risk-blocked,
 .mail-body-link--demo-blocked {
-  color: rgba(252, 165, 165, 0.98) !important;
-  text-decoration-color: rgba(248, 113, 113, 0.65);
+  color: rgba(254, 202, 202, 0.98) !important;
+  text-decoration-color: rgba(248, 113, 113, 0.75);
   box-shadow:
-    0 0 16px rgba(239, 68, 68, 0.55),
-    0 0 1px rgba(248, 113, 113, 0.65);
+    0 0 18px rgba(239, 68, 68, 0.62),
+    0 0 1px rgba(220, 38, 38, 0.65);
   border-radius: 3px;
 }
 
@@ -19071,69 +20599,12 @@ body:has(.app-layout.theme-nova) .ai-insight-panel.glass-panel.ai-insight-panel-
     0 8px 18px rgba(0, 0, 0, 0.35) !important;
 }
 
-.app-layout.theme-blacken
-  :is(
+/* BLACKEN — neutralize chrome wash / liquid-gold on interactive controls */
+.app-layout.theme-blacken :is(
     .menu-clean-btn,
     .display-mode-btn,
     .theme-pill-btn,
-    .reply-smart-btn,
-    .tone-chip,
-    .mail-send-btn,
-    .ai-primary,
-    .ai-secondary,
-    .action-btn,
-    .decision-view-suggestion
-  ):hover,
-.app-layout.theme-blacken
-  :is(
-    .menu-clean-btn,
-    .display-mode-btn,
-    .theme-pill-btn,
-    .reply-smart-btn,
-    .tone-chip,
-    .mail-send-btn,
-    .ai-primary,
-    .ai-secondary,
-    .action-btn,
-    .decision-view-suggestion
-  ):hover
-  span,
-.app-layout[data-theme="blacken"]
-  :is(
-    .menu-clean-btn,
-    .display-mode-btn,
-    .theme-pill-btn,
-    .reply-smart-btn,
-    .tone-chip,
-    .mail-send-btn,
-    .ai-primary,
-    .ai-secondary,
-    .action-btn,
-    .decision-view-suggestion
-  ):hover,
-.app-layout[data-theme="blacken"]
-  :is(
-    .menu-clean-btn,
-    .display-mode-btn,
-    .theme-pill-btn,
-    .reply-smart-btn,
-    .tone-chip,
-    .mail-send-btn,
-    .ai-primary,
-    .ai-secondary,
-    .action-btn,
-    .decision-view-suggestion
-  ):hover
-  span {
-  color: rgba(250, 248, 248, 0.96) !important;
-  text-shadow: none !important;
-}
-
-.app-layout.theme-blacken
-  :is(
-    .menu-clean-btn,
-    .display-mode-btn,
-    .theme-pill-btn,
+    .cc-icon-item,
     .reply-smart-btn,
     .tone-chip,
     .mail-send-btn,
@@ -19142,11 +20613,11 @@ body:has(.app-layout.theme-nova) .ai-insight-panel.glass-panel.ai-insight-panel-
     .action-btn,
     .decision-view-suggestion
   ):hover::before,
-.app-layout[data-theme="blacken"]
-  :is(
+.app-layout[data-theme="blacken"] :is(
     .menu-clean-btn,
     .display-mode-btn,
     .theme-pill-btn,
+    .cc-icon-item,
     .reply-smart-btn,
     .tone-chip,
     .mail-send-btn,
@@ -19155,23 +20626,23 @@ body:has(.app-layout.theme-nova) .ai-insight-panel.glass-panel.ai-insight-panel-
     .action-btn,
     .decision-view-suggestion
   ):hover::before {
-  animation: none !important;
+  opacity: 0.35;
+  animation: none;
   background: linear-gradient(
     120deg,
-    transparent 20%,
-    rgba(120, 22, 35, 0.1),
-    rgba(160, 28, 45, 0.14),
-    rgba(120, 22, 35, 0.1),
-    transparent 80%
-  ) !important;
-  opacity: 0.4 !important;
+    transparent 18%,
+    rgba(255, 255, 255, 0.03),
+    rgba(160, 28, 45, 0.07),
+    rgba(255, 255, 255, 0.03),
+    transparent 82%
+  );
 }
 
-.app-layout.theme-blacken
-  :is(
+.app-layout.theme-blacken :is(
     .menu-clean-btn,
     .display-mode-btn,
     .theme-pill-btn,
+    .cc-icon-item,
     .reply-smart-btn,
     .tone-chip,
     .mail-send-btn,
@@ -19180,11 +20651,11 @@ body:has(.app-layout.theme-nova) .ai-insight-panel.glass-panel.ai-insight-panel-
     .action-btn,
     .decision-view-suggestion
   ):hover::after,
-.app-layout[data-theme="blacken"]
-  :is(
+.app-layout[data-theme="blacken"] :is(
     .menu-clean-btn,
     .display-mode-btn,
     .theme-pill-btn,
+    .cc-icon-item,
     .reply-smart-btn,
     .tone-chip,
     .mail-send-btn,
@@ -19193,1467 +20664,71 @@ body:has(.app-layout.theme-nova) .ai-insight-panel.glass-panel.ai-insight-panel-
     .action-btn,
     .decision-view-suggestion
   ):hover::after {
-  animation: none !important;
-  opacity: 0 !important;
-}
-
-.app-layout.theme-blacken .button-liquid:hover,
-.app-layout[data-theme="blacken"] .button-liquid:hover {
-  box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.78),
-    0 0 22px rgba(255, 42, 42, 0.2) !important;
-}
-
-.app-layout.theme-blacken .app-ribbon.glass-panel-chrome,
-.app-layout[data-theme="blacken"] .app-ribbon.glass-panel-chrome {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  background: #000000 !important;
-}
-
-.app-layout.theme-blacken .app-ribbon.glass-panel-chrome:hover,
-.app-layout[data-theme="blacken"] .app-ribbon.glass-panel-chrome:hover {
-  border-color: rgba(160, 35, 50, 0.45) !important;
-  box-shadow:
-    0 0 22px rgba(160, 28, 45, 0.14),
-    0 12px 36px rgba(0, 0, 0, 0.92) !important;
-}
-
-@keyframes blackenMetalSweep {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  /* Static deep black — no pulse / infinite sweep wash */
-  .app-layout.theme-blacken .mail-list.glass-panel-chrome,
-  .app-layout[data-theme="blacken"] .mail-list.glass-panel-chrome,
-  .app-layout.theme-blacken .reply-panel,
-  .app-layout[data-theme="blacken"] .reply-panel {
-    animation: none !important;
-    background: #000000 !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.03),
-      0 0 0 1px rgba(78, 14, 22, 0.1),
-      0 0 32px rgba(130, 26, 38, 0.042) !important;
-  }
-
-  .app-layout.theme-blacken .mail-list .mail-card.glass-panel.active,
-  .app-layout[data-theme="blacken"] .mail-list .mail-card.glass-panel.active {
-    animation: none !important;
-  }
-
-  .app-layout.theme-blacken .reply-panel .tone-chip.active,
-  .app-layout[data-theme="blacken"] .reply-panel .tone-chip.active {
-    animation: none !important;
-  }
-
-  .app-layout.theme-blacken .mail-list.glass-panel-chrome::after,
-  .app-layout[data-theme="blacken"] .mail-list.glass-panel-chrome::after,
-  .app-layout.theme-blacken .reply-panel.glass-panel-chrome::after,
-  .app-layout[data-theme="blacken"] .reply-panel.glass-panel-chrome::after {
-    animation: none !important;
-    opacity: 0 !important;
-  }
-
-  .app-layout.theme-blacken .mail-list.glass-panel-chrome:hover,
-  .app-layout[data-theme="blacken"] .mail-list.glass-panel-chrome:hover {
-    border-color: rgba(165, 44, 54, 0.36) !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.035),
-      0 0 0 1px rgba(100, 22, 32, 0.32),
-      0 0 26px rgba(160, 32, 48, 0.11),
-      0 14px 38px rgba(0, 0, 0, 0.93) !important;
-  }
-
-  .app-layout.theme-blacken .reply-panel:hover,
-  .app-layout[data-theme="blacken"] .reply-panel:hover {
-    border-color: rgba(165, 44, 54, 0.38) !important;
-    box-shadow:
-      0 0 0 1px rgba(95, 20, 30, 0.34),
-      0 0 32px rgba(160, 30, 48, 0.12),
-      0 16px 46px rgba(0, 0, 0, 0.91) !important;
-  }
-
-  .app-layout.theme-blacken .mail-list .mail-card.glass-panel.active:hover,
-  .app-layout[data-theme="blacken"] .mail-list .mail-card.glass-panel.active:hover {
-    border-color: rgba(195, 55, 68, 0.55) !important;
-    box-shadow:
-      0 0 0 1px rgba(120, 28, 40, 0.48),
-      0 0 34px rgba(170, 38, 52, 0.24),
-      0 12px 32px rgba(0, 0, 0, 0.82) !important;
-  }
-
-  .app-layout.theme-blacken .reply-panel .tone-chip.active:hover,
-  .app-layout[data-theme="blacken"] .reply-panel .tone-chip.active:hover {
-    border-color: rgba(195, 52, 65, 0.58) !important;
-    box-shadow:
-      0 0 0 1px rgba(115, 26, 36, 0.42),
-      0 0 26px rgba(165, 36, 50, 0.2) !important;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .app-layout.theme-blacken .mail-list.glass-panel-chrome,
-  .app-layout.theme-blacken .reply-panel,
-  .app-layout.theme-blacken .mail-list .mail-card.glass-panel.active,
-  .app-layout.theme-blacken .reply-panel .tone-chip.active,
-  .app-layout[data-theme="blacken"] .mail-list.glass-panel-chrome,
-  .app-layout[data-theme="blacken"] .reply-panel,
-  .app-layout[data-theme="blacken"] .mail-list .mail-card.glass-panel.active,
-  .app-layout[data-theme="blacken"] .reply-panel .tone-chip.active {
-    animation: none !important;
-  }
-
-  .app-layout.theme-blacken .mail-list.glass-panel-chrome::after,
-  .app-layout.theme-blacken .reply-panel.glass-panel-chrome::after,
-  .app-layout[data-theme="blacken"] .mail-list.glass-panel-chrome::after,
-  .app-layout[data-theme="blacken"] .reply-panel.glass-panel-chrome::after {
-    animation: none !important;
-  }
-}
-
-/* BLACKEN — Core block: strip glass sheen behind the trio (parent ::before was bathing buttons in red) */
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features.glass-panel,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features.glass-panel {
-  background: #000000 !important;
-  border-color: rgba(255, 255, 255, 0.07) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    0 8px 26px rgba(0, 0, 0, 0.92) !important;
-  filter: none !important;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features.glass-panel::before,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features.glass-panel::before {
-  opacity: 0 !important;
-  pointer-events: none;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features.glass-panel:hover,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features.glass-panel:hover {
-  background: #000000 !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    0 10px 28px rgba(0, 0, 0, 0.94) !important;
-  filter: none !important;
-  border-color: rgba(180, 40, 55, 0.35) !important;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features.glass-panel:hover::before,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features.glass-panel:hover::before {
-  opacity: 0 !important;
-}
-
-/* BLACKEN — premium scarlet light sweep (Altered Carbon–style; hover-only, no loop) */
-/* Faint scarlet reflection — black stays dominant */
-@keyframes blackenPremiumSweep {
-  0% {
-    left: -142%;
-    opacity: 0;
-  }
-  22% {
-    opacity: 0.34;
-  }
-  70% {
-    opacity: 0.28;
-  }
-  100% {
-    left: 138%;
-    opacity: 0;
-  }
-}
-
-/* Core ribbon — AI / Context / Actions: pure black + scarlet interaction */
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item {
-  position: relative;
-  z-index: 2;
-  background: #000000 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: none !important;
-  filter: none !important;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item.magnetic-ui,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item.magnetic-ui {
-  transform: translate3d(var(--mx, 0), var(--my, 0), 0);
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item.active,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item.active {
-  background: #000000 !important;
-  border: 1px solid rgba(170, 40, 52, 0.38) !important;
-  box-shadow:
-    0 0 0 1px rgba(100, 20, 30, 0.28),
-    0 0 16px rgba(160, 28, 45, 0.12) !important;
-  filter: none !important;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item:hover,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item:hover {
-  background: #000000 !important;
-  border-color: rgba(255, 42, 42, 0.55) !important;
-  box-shadow:
-    0 0 18px rgba(255, 42, 42, 0.12),
-    0 0 0 1px rgba(140, 28, 40, 0.22),
-    0 4px 14px rgba(0, 0, 0, 0.78) !important;
-  filter: none !important;
-  transform: translate3d(var(--mx, 0), var(--my, 0), 0) scale(1.015);
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-circle,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-circle {
-  background: #000000 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item:hover .cc-icon-circle,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item:hover .cc-icon-circle {
-  border-color: rgba(200, 55, 62, 0.38) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 0 8px rgba(255, 42, 42, 0.08) !important;
-  filter: none !important;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item.active .cc-icon-circle,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item.active .cc-icon-circle {
-  background: #000000 !important;
-  border: 1px solid rgba(175, 45, 55, 0.35) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    0 0 10px rgba(160, 28, 45, 0.08) !important;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-label,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-label {
-  color: rgba(200, 198, 198, 0.88);
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item:hover .cc-icon-label,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item:hover .cc-icon-label {
-  color: rgba(252, 248, 248, 0.96);
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item > *,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item > * {
-  position: relative;
-  z-index: 2;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid {
-  overflow: hidden;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid::before,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid::before {
-  display: block !important;
-  content: "" !important;
-  position: absolute;
-  top: 0;
-  left: -145%;
-  width: 56%;
-  height: 100%;
   background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(30, 4, 8, 0.04) 40%,
-    rgba(160, 36, 48, 0.09) 50%,
-    rgba(30, 4, 8, 0.04) 60%,
-    transparent 100%
-  ) !important;
-  transform: skewX(-17deg);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 1;
-  animation: none !important;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid:hover::before,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid:hover::before {
-  animation: blackenPremiumSweep 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
-}
-
-.app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid::after,
-.app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid::after {
-  display: none !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .app-layout.theme-blacken .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid:hover::before,
-  .app-layout[data-theme="blacken"] .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid:hover::before {
-    animation: none !important;
-  }
-}
-
-/* BLACKEN — mail preview cards + detected panel: same sweep (not sidebar / chrome) */
-.app-layout.theme-blacken .mail-list .mail-card.glass-panel,
-.app-layout[data-theme="blacken"] .mail-list .mail-card.glass-panel {
-  overflow: hidden;
-}
-
-.app-layout.theme-blacken .mail-list .mail-card.glass-panel::before,
-.app-layout[data-theme="blacken"] .mail-list .mail-card.glass-panel::before {
-  content: "" !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: -145% !important;
-  width: 52% !important;
-  height: 100% !important;
-  border-radius: 0 !important;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(24, 4, 6, 0.04) 42%,
-    rgba(150, 32, 44, 0.08) 50%,
-    rgba(24, 4, 6, 0.04) 58%,
-    transparent 100%
-  ) !important;
-  transform: skewX(-15deg) !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-  animation: none !important;
-}
-
-.app-layout.theme-blacken .mail-list .mail-card.glass-panel:hover::before,
-.app-layout[data-theme="blacken"] .mail-list .mail-card.glass-panel:hover::before {
-  animation: blackenPremiumSweep 0.78s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
-}
-
-.app-layout.theme-blacken .mail-list .suggested-decision.glass-panel,
-.app-layout[data-theme="blacken"] .mail-list .suggested-decision.glass-panel {
-  animation: none !important;
-  box-shadow:
-    0 8px 28px rgba(0, 0, 0, 0.92),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025),
-    0 0 0 1px rgba(90, 16, 24, 0.12),
-    0 0 24px rgba(150, 28, 42, 0.04) !important;
-}
-
-.app-layout.theme-blacken .mail-list .suggested-decision.glass-panel::after,
-.app-layout[data-theme="blacken"] .mail-list .suggested-decision.glass-panel::after {
-  content: "" !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: -145% !important;
-  width: 52% !important;
-  height: 100% !important;
-  inset: auto !important;
-  border-radius: inherit !important;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(28, 4, 8, 0.04) 42%,
-    rgba(155, 34, 46, 0.09) 50%,
-    rgba(28, 4, 8, 0.04) 58%,
-    transparent 100%
-  ) !important;
-  background-size: auto !important;
-  transform: skewX(-15deg) !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-  animation: none !important;
-  mix-blend-mode: normal !important;
-}
-
-.app-layout.theme-blacken .mail-list .suggested-decision.glass-panel:hover::after,
-.app-layout[data-theme="blacken"] .mail-list .suggested-decision.glass-panel:hover::after {
-  animation: blackenPremiumSweep 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .app-layout.theme-blacken .mail-list .mail-card.glass-panel:hover::before,
-  .app-layout[data-theme="blacken"] .mail-list .mail-card.glass-panel:hover::before,
-  .app-layout.theme-blacken .mail-list .suggested-decision.glass-panel:hover::after,
-  .app-layout[data-theme="blacken"] .mail-list .suggested-decision.glass-panel:hover::after {
-    animation: none !important;
-  }
-}
-
-/* =============================================================================
-   App chrome: scrollbar + text selection (inherits theme vars from .app-layout)
-   Theme-specific blocks (e.g. BLACKEN) may override with higher specificity.
-   ============================================================================= */
-body:has(.app-layout)::-webkit-scrollbar,
-html:has(body:has(.app-layout))::-webkit-scrollbar,
-body:has(.app-layout) *::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-body:has(.app-layout)::-webkit-scrollbar-track,
-html:has(body:has(.app-layout))::-webkit-scrollbar-track,
-body:has(.app-layout) *::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-body:has(.app-layout)::-webkit-scrollbar-thumb,
-html:has(body:has(.app-layout))::-webkit-scrollbar-thumb,
-body:has(.app-layout) *::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--accent) 36%, rgba(255, 255, 255, 0.06));
-  border-radius: 999px;
-}
-
-body:has(.app-layout)::-webkit-scrollbar-thumb:hover,
-html:has(body:has(.app-layout))::-webkit-scrollbar-thumb:hover,
-body:has(.app-layout) *::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--accent) 50%, rgba(255, 255, 255, 0.1));
-}
-
-body:has(.app-layout),
-body:has(.app-layout) * {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--accent) 42%, transparent) transparent;
-}
-
-body:has(.app-layout) ::selection {
-  background: color-mix(in srgb, var(--accent) 26%, rgba(255, 255, 255, 0.08));
-  color: inherit;
-  text-shadow: 0 0 14px color-mix(in srgb, var(--accent-glow) 22%, transparent);
-}
-
-/* =============================================================================
-   GOD UX — interaction system (transform + opacity only; no animated shadows/blur)
-   ============================================================================= */
-:root {
-  --god-ui-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --god-ui-fast: 0.25s;
-}
-
-.mail-container[data-god-hover] .mail-card:not(.hovered) {
-  opacity: 0.95;
-  transition: opacity var(--god-ui-fast) var(--god-ui-ease);
-}
-
-.mail-list .mail-card.hovered {
-  opacity: 1;
-  transition:
-    opacity var(--god-ui-fast) var(--god-ui-ease),
-    transform var(--god-ui-fast) var(--god-ui-ease);
-}
-
-.mail-container[data-god-hover] .mail-card.hovered .mail-title,
-.mail-container[data-god-hover] .mail-card.hovered .mail-action-block,
-.mail-container[data-god-hover] .mail-card.hovered .mail-card-meta-icons {
-  opacity: 1;
-  transition: opacity var(--god-ui-fast) var(--god-ui-ease);
-}
-
-.mail-container[data-god-hover] .mail-card:not(.hovered) .mail-title,
-.mail-container[data-god-hover] .mail-card:not(.hovered) .mail-action-block,
-.mail-container[data-god-hover] .mail-card:not(.hovered) .mail-card-meta-icons {
-  opacity: 0.88;
-  transition: opacity var(--god-ui-fast) var(--god-ui-ease);
-}
-
-.mail-list .mail-card:active:not(.processing):not(.active) {
-  transform: scale(0.98);
-  transition: transform 0.12s var(--god-ui-ease);
-}
-
-/* Intent preview — anticipatory scale on predicted action chip */
-.mail-list .mail-card.god-intent-preview .mail-action-block {
-  transition:
-    transform var(--god-ui-fast) var(--god-ui-ease),
-    opacity var(--god-ui-fast) var(--god-ui-ease);
-}
-
-.mail-list .mail-card.god-intent-preview[data-god-intent="read"] .mail-action-block[data-action="read"],
-.mail-list .mail-card.god-intent-preview[data-god-intent="reply"] .mail-action-block[data-action="reply"],
-.mail-list .mail-card.god-intent-preview[data-god-intent="schedule"] .mail-action-block[data-action="schedule"] {
-  transform: scale(1.03);
-  opacity: 1;
-}
-
-/* High risk — ring pulse (opacity only) */
-.mail-list .mail-card .god-risk-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 3;
-  box-sizing: border-box;
-  border: 1px solid rgba(248, 113, 113, 0.55);
-  opacity: 0.55;
-  animation: godRiskRingPulse 2.4s var(--god-ui-ease) infinite;
-}
-
-@keyframes godRiskRingPulse {
-  0%,
-  100% {
-    opacity: 0.42;
-  }
-  50% {
-    opacity: 0.78;
-  }
-}
-
-.app-layout[data-god-risk="high"] .sidebar,
-.app-layout[data-god-risk="high"] .app-ribbon {
-  opacity: 0.93;
-  transition: opacity var(--god-ui-fast) var(--god-ui-ease);
-}
-
-.reply-panel.god-high-risk-context .ai-panel {
-  opacity: 1;
-  transform: translateZ(0) scale(1.005);
-  transition:
-    opacity var(--god-ui-fast) var(--god-ui-ease),
-    transform var(--god-ui-fast) var(--god-ui-ease);
-}
-
-.app-layout[data-god-inline-focus="true"] .sidebar,
-.app-layout[data-god-inline-focus="true"] .app-ribbon {
-  opacity: 0.92;
-  transition: opacity var(--god-ui-fast) var(--god-ui-ease);
-}
-
-.app-layout[data-god-inline-focus="true"] .mail-container .mail-card:not(.active) {
-  opacity: 0.93;
-  transition: opacity var(--god-ui-fast) var(--god-ui-ease);
-}
-
-.app-layout[data-god-inline-focus="true"] .mail-container .mail-card.active {
-  opacity: 1;
-  transform: scale(1.01);
-  transition:
-    opacity var(--god-ui-fast) var(--god-ui-ease),
-    transform var(--god-ui-fast) var(--god-ui-ease);
-}
-
-/* Malicious link — shake + red flash (opacity only on overlay) */
-@keyframes godThreatShake {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  20% {
-    transform: translate3d(-3px, 0, 0);
-  }
-  40% {
-    transform: translate3d(3px, 0, 0);
-  }
-  60% {
-    transform: translate3d(-2px, 0, 0);
-  }
-  80% {
-    transform: translate3d(2px, 0, 0);
-  }
-}
-
-.app-layout.god-link-threat-flash {
-  animation: godThreatShake 0.38s var(--god-ui-ease);
-}
-
-.god-link-threat-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 999998;
-  pointer-events: none;
-  background: rgba(220, 38, 38, 0.14);
-  animation: godThreatFlash 0.42s var(--god-ui-ease) forwards;
-}
-
-@keyframes godThreatFlash {
-  0% {
-    opacity: 0.55;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Idle attention — barely visible */
-.mail-list .mail-card.god-idle-attention:not(.hovered):not(.active) {
-  opacity: 0.88;
-  animation: godIdleGlow 4s var(--god-ui-ease) infinite;
-}
-
-@keyframes godIdleGlow {
-  0%,
-  100% {
-    opacity: 0.88;
-  }
-  50% {
-    opacity: 0.94;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mail-list .mail-card .god-risk-ring {
-    animation: none;
-    opacity: 0.55;
-  }
-
-  .mail-list .mail-card.god-idle-attention:not(.hovered):not(.active) {
-    animation: none;
-    opacity: 0.9;
-  }
-
-  .app-layout.god-link-threat-flash {
-    animation: none;
-  }
-}
-
-/* Thematic nuance */
-.app-layout[data-theme="blacken"] .mail-list .mail-card.god-intent-preview .mail-action-block[data-action] {
-  transform: scale(1.045);
-}
-
-.app-layout.theme-voidbeast .mail-list .mail-card.god-intent-preview .mail-action-block[data-action] {
-  transition: transform 0.38s var(--god-ui-ease);
-}
-
-.app-layout.theme-nova .mail-list .mail-card.hovered {
-  opacity: 1;
-}
-
-.app-layout.theme-nova .mail-container[data-god-hover] .mail-card:not(.hovered) {
-  opacity: 0.96;
-}
-
-.app-layout[data-theme="forge"] .mail-list .mail-card.god-idle-attention:not(.hovered):not(.active),
-.theme-ember .mail-list .mail-card.god-idle-attention:not(.hovered):not(.active) {
-  animation: godIdleGlowEmber 3.2s var(--god-ui-ease) infinite;
-}
-
-@keyframes godIdleGlowEmber {
-  0%,
-  100% {
-    opacity: 0.87;
-  }
-  50% {
-    opacity: 0.95;
-  }
-}
-
-.app-layout.theme-carbonite .mail-list .mail-card:active:not(.processing):not(.active) {
-  transform: scale(0.985);
-  transition: transform 0.1s linear;
-}
-
-/* =============================================================================
-   BLACKEN — full black viewport (no left gutter / white seam), dark scrollbars
-   ============================================================================= */
-
-html:has(body:has(.app-layout.theme-blacken)) {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100%;
-  background: #000000;
-  overflow-x: hidden;
-}
-
-body:has(.app-layout.theme-blacken) {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: #000000 !important;
-  overflow-x: hidden;
-  color-scheme: dark;
-}
-
-body:has(.app-layout.theme-blacken) .page-root,
-body:has(.app-layout.theme-blacken) .app-reveal {
-  width: 100%;
-  max-width: 100%;
-  margin-left: 0;
-  margin-right: 0;
-  box-sizing: border-box;
-}
-
-/* Chrome, Edge, Safari — viewport + in-app scrollers */
-body:has(.app-layout.theme-blacken)::-webkit-scrollbar,
-html:has(body:has(.app-layout.theme-blacken))::-webkit-scrollbar,
-body:has(.app-layout.theme-blacken) *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-body:has(.app-layout.theme-blacken)::-webkit-scrollbar-track,
-html:has(body:has(.app-layout.theme-blacken))::-webkit-scrollbar-track,
-body:has(.app-layout.theme-blacken) *::-webkit-scrollbar-track {
-  background: #000000;
-}
-
-body:has(.app-layout.theme-blacken)::-webkit-scrollbar-thumb,
-html:has(body:has(.app-layout.theme-blacken))::-webkit-scrollbar-thumb,
-body:has(.app-layout.theme-blacken) *::-webkit-scrollbar-thumb {
-  background: rgba(255, 0, 0, 0.25);
-  border-radius: 10px;
-}
-
-body:has(.app-layout.theme-blacken)::-webkit-scrollbar-thumb:hover,
-html:has(body:has(.app-layout.theme-blacken))::-webkit-scrollbar-thumb:hover,
-body:has(.app-layout.theme-blacken) *::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 0, 0, 0.5);
-}
-
-/* Firefox */
-body:has(.app-layout.theme-blacken),
-body:has(.app-layout.theme-blacken) * {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 0, 0, 0.3) #000000;
-}
-
-/* OpenMail GOD MODE UX */
-.app-layout {
-  --openmail-icon-glow: color-mix(in srgb, var(--theme-glow) 55%, transparent);
-}
-
-.openmail-icon,
-.icon {
-  opacity: 0.95;
-  color: color-mix(in srgb, var(--theme-accent) 78%, white);
-  transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
-}
-
-.menu-grid-item:hover .icon,
-.sidebar-item:hover .icon,
-.menu-grid-item:focus-visible .icon,
-.sidebar-item:focus-visible .icon {
-  opacity: 1;
-  transform: scale(1.08);
-  filter: drop-shadow(0 0 6px var(--openmail-icon-glow));
-}
-
-.menu-grid-six {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.menu-grid-item {
-  min-height: 36px;
-  border-radius: 10px;
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: flex-start;
-  background: color-mix(in srgb, var(--glass-btn-bg) 84%, transparent);
-  border: 1px solid color-mix(in srgb, var(--theme-glow) 24%, rgba(255, 255, 255, 0.08));
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-}
-
-.menu-grid-item:hover,
-.menu-grid-item:focus-visible {
-  background: color-mix(in srgb, var(--glass-btn-bg) 96%, transparent);
-  border-color: color-mix(in srgb, var(--theme-glow) 45%, rgba(255, 255, 255, 0.09));
-  box-shadow: 0 0 10px color-mix(in srgb, var(--theme-glow) 25%, transparent);
-  animation: openmailGlowPulse 1.2s ease-in-out infinite;
-}
-
-.menu-grid-item:active {
-  transform: scale(0.97);
-}
-
-.menu-grid-item.active {
-  background: color-mix(in srgb, var(--theme-glow) 8%, rgba(255, 255, 255, 0.04));
-  border-color: color-mix(in srgb, var(--theme-glow) 48%, rgba(255, 255, 255, 0.1));
-  box-shadow: inset 0 0 10px color-mix(in srgb, var(--theme-glow) 38%, transparent);
-}
-
-.menu-grid-item.active .icon {
-  opacity: 1;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--theme-glow) 45%, transparent));
-}
-
-.sidebar {
-  transition: width 220ms ease, min-width 220ms ease, padding 220ms ease;
-}
-
-.sidebar-item {
-  gap: 10px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-}
-
-.sidebar-item:hover,
-.sidebar-item:focus-visible {
-  border-color: color-mix(in srgb, var(--theme-glow) 40%, rgba(255, 255, 255, 0.12));
-  box-shadow:
-    inset 0 0 8px color-mix(in srgb, var(--theme-glow) 22%, transparent),
-    0 0 10px color-mix(in srgb, var(--theme-glow) 20%, transparent);
-  animation: openmailGlowPulse 1.2s ease-in-out infinite;
-}
-
-.sidebar-item:active {
-  transform: scale(0.97);
-}
-
-.sidebar-item.active {
-  background: color-mix(in srgb, var(--theme-glow) 8%, rgba(20, 20, 26, 0.55));
-  box-shadow: inset 0 0 10px color-mix(in srgb, var(--theme-glow) 38%, transparent);
-}
-
-.sidebar-item-label {
-  opacity: 1;
-  transition: opacity 180ms ease, max-width 220ms ease, transform 220ms ease;
-  max-width: 180px;
-  white-space: nowrap;
-}
-
-.sidebar.collapsed {
-  min-width: 78px;
-  width: 78px;
-  padding-left: 6px;
-  padding-right: 6px;
-}
-
-.sidebar.collapsed .sidebar-item {
-  justify-content: center;
-  padding: 0;
-}
-
-.sidebar.collapsed .sidebar-item-label {
-  opacity: 0;
-  max-width: 0;
-  overflow: hidden;
-  transform: translateX(-4px);
-}
-
-.sidebar.collapsed .sidebar-item[title] {
-  position: relative;
-}
-
-.sidebar.collapsed .sidebar-item[title]:hover::after {
-  content: attr(title);
-  position: absolute;
-  left: calc(100% + 8px);
-  top: 50%;
-  transform: translateY(-50%);
-  white-space: nowrap;
-  padding: 4px 8px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--glass-bg) 88%, rgba(0, 0, 0, 0.35));
-  border: 1px solid color-mix(in srgb, var(--theme-glow) 28%, rgba(255, 255, 255, 0.12));
-  box-shadow: 0 0 8px color-mix(in srgb, var(--theme-glow) 18%, transparent);
-  font-size: 10px;
-  letter-spacing: 0.05em;
-  z-index: 40;
-}
-
-.sidebar-collapse-toggle {
-  margin-bottom: 2px;
-}
-
-.icon-breathe {
-  animation: openmailBreathe 2.2s ease-in-out infinite;
-}
-
-@keyframes openmailGlowPulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 color-mix(in srgb, var(--theme-glow) 0%, transparent);
-  }
-  50% {
-    box-shadow: 0 0 12px color-mix(in srgb, var(--theme-glow) 24%, transparent);
-  }
-}
-
-@keyframes openmailBreathe {
-  0%,
-  100% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-/* Final polish pass — ultimate boss mode */
-.app-layout,
-.app-layout * {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.app-layout .button,
-.app-layout .sidebar-item,
-.app-layout .theme-card,
-.app-layout .menu-grid-item,
-.app-layout .mail-send-btn {
-  transition: all 0.2s ease;
-}
-
-.app-layout .glass-panel,
-.app-layout .glass-panel-chrome,
-.app-layout .glass-plate {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  position: relative;
-}
-
-.app-layout .glass-panel::before,
-.app-layout .glass-panel-chrome::before,
-.app-layout .glass-plate::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--theme-glow) 12%, rgba(255, 255, 255, 0.06)),
-    transparent 34%
+    120deg,
+    transparent,
+    rgba(160, 28, 45, 0.14),
+    rgba(255, 255, 255, 0.08),
+    rgba(160, 28, 45, 0.14),
+    transparent
   );
-  opacity: 0.5;
-}
-
-.menu-grid-item .icon,
-.sidebar-item .icon {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  min-height: 24px;
-  opacity: 0.95;
-  padding: 4px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  filter: drop-shadow(0 0 8px var(--theme-glow));
-}
-
-.menu-grid-item:hover .icon,
-.sidebar-item:hover .icon {
-  transform: scale(1.1);
-  opacity: 1;
-  filter:
-    brightness(1.16)
-    drop-shadow(0 0 14px var(--theme-glow));
-}
-
-.menu-grid-item.active .icon,
-.sidebar-item.active .icon {
-  opacity: 1;
-  filter:
-    brightness(1.22)
-    drop-shadow(0 0 14px var(--theme-glow));
-  background: color-mix(in srgb, var(--theme-glow) 16%, rgba(255, 255, 255, 0.03));
-  border-color: color-mix(in srgb, var(--theme-glow) 45%, rgba(255, 255, 255, 0.16));
-}
-
-.sidebar-item {
-  min-height: 46px;
-  padding: 0 18px;
-  align-items: center;
-}
-
-.sidebar-item-label {
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-}
-
-.sidebar-item:hover {
-  transform: translateX(3px);
-  box-shadow:
-    inset 0 0 10px color-mix(in srgb, var(--theme-glow) 26%, transparent),
-    0 0 14px color-mix(in srgb, var(--theme-glow) 22%, transparent);
-}
-
-.sidebar-item.active {
-  background: color-mix(in srgb, var(--theme-glow) 12%, rgba(255, 255, 255, 0.05));
-  border-color: color-mix(in srgb, var(--theme-glow) 45%, rgba(255, 255, 255, 0.14));
-  box-shadow:
-    inset 0 0 12px color-mix(in srgb, var(--theme-glow) 42%, transparent),
-    0 0 14px color-mix(in srgb, var(--theme-glow) 18%, transparent);
-}
-
-.sidebar-group-start {
-  margin-top: 12px;
-}
-
-.theme-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
-}
-
-.theme-card:hover,
-.theme-card:focus-visible {
-  transform: scale(1.05);
-  border-color: color-mix(in srgb, var(--theme-glow) 48%, rgba(255, 255, 255, 0.12));
-  box-shadow: 0 0 16px color-mix(in srgb, var(--theme-glow) 28%, transparent);
-}
-
-.theme-card.active {
-  box-shadow:
-    inset 0 0 14px color-mix(in srgb, var(--theme-glow) 42%, transparent),
-    0 0 16px color-mix(in srgb, var(--theme-glow) 30%, transparent);
-}
-
-.app-layout {
-  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
-}
-
-.openmail-empty-system-ready {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(
-      120% 90% at 20% 10%,
-      color-mix(in srgb, var(--theme-glow) 16%, transparent),
-      transparent 50%
-    ),
-    linear-gradient(
-      120deg,
-      color-mix(in srgb, var(--theme-glow) 8%, rgba(255, 255, 255, 0.03)),
-      rgba(255, 255, 255, 0.02),
-      color-mix(in srgb, var(--theme-glow) 7%, transparent)
-    );
-  animation: openmailSystemDrift 14s ease-in-out infinite;
-}
-
-.openmail-empty-system-ready::after {
-  content: "";
-  position: absolute;
-  inset: -20%;
-  pointer-events: none;
-  background: radial-gradient(
-    circle at 50% 50%,
-    color-mix(in srgb, var(--theme-glow) 15%, transparent),
-    transparent 62%
-  );
-  opacity: 0.35;
-  animation: openmailSystemPulse 3.6s ease-in-out infinite;
-}
-
-.openmail-empty-state-btn:hover,
-.openmail-empty-state-btn:focus-visible {
-  transform: scale(1.03);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--theme-glow) 30%, transparent);
-}
-
-.openmail-empty-state-btn:active {
-  transform: scale(0.98);
-}
-
-@keyframes openmailSystemDrift {
-  0%,
-  100% {
-    background-position: 0% 50%, 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%, 100% 50%;
-  }
-}
-
-@keyframes openmailSystemPulse {
-  0%,
-  100% {
-    opacity: 0.24;
-  }
-  50% {
-    opacity: 0.42;
-  }
-}
-
-/* Icon system rebuild: visibility + theme-reactive */
-.app-layout {
-  --icon-color: color-mix(in srgb, var(--theme-accent) 78%, white);
-  --icon-color-soft: color-mix(in srgb, var(--theme-accent) 52%, white);
-}
-
-.app-layout.theme-aether,
-.app-layout[data-theme="purple"] {
-  --icon-color: #8ab4ff;
-  --icon-color-soft: #b8ccff;
-}
-
-.app-layout.theme-orbital,
-.app-layout[data-theme="orbital"] {
-  --icon-color: #6ea8ff;
-  --icon-color-soft: #a7cbff;
-}
-
-.app-layout.theme-ember,
-.app-layout[data-theme="forge"] {
-  --icon-color: #ff7a7a;
-  --icon-color-soft: #ffabab;
-}
-
-.app-layout.theme-nova,
-.app-layout[data-theme="light"] {
-  --icon-color: #00e5ff;
-  --icon-color-soft: #7afcff;
-}
-
-.app-layout.theme-carbonite,
-.app-layout[data-theme="carbonite"] {
-  --icon-color: #9fb3c8;
-  --icon-color-soft: #c5d2de;
-}
-
-.app-layout.theme-blacken,
-.app-layout[data-theme="blacken"] {
-  --icon-color: #ff3b3b;
-  --icon-color-soft: #ff7a7a;
-  --theme-glow: rgba(255, 59, 59, 0.6);
-}
-
-.app-layout.theme-voidbeast,
-.app-layout[data-theme="voidbeast"] {
-  --icon-color: #00ff88;
-  --icon-color-soft: #66ffbb;
-  --theme-glow: rgba(0, 255, 136, 0.6);
-}
-
-.icon-container {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
-  opacity: 1;
-  fill: none;
-  stroke: var(--icon-color);
-  stroke-width: 2;
-  filter: drop-shadow(0 0 6px var(--theme-glow));
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.menu-grid-item,
-.sidebar-item {
-  gap: 10px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
-.menu-grid-item:hover .icon-container,
-.sidebar-item:hover .icon-container {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--icon-color);
-}
-
-.menu-grid-item:hover .icon,
-.sidebar-item:hover .icon {
-  transform: scale(1.1);
-  filter: brightness(1.12) drop-shadow(0 0 12px var(--theme-glow));
-}
-
-.menu-grid-item.active .icon-container,
-.sidebar-item.active .icon-container {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid var(--icon-color);
-  box-shadow: 0 0 12px var(--theme-glow);
-}
-
-.menu-grid-item.active .icon,
-.sidebar-item.active .icon {
-  filter: brightness(1.2) drop-shadow(0 0 14px var(--theme-glow));
-}
-
-/* Icon visibility force override */
-.app-layout .icon,
-.app-layout .icon svg {
-  color: var(--icon-color) !important;
-  stroke: var(--icon-color) !important;
-}
-
-.app-layout .icon {
-  opacity: 1;
-  stroke-width: 2.2;
-  transform: scale(1.1);
-  filter: drop-shadow(0 0 8px var(--theme-glow));
-}
-
-.menu-item .icon {
-  opacity: 0.85;
-}
-
-.menu-item:not(.active) .icon {
-  opacity: 0.75;
-}
-
-.menu-item:hover .icon,
-.menu-item:focus-visible .icon {
-  opacity: 1;
-  transform: scale(1.15);
-  filter: drop-shadow(0 0 12px var(--theme-glow));
-}
-
-.menu-item.active .icon {
-  color: var(--icon-color);
-  transform: scale(1.2);
-  filter: brightness(1.15) drop-shadow(0 0 14px var(--theme-glow));
-  animation: iconPulse 2.5s infinite ease-in-out;
-}
-
-.menu-item.active .icon-container {
-  border: 1px solid var(--icon-color);
-  box-shadow: 0 0 12px var(--theme-glow);
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.menu-item.active {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--theme-glow);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-}
-
-@keyframes iconPulse {
-  0% {
-    opacity: 0.9;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.9;
-  }
-}
-
-/* Strict theme glow fix (NOVA, ORBITAL, VOIDBEAST only) */
-.app-layout[data-theme="nova"],
-.app-layout.theme-nova,
-.app-layout[data-theme="light"].theme-nova {
-  --theme-glow: rgba(180, 220, 255, 0.6);
-  --theme-glow-soft: rgba(180, 220, 255, 0.05);
-  --glow-color: var(--theme-glow);
-}
-
-.app-layout[data-theme="orbital"],
-.app-layout.theme-orbital {
-  --theme-glow: rgba(120, 200, 255, 0.6);
-  --theme-glow-soft: rgba(120, 200, 255, 0.05);
-  --glow-color: var(--theme-glow);
-}
-
-.app-layout[data-theme="voidbeast"],
-.app-layout.theme-voidbeast {
-  --theme-glow: rgba(0, 255, 150, 0.6);
-  --theme-glow-soft: rgba(0, 255, 150, 0.05);
-  --glow-color: var(--theme-glow);
-}
-
-/* MENU text color lock (fix residual violet on specific themes) */
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-clean-btn,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-clean-btn,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-clean-btn,
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-grid-item,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-grid-item,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-grid-item {
-  color: var(--icon-color-soft) !important;
-}
-
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-clean-btn:hover,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-clean-btn:hover,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-clean-btn:hover,
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-grid-item:hover,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-grid-item:hover,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-grid-item:hover,
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-clean-btn.active,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-clean-btn.active,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-clean-btn.active,
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-grid-item.active,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-grid-item.active,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-grid-item.active {
-  color: var(--icon-color) !important;
-}
-
-/* Stable ribbon button model (same lock style as working themes) */
-.app-layout.theme-nova .app-ribbon .button,
-.app-layout.theme-orbital .app-ribbon .button,
-.app-layout.theme-voidbeast .app-ribbon .button,
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-clean-btn,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-clean-btn,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-clean-btn,
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-grid-item,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-grid-item,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-grid-item {
-  color: var(--icon-color-soft) !important;
-}
-
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-clean-btn span,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-clean-btn span,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-clean-btn span,
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-grid-item span,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-grid-item span,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-grid-item span {
-  color: inherit !important;
-  background-image: none !important;
-  -webkit-text-fill-color: currentColor !important;
-  background-clip: border-box !important;
-  -webkit-background-clip: border-box !important;
-}
-
-.app-layout.theme-nova .app-ribbon .button.active,
-.app-layout.theme-orbital .app-ribbon .button.active,
-.app-layout.theme-voidbeast .app-ribbon .button.active,
-.app-layout.theme-nova .control-block.ribbon-panel.menu-group .menu-grid-item.active,
-.app-layout.theme-orbital .control-block.ribbon-panel.menu-group .menu-grid-item.active,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.menu-group .menu-grid-item.active {
-  color: var(--icon-color) !important;
-  border-color: var(--glow-color) !important;
-  box-shadow: 0 0 12px var(--glow-color) !important;
-}
-
-/* VOIDBEAST-only: hard lock CORE button palette (remove residual violet) */
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item.magnetic-ui {
-  color: var(--icon-color) !important;
-  border-color: color-mix(in srgb, var(--theme-glow) 26%, transparent) !important;
-  box-shadow: 0 0 12px var(--theme-glow) !important;
-}
-
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item:hover,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item.magnetic-ui:hover,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item:focus-visible,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item.magnetic-ui:focus-visible {
-  border-color: var(--theme-glow) !important;
-  box-shadow: 0 0 14px var(--theme-glow) !important;
-}
-
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item.active,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item.magnetic-ui.active {
-  background: color-mix(in srgb, var(--theme-glow) 10%, transparent) !important;
-  border-color: var(--theme-glow) !important;
-  box-shadow: 0 0 16px var(--theme-glow) !important;
-}
-
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-label {
-  color: var(--icon-color-soft) !important;
-}
-
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item:hover .cc-icon-label,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item.active .cc-icon-label {
-  color: var(--icon-color) !important;
-}
-
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-circle {
-  border-color: color-mix(in srgb, var(--theme-glow) 34%, var(--glass-btn-edge)) !important;
-  box-shadow: var(--glass-inset), 0 0 12px var(--theme-glow) !important;
-}
-
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid::before,
-.app-layout.theme-voidbeast .control-block.ribbon-panel.core-features .cc-icon-item.button-liquid::after {
-  background: transparent !important;
-  opacity: 0 !important;
-}
-
-/* Voidbeast accent unification: prevent purple accent fallback */
-.app-layout[data-theme="voidbeast"],
-.app-layout.theme-voidbeast {
-  --xeno-accent: #00ffcc;
-  --accent: var(--xeno-accent);
-  --theme-accent: var(--xeno-accent);
-  --theme-accent-soft: rgba(0, 255, 204, 0.18);
-  --accent-glow: rgba(0, 255, 204, 0.45);
-}
-
-/* AI Reply — multi-suggestion chips (full auto mode) */
-.suggestion-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.suggestion-chip {
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-surface);
-  color: inherit;
-  cursor: pointer;
-  opacity: 0.7;
-  transition: 0.2s;
-}
-
-.suggestion-chip.active {
-  opacity: 1;
-  box-shadow: 0 0 10px var(--theme-accent);
-}
-
-/* AI Reply panel — flex column shell; only middle (.ai-reply-content) scrolls */
-.ai-reply-panel-shell {
-  max-height: 100%;
-}
-
-.ai-reply-content {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 6px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-}
-
-/* Subtle reveal after micro-delay (auto-generated reply) */
-.ai-reply-fade-in {
-  opacity: 0;
-  transition: opacity 120ms ease-out;
-}
-
-.ai-reply-fade-in.ai-reply-fade-in--visible {
-  opacity: 1;
-}
-
-/* OpenMail AI column: generated reply block is always visible (no fade hiding the textarea). */
-.ai-reply-panel-shell .ai-reply-generated {
-  opacity: 1;
-}
-
-.ai-reply-panel-shell textarea.ai-reply-main-textarea {
-  opacity: 1 !important;
-  color: rgba(248, 250, 252, 0.95);
-}
-
-.ai-reply-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.ai-reply-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-
-.ai-reply-panel-shell .reply-input,
-.ai-reply-content .reply-input {
-  margin-bottom: 10px;
-}
-
-.reply-panel .reply-panel-stack {
-  min-height: 0;
-}
-
-.refine-block {
-  margin-top: 10px;
-  opacity: 0.8;
-}
-
-.refine-block summary {
-  cursor: pointer;
-  font-size: 13px;
-  margin-bottom: 6px;
-  list-style: none;
-}
-
-.refine-block summary::-webkit-details-marker {
-  display: none;
+  animation: chromeSweep 1.35s ease forwards;
+}
+
+.app-layout.theme-blacken :is(
+    .menu-clean-btn,
+    .display-mode-btn,
+    .theme-pill-btn,
+    .cc-icon-item,
+    .reply-smart-btn,
+    .tone-chip,
+    .mail-send-btn,
+    .ai-primary,
+    .ai-secondary,
+    .action-btn,
+    .decision-view-suggestion
+  ):hover,
+.app-layout.theme-blacken :is(
+    .menu-clean-btn,
+    .display-mode-btn,
+    .theme-pill-btn,
+    .cc-icon-item,
+    .reply-smart-btn,
+    .tone-chip,
+    .mail-send-btn,
+    .ai-primary,
+    .ai-secondary,
+    .action-btn,
+    .decision-view-suggestion
+  ):hover span,
+.app-layout[data-theme="blacken"] :is(
+    .menu-clean-btn,
+    .display-mode-btn,
+    .theme-pill-btn,
+    .cc-icon-item,
+    .reply-smart-btn,
+    .tone-chip,
+    .mail-send-btn,
+    .ai-primary,
+    .ai-secondary,
+    .action-btn,
+    .decision-view-suggestion
+  ):hover,
+.app-layout[data-theme="blacken"] :is(
+    .menu-clean-btn,
+    .display-mode-btn,
+    .theme-pill-btn,
+    .cc-icon-item,
+    .reply-smart-btn,
+    .tone-chip,
+    .mail-send-btn,
+    .ai-primary,
+    .ai-secondary,
+    .action-btn,
+    .decision-view-suggestion
+  ):hover span {
+  color: rgba(248, 245, 245, 0.95);
+  text-shadow:
+    0 0 6px rgba(160, 28, 45, 0.2),
+    0 0 14px rgba(0, 0, 0, 0.35);
 }

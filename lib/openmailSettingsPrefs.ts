@@ -22,11 +22,24 @@ export type MockAccount = {
 export type OpenmailDisplayPrefs = {
   density: "compact" | "comfortable";
   animations: boolean;
+  /** Desktop notifications for new mail (summary, intent, quick actions). */
+  smartNotifications: boolean;
 };
 
 export type OpenmailAiPrefs = {
   autoSuggestions: boolean;
   autoAnalyze: boolean;
+  /** Stronger CORE judgments and slightly higher confidence display. */
+  aggressionHigh: boolean;
+  /** Rank suggestions and pick reply tone from past usage (per profile). */
+  learnFromUsage: boolean;
+  /** High-confidence inbox triage: archive / draft / mark done before you open mail. */
+  autoResolveInbox: boolean;
+  /**
+   * When safe + reply intent + high confidence, Guardian may send the top GPT reply
+   * without pressing Send. Medium risk always requires confirmation; high risk blocks send.
+   */
+  guardianAutoResponse: boolean;
   defaultTone: PrefsReplyTone;
 };
 
@@ -46,22 +59,19 @@ export type OpenmailSettingsState = {
 
 export const OPENMAIL_SETTINGS_DEFAULT: OpenmailSettingsState = {
   activeSection: "display",
-  accounts: [
-    {
-      id: "mock-1",
-      email: "you@example.com",
-      imapHost: "imap.example.com",
-      smtpHost: "smtp.example.com",
-      status: "connected",
-    },
-  ],
+  accounts: [],
   display: {
     density: "comfortable",
     animations: true,
+    smartNotifications: false,
   },
   ai: {
     autoSuggestions: true,
     autoAnalyze: true,
+    aggressionHigh: false,
+    learnFromUsage: true,
+    autoResolveInbox: true,
+    guardianAutoResponse: false,
     defaultTone: "Professional",
   },
   security: {
@@ -124,6 +134,10 @@ export function parseOpenmailSettingsState(raw: string | null): OpenmailSettings
       typeof displayIn.animations === "boolean"
         ? displayIn.animations
         : OPENMAIL_SETTINGS_DEFAULT.display.animations;
+    const smartNotifications =
+      typeof displayIn.smartNotifications === "boolean"
+        ? displayIn.smartNotifications
+        : OPENMAIL_SETTINGS_DEFAULT.display.smartNotifications;
 
     const aiIn = isRecord(j.ai) ? j.ai : {};
     const ai: OpenmailAiPrefs = {
@@ -135,6 +149,22 @@ export function parseOpenmailSettingsState(raw: string | null): OpenmailSettings
         typeof aiIn.autoAnalyze === "boolean"
           ? aiIn.autoAnalyze
           : OPENMAIL_SETTINGS_DEFAULT.ai.autoAnalyze,
+      aggressionHigh:
+        typeof aiIn.aggressionHigh === "boolean"
+          ? aiIn.aggressionHigh
+          : OPENMAIL_SETTINGS_DEFAULT.ai.aggressionHigh,
+      learnFromUsage:
+        typeof aiIn.learnFromUsage === "boolean"
+          ? aiIn.learnFromUsage
+          : OPENMAIL_SETTINGS_DEFAULT.ai.learnFromUsage,
+      autoResolveInbox:
+        typeof aiIn.autoResolveInbox === "boolean"
+          ? aiIn.autoResolveInbox
+          : OPENMAIL_SETTINGS_DEFAULT.ai.autoResolveInbox,
+      guardianAutoResponse:
+        typeof aiIn.guardianAutoResponse === "boolean"
+          ? aiIn.guardianAutoResponse
+          : OPENMAIL_SETTINGS_DEFAULT.ai.guardianAutoResponse,
       defaultTone: parseTone(aiIn.defaultTone),
     };
 
@@ -156,7 +186,7 @@ export function parseOpenmailSettingsState(raw: string | null): OpenmailSettings
     return {
       activeSection: parseSection(j.activeSection),
       accounts: mergedAccounts,
-      display: { density, animations },
+      display: { density, animations, smartNotifications },
       ai,
       security,
     };

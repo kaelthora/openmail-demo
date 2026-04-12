@@ -19,6 +19,9 @@ import {
   type UnifiedLinkTier,
 } from "./openmailSecurityContext";
 import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
+import { guardianEvaluate } from "@/lib/guardianEngine";
+import { useGuardianIntercept } from "./GuardianInterceptProvider";
+import { useGuardianTrace } from "./GuardianTraceProvider";
 
 function mapVerdictToTier(
   verdict: "safe" | "suspicious" | "dangerous"
@@ -47,6 +50,17 @@ function openSecureFileMode(
 function openLinkSandbox(url: string, mode: SandboxMode): void {
   const path = `/openmail/safe-link?url=${encodeURIComponent(url)}&mode=${encodeURIComponent(mode)}`;
   globalThis.open(path, "_blank", "noopener,noreferrer");
+}
+
+/** Low-risk links: open destination directly (http/https only). */
+function openHttpUrlNormal(url: string): void {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return;
+    globalThis.open(url, "_blank", "noopener,noreferrer");
+  } catch {
+    /* invalid URL */
+  }
 }
 
 type LinkModalState =
@@ -80,10 +94,10 @@ function linkModalToSecurityModal(
       open: true,
       variant: "risk",
       severity: "safe",
-      title: "Safe link",
+      title: "Low risk link",
       reason:
         m.reason ||
-        "AI classifies this destination as low risk. Open it only in the secure environment.",
+        "This destination looks safe. You can open it in the secure viewer or cancel.",
       detail: m.url,
       role: "dialog",
       primaryAction: {
@@ -102,14 +116,14 @@ function linkModalToSecurityModal(
       open: true,
       variant: "risk",
       severity: "suspicious",
-      title: "Suspicious link",
+      title: "Sandbox only",
       reason:
         m.reason ||
-        "This link shows suspicious signals. Confirm you trust the destination.",
+        "Medium risk — this link may only be opened inside the isolated sandbox.",
       detail: m.url,
       role: "alertdialog",
       primaryAction: {
-        label: "Open in secure mode",
+        label: "Open in sandbox",
         onClick: () => {
           onOpenSecure("isolated");
           onDismissSafe();
@@ -123,7 +137,7 @@ function linkModalToSecurityModal(
     open: true,
     variant: "risk",
     severity: "dangerous",
-    title: "Link blocked",
+    title: "Blocked for security",
     reason:
       m.reason ||
       "This URL cannot be opened — phishing, impersonation, or policy violation.",
@@ -144,9 +158,9 @@ function attachmentSafeModal(
     open: true,
     variant: "risk",
     severity: "safe",
-    title: "Safe file",
+    title: "Low risk file",
     reason:
-      "AI classifies this attachment as safe. It will not open directly — use the secure environment only.",
+      "This attachment looks safe. Open it in the secure viewer, or cancel.",
     detail: fileName,
     role: "dialog",
     primaryAction: {
@@ -190,6 +204,8 @@ export function OpenmailSecurityProvider({
   );
   const mountedRef = useRef(true);
   const { security: secPrefs } = useOpenmailPreferences();
+  const { record: recordGuardianTrace } = useGuardianTrace();
+  const { present: presentGuardianIntercept } = useGuardianIntercept();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -210,26 +226,44 @@ export function OpenmailSecurityProvider({
 
   const handleLinkClick = useCallback(
     async (url: string, mail: MailSecurityInput, mailId: string) => {
-      if (mail.mailAiRisk === "high") {
+      const guard = guardianEvaluate("click_link", {
+        mailId,
+        url,
+        sender: mail.sender,
+        title: mail.title,
+        subject: mail.subject,
+        preview: mail.preview,
+        content: mail.content,
+        mailAiRisk: mail.mailAiRisk,
+      });
+      recordGuardianTrace(guard, "client:link");
+      if (guard.decision === "block") {
         onMaliciousLinkDetected?.();
-        setLinkModal({
-          tier: "blocked",
-          url,
-          mailId,
-          reason:
-            "This message is flagged high risk. Links are blocked to protect your account.",
+        await presentGuardianIntercept({
+          kind: "click_link",
+          decision: "block",
+          result: guard,
+          detail: url,
+          onBlockedAcknowledge: () => onQuarantineMail?.(mailId),
         });
         return;
       }
-
-      if (mail.mailAiRisk === "medium") {
-        setLinkModal({
-          tier: "suspicious",
-          url,
-          mailId,
-          reason:
-            "This message is flagged medium risk. Open the destination only in the secure sandbox if you trust it.",
+      if (guard.decision === "warn") {
+        const out = await presentGuardianIntercept({
+          kind: "click_link",
+          decision: "warn",
+          result: guard,
+          detail: url,
         });
+        if (out === "cancel") return;
+        if (out === "sandbox") {
+          openLinkSandbox(url, "isolated");
+          return;
+        }
+        if (out === "proceed") {
+          openHttpUrlNormal(url);
+          return;
+        }
         return;
       }
 
@@ -260,7 +294,11 @@ export function OpenmailSecurityProvider({
       }
 
       if (tier === "safe") {
-        setLinkModal({ tier: "safe", url, mailId, reason });
+        if (secPrefs.forceSandboxLinks) {
+          setLinkModal({ tier: "safe", url, mailId, reason });
+        } else {
+          openHttpUrlNormal(url);
+        }
         return;
       }
       if (tier === "suspicious") {
@@ -270,7 +308,15 @@ export function OpenmailSecurityProvider({
       onMaliciousLinkDetected?.();
       setLinkModal({ tier: "blocked", url, mailId, reason });
     },
-    [demoMode, onMaliciousLinkDetected, secPrefs.sensitivity]
+    [
+      demoMode,
+      onMaliciousLinkDetected,
+      onQuarantineMail,
+      presentGuardianIntercept,
+      recordGuardianTrace,
+      secPrefs.forceSandboxLinks,
+      secPrefs.sensitivity,
+    ]
   );
 
   const acknowledgeBlockedLink = useCallback(() => {
@@ -293,38 +339,67 @@ export function OpenmailSecurityProvider({
   }, []);
 
   const handleAttachmentClick = useCallback(
-    async (att: MailAttachmentItem, mail: MailSecurityInput) => {
+    async (att: MailAttachmentItem, mail: MailSecurityInput, mailId: string) => {
       setAttachmentModal(null);
       setAttachmentSafeTarget(null);
 
       const blockedReason =
         "This file was blocked: possible phishing, impersonation, or an unsafe type detected by AI.";
 
-      if (mail.mailAiRisk === "high") {
-        setAttachmentModal({
-          kind: "blocked",
-          att,
-          name: att.name,
-          reason:
-            "This message is flagged high risk. Attachments are blocked until the thread is verified.",
+      const guard = guardianEvaluate("open_attachment", {
+        mailId,
+        fileName: att.name,
+        mimeType: att.mimeType,
+        attachmentRiskLevel: att.riskLevel,
+        sender: mail.sender,
+        title: mail.title,
+        subject: mail.subject,
+        preview: mail.preview,
+        content: mail.content,
+        mailAiRisk: mail.mailAiRisk,
+      });
+      recordGuardianTrace(guard, "client:attachment");
+      if (guard.decision === "block") {
+        await presentGuardianIntercept({
+          kind: "open_attachment",
+          decision: "block",
+          result: guard,
+          detail: att.name,
+          onBlockedAcknowledge: () => {
+            const id = att.id;
+            queueMicrotask(() => {
+              setBlockedAttachmentIds((prev) => new Set([...prev, id]));
+            });
+          },
         });
         return;
       }
-
-      if (mail.mailAiRisk === "medium") {
-        setAttachmentModal({
-          kind: "suspicious",
-          att,
-          name: att.name,
-          reason:
-            "This message is flagged medium risk. Open files only in isolated secure mode if you trust the sender.",
+      if (guard.decision === "warn") {
+        const out = await presentGuardianIntercept({
+          kind: "open_attachment",
+          decision: "warn",
+          result: guard,
+          detail: att.name,
         });
+        if (out === "cancel") return;
+        if (out === "sandbox") {
+          openSecureFileMode(att.name, "isolated", att.mimeType);
+          return;
+        }
+        if (out === "proceed") {
+          openSecureFileMode(att.name, "normal", att.mimeType);
+          return;
+        }
         return;
       }
 
       if (att.riskLevel) {
         if (att.riskLevel === "safe") {
-          setAttachmentSafeTarget({ name: att.name, mimeType: att.mimeType });
+          if (secPrefs.forceSandboxLinks) {
+            setAttachmentSafeTarget({ name: att.name, mimeType: att.mimeType });
+          } else {
+            openSecureFileMode(att.name, "normal", att.mimeType);
+          }
           return;
         }
         if (att.riskLevel === "suspicious") {
@@ -367,7 +442,11 @@ export function OpenmailSecurityProvider({
         if (!mountedRef.current) return;
         setScanningFile(null);
         if (result.verdict === "safe") {
-          setAttachmentSafeTarget({ name: att.name, mimeType: att.mimeType });
+          if (secPrefs.forceSandboxLinks) {
+            setAttachmentSafeTarget({ name: att.name, mimeType: att.mimeType });
+          } else {
+            openSecureFileMode(att.name, "normal", att.mimeType);
+          }
         } else if (result.verdict === "suspicious") {
           if (secPrefs.blockRiskyAttachments) {
             setAttachmentModal({
@@ -400,7 +479,12 @@ export function OpenmailSecurityProvider({
         if (mountedRef.current) setAnalyzingId(null);
       }
     },
-    [secPrefs.blockRiskyAttachments]
+    [
+      presentGuardianIntercept,
+      recordGuardianTrace,
+      secPrefs.blockRiskyAttachments,
+      secPrefs.forceSandboxLinks,
+    ]
   );
 
   const isAttachmentBlocked = useCallback(
@@ -449,12 +533,12 @@ export function OpenmailSecurityProvider({
           open: true,
           variant: "risk",
           severity: "suspicious",
-          title: "Suspicious file",
+          title: "Sandbox only",
           reason: attachmentModal.reason,
           detail: attachmentModal.name,
           role: "alertdialog",
           primaryAction: {
-            label: "Open in secure mode",
+            label: "Open in sandbox",
             onClick: () => {
               openSecureFileMode(
                 attachmentModal.name,
@@ -478,7 +562,7 @@ export function OpenmailSecurityProvider({
           open: true,
           variant: "risk",
           severity: "dangerous",
-          title: "File blocked",
+          title: "Blocked for security",
           reason: attachmentModal.reason,
           detail: attachmentModal.name,
           role: "alertdialog",

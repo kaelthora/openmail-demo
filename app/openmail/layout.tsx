@@ -1,4 +1,9 @@
+import { GuardianInterceptProvider } from "./GuardianInterceptProvider";
+import { GuardianTraceProvider } from "./GuardianTraceProvider";
 import MailStoreProvider from "./MailStoreProvider";
+import { SmartNotificationsProvider } from "./SmartNotificationsProvider";
+import { AttentionEngineProvider } from "./AttentionEngineProvider";
+import { UserBehaviorProvider } from "./UserBehaviorProvider";
 import { OpenmailPreferencesProvider } from "./OpenmailPreferencesProvider";
 import { OpenmailSecurityProvider } from "./OpenmailSecurityProvider";
 import { OpenmailThemeProvider } from "./OpenmailThemeProvider";
@@ -10,13 +15,23 @@ export default function OpenMailLayout({
   return (
     <OpenmailThemeProvider>
       <OpenmailPreferencesProvider>
-        <MailStoreProvider>
-          <OpenmailToastProvider>
-            <OpenmailSecurityProvider demoMode>
-              {children}
-            </OpenmailSecurityProvider>
-          </OpenmailToastProvider>
-        </MailStoreProvider>
+        <UserBehaviorProvider>
+          <GuardianTraceProvider>
+            <GuardianInterceptProvider>
+              <MailStoreProvider>
+                <SmartNotificationsProvider>
+                  <AttentionEngineProvider>
+                    <OpenmailToastProvider>
+                      <OpenmailSecurityProvider demoMode>
+                        {children}
+                      </OpenmailSecurityProvider>
+                    </OpenmailToastProvider>
+                  </AttentionEngineProvider>
+                </SmartNotificationsProvider>
+              </MailStoreProvider>
+            </GuardianInterceptProvider>
+          </GuardianTraceProvider>
+        </UserBehaviorProvider>
       </OpenmailPreferencesProvider>
     </OpenmailThemeProvider>
   );

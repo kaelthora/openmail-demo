@@ -7,14 +7,16 @@ export type ComposeEmailDraft = {
   cc: string;
   subject: string;
   body: string;
+  aiAssist: boolean;
+  tone: "Professional" | "Friendly" | "Direct" | "Short";
   attachmentLabels: string[];
 };
 
 type ComposeEmailModalProps = {
   open: boolean;
   onClose: () => void;
-  /** Mock send — no network; parent may show toast */
-  onSend?: (draft: ComposeEmailDraft) => void;
+  /** If this rejects, the dialog stays open so the user can fix and retry. */
+  onSend?: (draft: ComposeEmailDraft) => void | Promise<void>;
 };
 
 const inputClass =
@@ -28,6 +30,8 @@ function initialDraft(): ComposeEmailDraft {
     cc: "",
     subject: "",
     body: "",
+    aiAssist: true,
+    tone: "Professional",
     attachmentLabels: [],
   };
 }
@@ -59,10 +63,20 @@ export function ComposeEmailModal({ open, onClose, onSend }: ComposeEmailModalPr
     reset();
   }, [open, reset]);
 
-  const handleSend = () => {
-    onSend?.(draft);
-    reset();
-    onClose();
+  const [sending, setSending] = useState(false);
+
+  const handleSend = async () => {
+    if (!onSend || sending) return;
+    setSending(true);
+    try {
+      await onSend(draft);
+      reset();
+      onClose();
+    } catch {
+      /* parent toasts / logs; keep draft */
+    } finally {
+      setSending(false);
+    }
   };
 
   const addMockAttachment = () => {
@@ -169,6 +183,51 @@ export function ComposeEmailModal({ open, onClose, onSend }: ComposeEmailModalPr
                 onChange={(e) => setDraft((d) => ({ ...d, body: e.target.value }))}
               />
             </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <span className={labelClass}>AI assist</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={draft.aiAssist}
+                  className={`relative h-8 w-14 rounded-full border transition-colors ${
+                    draft.aiAssist
+                      ? "border-[var(--accent)]/50 bg-[var(--accent-soft)]"
+                      : "border-white/[0.1] bg-[#141414]"
+                  }`}
+                  onClick={() =>
+                    setDraft((d) => ({ ...d, aiAssist: !d.aiAssist }))
+                  }
+                >
+                  <span
+                    className={`absolute top-0.5 h-6 w-6 rounded-full bg-[var(--text-main)] shadow transition-transform ${
+                      draft.aiAssist ? "translate-x-7" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div>
+                <label htmlFor="compose-tone" className={labelClass}>
+                  Tone
+                </label>
+                <select
+                  id="compose-tone"
+                  className={inputClass}
+                  value={draft.tone}
+                  onChange={(e) =>
+                    setDraft((d) => ({
+                      ...d,
+                      tone: e.target.value as ComposeEmailDraft["tone"],
+                    }))
+                  }
+                >
+                  <option value="Professional">Professional</option>
+                  <option value="Friendly">Friendly</option>
+                  <option value="Direct">Direct</option>
+                  <option value="Short">Short</option>
+                </select>
+              </div>
+            </div>
 
             <div>
               <span className={labelClass}>Attachments</span>
@@ -216,10 +275,12 @@ export function ComposeEmailModal({ open, onClose, onSend }: ComposeEmailModalPr
           </button>
           <button
             type="button"
-            className="rounded-[10px] border border-[var(--accent)]/45 bg-[var(--accent)]/12 px-4 py-2 text-xs font-semibold text-[var(--text-main)] shadow-[0_0_20px_var(--openmail-shadow-accent-xs)] transition-[background-color,border-color] hover:border-[var(--accent)]/65 hover:bg-[var(--accent)]/20"
+            className="rounded-[10px] border border-[var(--accent)]/45 bg-[var(--accent)]/12 px-4 py-2 text-xs font-semibold text-[var(--text-main)] shadow-[0_0_20px_var(--openmail-shadow-accent-xs)] transition-[background-color,border-color] hover:border-[var(--accent)]/65 hover:bg-[var(--accent)]/20 disabled:pointer-events-none disabled:opacity-50"
             onClick={handleSend}
+            disabled={sending}
+            aria-busy={sending}
           >
-            Send
+            {sending ? "Sending…" : "Send"}
           </button>
         </footer>
       </div>

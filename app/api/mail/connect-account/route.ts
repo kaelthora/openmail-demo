@@ -6,6 +6,7 @@ import {
   type OpenMailAccountProfile,
   type MailTransportSecurity,
 } from "@/lib/mailAccountConfig";
+import { guardImapFlowClient, imapMailboxOpenOptions } from "@/lib/imapReadOnly";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -105,22 +106,24 @@ async function verifyImap(account: OpenMailAccountProfile) {
     security: account.imap.security,
     username: account.imap.username,
   });
-  const client = new ImapFlow({
-    host: account.imap.host.trim(),
-    port: account.imap.port,
-    secure: account.imap.security === "ssl",
-    connectionTimeout: 10000,
-    socketTimeout: 10000,
-    tls: account.imap.security === "tls" ? {} : undefined,
-    logger: false,
-    auth: {
-      user: account.imap.username.trim(),
-      pass: account.imap.password,
-    },
-  });
+  const client = guardImapFlowClient(
+    new ImapFlow({
+      host: account.imap.host.trim(),
+      port: account.imap.port,
+      secure: account.imap.security === "ssl",
+      connectionTimeout: 10000,
+      socketTimeout: 10000,
+      tls: account.imap.security === "tls" ? {} : undefined,
+      logger: false,
+      auth: {
+        user: account.imap.username.trim(),
+        pass: account.imap.password,
+      },
+    })
+  );
   try {
     await client.connect();
-    await client.mailboxOpen("INBOX");
+    await client.mailboxOpen("INBOX", imapMailboxOpenOptions());
   } finally {
     try {
       await client.logout();

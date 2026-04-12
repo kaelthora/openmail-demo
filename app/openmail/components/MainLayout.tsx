@@ -1,23 +1,35 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import type { ProcessedMail } from "@/lib/mailTypes";
+import { useCallback, useRef, useState } from "react";
+import type { OpenmailSidebarFolderId } from "@/lib/openmailNavFolders";
+import type { OpenmailSmartFolderId, ProcessedMail } from "@/lib/mailTypes";
 import type { ServerInboxScope, ServerMailAccountSummary } from "@/lib/serverInboxTypes";
-import type { ReplyState, ReplyTone } from "./types";
+import type { TimeCompressionPanelProps } from "@/lib/openmailTimeCompression";
+import type { SettingsSection } from "@/lib/openmailSettingsPrefs";
+import type { GuardianAutoResponseMode } from "@/lib/guardianAutoResponse";
+import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
+import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
 import { ComposeEmailModal, type ComposeEmailDraft } from "./ComposeEmailModal";
 import { OpenmailSettingsPanel } from "./OpenmailSettingsPanel";
 import { Sidebar } from "./Sidebar";
-import { MailPanel } from "./MailPanel";
+import { MailPanel, type AutoResolvedMailboxEntry } from "./MailPanel";
 import { AIPanel } from "./AIPanel";
 import { OpenMailTopNav } from "./OpenMailTopNav";
+export type { CoreRecommendedAction } from "./types";
 
 type MainLayoutProps = {
-  navCenterTitle?: string | null;
-  onNavSearch?: () => void;
-  activeFolder: "inbox" | "sent" | "drafts";
-  onFolderChange: (folder: "inbox" | "sent" | "drafts") => void;
-  sidebarRefreshInbox?: () => void | Promise<void>;
-  sidebarInboxRefreshing?: boolean;
+  /** Shown in top bar as account identity + breadcrumb. */
+  navAccountIdentity: string;
+  navProfilePrimary: string;
+  navProfileSecondary?: string | null;
+  activeFolder: OpenmailSidebarFolderId;
+  onFolderChange: (folder: OpenmailSidebarFolderId) => void;
+  customFolders?: string[];
+  onAddCustomFolder?: (name: string) => void;
+  onRenameCustomFolder?: (oldName: string, newName: string) => void;
+  onDeleteCustomFolder?: (name: string) => void;
+  activeInboxSubfolder?: string | null;
+  onSelectInboxSubfolder?: (name: string | null) => void;
   sidebarImapSync?: () => void | Promise<void>;
   sidebarImapSyncing?: boolean;
   sidebarAccountConnected?: boolean;
@@ -45,9 +57,22 @@ type MainLayoutProps = {
   inboxRefreshing?: boolean;
   showInboxRefresh?: boolean;
   actionLabel: string;
-  coreSummary: string;
-  primaryActionLabel: string;
-  onPrimaryAction: () => void;
+  onProceed: () => void | Promise<void>;
+  proceedBusy?: boolean;
+  onApplyTopSuggestion?: () => void;
+  onCoreIgnore?: () => void;
+  onCoreEscalate?: () => void;
+  onCoreReplyWithSuggestion?: () => void;
+  onRiskBlockSender?: () => void | Promise<void>;
+  onRiskReportPhishing?: () => void | Promise<void>;
+  onRiskOpenSandbox?: () => void | Promise<void>;
+  onRiskMarkSafe?: () => void | Promise<void>;
+  /** High-risk Decision Engine primary: block sender + report phishing in one step. */
+  onDecisionBlockAndReport?: () => void | Promise<void>;
+  /** Safe / medium secondary: archive message (Ignore or Archive label in UI). */
+  onDecisionArchive?: () => void | Promise<void>;
+  riskActionBusy?: "block" | "phishing" | "sandbox" | "safe" | null;
+  recommendedCoreAction?: CoreRecommendedAction | null;
   replyState: ReplyState;
   onReplyChange: (text: string) => void;
   onSelectSuggestion: (index: number) => void;
@@ -57,17 +82,56 @@ type MainLayoutProps = {
   sending: boolean;
   sendError: string | null;
   sendSuccess: string | null;
-  /** Mock composer send (no backend) */
-  onComposeSent?: (draft: ComposeEmailDraft) => void;
+  onGenerateAiReply?: (opts?: { suggestionIndex?: number }) => Promise<void>;
+  /** Fills the reply draft from Guardian-approved / fetched text; never sends. */
+  onGuardianAssistDraft?: () => void | Promise<void>;
+  aiReplyLoading?: boolean;
+  guardianDraftLoading?: boolean;
+  guardianAutoResponseMode?: GuardianAutoResponseMode;
+  guardianAutoResponseEnabled?: boolean;
+  /** Composer send — may POST `/api/emails/send`; reject to keep draft open. */
+  onComposeSent?: (draft: ComposeEmailDraft) => void | Promise<void>;
+  onReadingArchive?: (mailId: string) => void;
+  onReadingDelete?: (mailId: string) => void;
+  onHoverPrefetchMail?: (mailId: string | null) => void;
+  autoResolvedEntries?: AutoResolvedMailboxEntry[];
+  onUndoAutoResolved?: (entry: AutoResolvedMailboxEntry) => void;
+  /** Inbox: time estimate + batch resolve all (high-confidence auto-resolve). */
+  timeCompression?: TimeCompressionPanelProps;
+  quickClassifyPrompt?: {
+    mailId: string;
+    open: boolean;
+    suggestedFolder: OpenmailSmartFolderId;
+    folderLabel: string;
+    confidencePct: number;
+    onConfirm: () => void;
+    onAlwaysApply: () => void;
+    onPickFolder: (folder: OpenmailSmartFolderId) => void;
+    onDismiss: () => void;
+  };
+  listToolbar?: {
+    onRefresh: () => void;
+    refreshBusy?: boolean;
+    onMarkRead: () => void;
+    onDelete: () => void;
+    onMove: (folder: OpenmailSmartFolderId) => void;
+    onArchive: () => void;
+    onSpam: () => void;
+  } | null;
 };
 
 export function MainLayout({
-  navCenterTitle,
-  onNavSearch,
+  navAccountIdentity,
+  navProfilePrimary,
+  navProfileSecondary,
   activeFolder,
   onFolderChange,
-  sidebarRefreshInbox,
-  sidebarInboxRefreshing = false,
+  customFolders = [],
+  onAddCustomFolder,
+  onRenameCustomFolder,
+  onDeleteCustomFolder,
+  activeInboxSubfolder = null,
+  onSelectInboxSubfolder,
   sidebarImapSync,
   sidebarImapSyncing = false,
   sidebarAccountConnected = false,
@@ -94,9 +158,20 @@ export function MainLayout({
   inboxRefreshing = false,
   showInboxRefresh = false,
   actionLabel,
-  coreSummary,
-  primaryActionLabel,
-  onPrimaryAction,
+  onProceed,
+  proceedBusy = false,
+  onApplyTopSuggestion,
+  onCoreIgnore,
+  onCoreEscalate,
+  onCoreReplyWithSuggestion,
+  onRiskBlockSender,
+  onRiskReportPhishing,
+  onRiskOpenSandbox,
+  onRiskMarkSafe,
+  onDecisionBlockAndReport,
+  onDecisionArchive,
+  riskActionBusy = null,
+  recommendedCoreAction = null,
   replyState,
   onReplyChange,
   onSelectSuggestion,
@@ -106,30 +181,68 @@ export function MainLayout({
   sending,
   sendError,
   sendSuccess,
+  onGenerateAiReply,
+  onGuardianAssistDraft,
+  aiReplyLoading = false,
+  guardianDraftLoading = false,
+  guardianAutoResponseMode = "require_validation",
+  guardianAutoResponseEnabled = false,
   onComposeSent,
+  onReadingArchive,
+  onReadingDelete,
+  onHoverPrefetchMail,
+  autoResolvedEntries,
+  onUndoAutoResolved,
+  timeCompression,
+  quickClassifyPrompt,
+  listToolbar = null,
 }: MainLayoutProps) {
+  const prefs = useOpenmailPreferences();
+  const listSearchInputRef = useRef<HTMLInputElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const toggleSidebar = useCallback(() => setSidebarOpen((o) => !o), []);
   const [composeOpen, setComposeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  const openSettingsSection = useCallback(
+    (section: SettingsSection) => {
+      prefs.setActiveSection(section);
+      setSettingsOpen(true);
+    },
+    [prefs]
+  );
+
+  const focusListSearch = useCallback(() => {
+    const el = listSearchInputRef.current;
+    if (!el) return;
+    el.focus();
+    el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, []);
+
   return (
     <div className="openmail-app flex h-screen flex-col bg-[var(--bg-main)] text-[var(--text-main)]">
       <OpenMailTopNav
-        centerTitle={navCenterTitle}
+        accountIdentity={navAccountIdentity}
+        folderLabel={folderLabel}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={toggleSidebar}
-        onNewEmail={() => setComposeOpen(true)}
-        onSearchClick={onNavSearch}
-        onSettingsClick={() => setSettingsOpen(true)}
+        onFocusSearch={focusListSearch}
+        onSettingsPanelOpen={() => setSettingsOpen(true)}
+        profilePrimary={navProfilePrimary}
+        profileSecondary={navProfileSecondary}
       />
-      <div className="flex min-h-0 flex-1 gap-[var(--openmail-layout-gap,1rem)] px-4 pb-4 pt-3">
+      <div className="flex min-h-0 flex-1 gap-[var(--openmail-layout-gap,1.25rem)] px-5 pb-6 pt-4">
         {sidebarOpen ? (
           <Sidebar
             activeFolder={activeFolder}
             onFolderChange={onFolderChange}
-            onRefreshInbox={sidebarRefreshInbox}
-            inboxRefreshing={sidebarInboxRefreshing}
+            customFolders={customFolders}
+            onAddCustomFolder={onAddCustomFolder}
+            onRenameCustomFolder={onRenameCustomFolder}
+            onDeleteCustomFolder={onDeleteCustomFolder}
+            activeInboxSubfolder={activeInboxSubfolder}
+            onSelectInboxSubfolder={onSelectInboxSubfolder}
+            onCompose={() => setComposeOpen(true)}
             onImapSync={sidebarImapSync}
             imapSyncing={sidebarImapSyncing}
             accountConnected={sidebarAccountConnected}
@@ -139,7 +252,7 @@ export function MainLayout({
             onInboxScopeChange={onSidebarInboxScopeChange}
           />
         ) : null}
-        <div className="flex min-h-0 min-w-0 flex-1 gap-4">
+        <div className="flex min-h-0 min-w-0 flex-1 gap-5">
           <MailPanel
             mails={mails}
             selectedMail={selectedMail}
@@ -159,13 +272,34 @@ export function MainLayout({
             onRefreshInbox={onRefreshInbox}
             inboxRefreshing={inboxRefreshing}
             showInboxRefresh={showInboxRefresh}
+            listSearchInputRef={listSearchInputRef}
+            onReadingArchive={onReadingArchive}
+            onReadingDelete={onReadingDelete}
+            onHoverPrefetchMail={onHoverPrefetchMail}
+            autoResolvedEntries={autoResolvedEntries}
+            onUndoAutoResolved={onUndoAutoResolved}
+            timeCompression={timeCompression}
+            smartFilingPrompt={quickClassifyPrompt ?? null}
+            listToolbar={listToolbar}
           />
           <AIPanel
             selectedMail={selectedMail}
+            readingMailId={readingMailId}
             actionLabel={actionLabel}
-            coreSummary={coreSummary}
-            primaryActionLabel={primaryActionLabel}
-            onPrimaryAction={onPrimaryAction}
+            onProceed={onProceed}
+            proceedBusy={proceedBusy}
+            onApplyTopSuggestion={onApplyTopSuggestion}
+            onCoreIgnore={onCoreIgnore}
+            onCoreEscalate={onCoreEscalate}
+            onCoreReplyWithSuggestion={onCoreReplyWithSuggestion}
+            onRiskBlockSender={onRiskBlockSender}
+            onRiskReportPhishing={onRiskReportPhishing}
+            onRiskOpenSandbox={onRiskOpenSandbox}
+            onRiskMarkSafe={onRiskMarkSafe}
+            onDecisionBlockAndReport={onDecisionBlockAndReport}
+            onDecisionArchive={onDecisionArchive}
+            riskActionBusy={riskActionBusy}
+            recommendedCoreAction={recommendedCoreAction}
             replyState={replyState}
             onReplyChange={onReplyChange}
             onSelectSuggestion={onSelectSuggestion}
@@ -175,6 +309,12 @@ export function MainLayout({
             sending={sending}
             sendError={sendError}
             sendSuccess={sendSuccess}
+            onGenerateAiReply={onGenerateAiReply}
+            onGuardianAssistDraft={onGuardianAssistDraft}
+            aiReplyLoading={aiReplyLoading}
+            guardianDraftLoading={guardianDraftLoading}
+            guardianAutoResponseMode={guardianAutoResponseMode}
+            guardianAutoResponseEnabled={guardianAutoResponseEnabled}
           />
         </div>
       </div>

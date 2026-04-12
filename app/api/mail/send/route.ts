@@ -6,6 +6,9 @@ import {
   type OpenMailAccountProfile,
   isAccountConfigured,
 } from "@/lib/mailAccountConfig";
+import { guardImapFlowClient, IMAP_READ_ONLY } from "@/lib/imapReadOnly";
+import { guardianEvaluate } from "@/lib/guardianEngine";
+import { recordGuardianTraceDev } from "@/lib/guardianTrace";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +20,7 @@ type SendBody = {
   text?: string;
   inReplyTo?: string;
   references?: string;
+  guardianWarnAcknowledged?: boolean;
 };
 
 type MailboxListEntry = {
@@ -85,19 +89,21 @@ async function appendToSentMailbox(
   account: OpenMailAccountProfile,
   raw: Buffer
 ) {
-  const client = new ImapFlow({
-    host: account.imap.host.trim(),
-    port: account.imap.port,
-    secure: account.imap.security === "ssl",
-    tls: account.imap.security === "tls" ? {} : undefined,
-    auth: {
-      user: account.imap.username.trim(),
-      pass: account.imap.password,
-    },
-    logger: false,
-    connectionTimeout: 10000,
-    socketTimeout: 10000,
-  });
+  const client = guardImapFlowClient(
+    new ImapFlow({
+      host: account.imap.host.trim(),
+      port: account.imap.port,
+      secure: account.imap.security === "ssl",
+      tls: account.imap.security === "tls" ? {} : undefined,
+      auth: {
+        user: account.imap.username.trim(),
+        pass: account.imap.password,
+      },
+      logger: false,
+      connectionTimeout: 10000,
+      socketTimeout: 10000,
+    })
+  );
 
   try {
     await client.connect();
@@ -141,6 +147,46 @@ export async function POST(request: Request) {
 
   const subj = subject?.trim() || "(no subject)";
   const bodyText = text ?? "";
+
+  const gSend = guardianEvaluate("send_email", {
+    to: toAddr,
+    subject: subj,
+    body: bodyText,
+  });
+  recordGuardianTraceDev(gSend, "server:legacy_send");
+  const warnAck = body.guardianWarnAcknowledged === true;
+
+  if (gSend.decision === "block") {
+    return NextResponse.json(
+      {
+        error: gSend.reason,
+        guardian: {
+          decision: gSend.decision,
+          rule: gSend.rule,
+          riskLevel: gSend.riskLevel,
+          requiresExplicitUserConsent: gSend.requiresExplicitUserConsent,
+          criticalBlock: gSend.criticalBlock,
+        },
+      },
+      { status: 403 }
+    );
+  }
+
+  if (gSend.decision === "warn" && !warnAck) {
+    return NextResponse.json(
+      {
+        error: gSend.reason,
+        guardian: {
+          decision: gSend.decision,
+          rule: gSend.rule,
+          riskLevel: gSend.riskLevel,
+          requiresExplicitUserConsent: true,
+          criticalBlock: false,
+        },
+      },
+      { status: 403 }
+    );
+  }
 
   const smtp = account.smtp;
   const secure = smtp.security === "ssl";
@@ -190,7 +236,7 @@ export async function POST(request: Request) {
       console.warn("[mail/send] Could not append to IMAP sent folder", appendError);
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, imapReadOnly: IMAP_READ_ONLY });
   } catch (e) {
     const message = e instanceof Error ? e.message : "SMTP send failed";
     return NextResponse.json({ error: message }, { status: 502 });

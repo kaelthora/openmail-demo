@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import type { EmailAttachmentRow, EmailListItem } from "@/lib/emailListTypes";
+import { resolveMailIsoDateString } from "@/lib/mailDateIso";
 function parseSuggestions(value: unknown): string[] | null {
   if (value == null) return null;
   if (!Array.isArray(value)) return null;
@@ -34,7 +35,6 @@ type EmailApiRow = {
   subject: string | null;
   mailFrom: string | null;
   body: string | null;
-  bodyHtml: string | null;
   attachments: unknown;
   date: Date | null;
   risk: string | null;
@@ -42,6 +42,9 @@ type EmailApiRow = {
   action: string | null;
   reason: string | null;
   suggestions: unknown;
+  intent: string | null;
+  intentUrgency: string | null;
+  intentConfidence: number | null;
   createdAt: Date;
   accountId: string | null;
 };
@@ -49,17 +52,15 @@ type EmailApiRow = {
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const accountIdParam = url.searchParams.get("accountId");
-    const legacy =
-      url.searchParams.get("legacy") === "1" ||
-      url.searchParams.get("legacy") === "true";
+    const legacy = url.searchParams.get("legacy") === "1";
+    const scopeId = url.searchParams.get("accountId")?.trim();
 
-    let where: { accountId: string | null } | { accountId: string } | undefined;
-    if (legacy) {
-      where = { accountId: null };
-    } else if (accountIdParam?.trim()) {
-      where = { accountId: accountIdParam.trim() };
-    }
+    const where =
+      scopeId && scopeId.length > 0
+        ? { accountId: scopeId }
+        : legacy
+          ? { accountId: null }
+          : undefined;
 
     const rowsRaw = await prisma.email.findMany({
       where,
@@ -70,7 +71,6 @@ export async function GET(request: Request) {
         subject: true,
         mailFrom: true,
         body: true,
-        bodyHtml: true,
         attachments: true,
         date: true,
         risk: true,
@@ -78,6 +78,9 @@ export async function GET(request: Request) {
         action: true,
         reason: true,
         suggestions: true,
+        intent: true,
+        intentUrgency: true,
+        intentConfidence: true,
         createdAt: true,
         accountId: true,
       },
@@ -89,15 +92,21 @@ export async function GET(request: Request) {
       id: r.id,
       subject: r.subject,
       from: r.mailFrom,
-      date: r.date?.toISOString() ?? null,
+      date: resolveMailIsoDateString(r.date, r.createdAt),
       body: r.body,
-      bodyHtml: r.bodyHtml,
+      bodyHtml: null,
       attachments: parseAttachments(r.attachments),
       risk: r.risk,
       summary: r.summary,
       action: r.action,
       reason: r.reason,
       suggestions: parseSuggestions(r.suggestions),
+      intent: r.intent,
+      intentUrgency: r.intentUrgency,
+      intentConfidence:
+        typeof r.intentConfidence === "number" && Number.isFinite(r.intentConfidence)
+          ? r.intentConfidence
+          : null,
       createdAt: r.createdAt.toISOString(),
       accountId: r.accountId ?? null,
     }));

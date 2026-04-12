@@ -1,15 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type OpenMailTopNavProps = {
-  centerTitle?: string | null;
-  onSearchClick?: () => void;
-  onSettingsClick?: () => void;
-  /** Folders column visibility */
+  /** Mailbox / session label (email or legacy env). */
+  accountIdentity: string;
+  /** Current folder: Inbox, Sent, Drafts. */
+  folderLabel: string;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
-  onNewEmail: () => void;
+  onFocusSearch: () => void;
+  onSettingsPanelOpen: () => void;
+  profilePrimary: string;
+  profileSecondary?: string | null;
 };
 
 function IconMenu({ className }: { className?: string }) {
@@ -58,34 +61,63 @@ function IconSettings({ className }: { className?: string }) {
   );
 }
 
+function IconUser({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M6.5 19.25c0-3.04 2.46-5.5 5.5-5.5s5.5 2.46 5.5 5.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 const navIconBtn =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--text-soft)] transition-colors duration-200 hover:bg-white/[0.06] hover:text-[var(--text-main)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/20";
 
-const menuItemClass =
-  "flex w-full items-center rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-[var(--text-main)] transition-colors hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/20";
+function accountAvatarInitials(identity: string): string {
+  const t = identity.trim();
+  if (!t) return "?";
+  if (t.includes("@")) {
+    const local = t.split("@")[0] ?? "";
+    const a = (local.match(/[a-zA-Z0-9]/g) ?? []).slice(0, 2).join("");
+    return a.toUpperCase() || "?";
+  }
+  const letters = t.replace(/[^a-zA-Z0-9]/g, "").slice(0, 2);
+  return letters.toUpperCase() || t.slice(0, 2).toUpperCase();
+}
 
 export function OpenMailTopNav({
-  centerTitle,
-  onSearchClick,
-  onSettingsClick,
+  accountIdentity,
+  folderLabel,
   sidebarOpen,
   onToggleSidebar,
-  onNewEmail,
+  onFocusSearch,
+  onSettingsPanelOpen,
+  profilePrimary,
+  profileSecondary,
 }: OpenMailTopNavProps) {
-  const title = centerTitle?.trim() ?? "";
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuWrapRef = useRef<HTMLDivElement>(null);
-
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const identity = accountIdentity.trim() || "OpenMail";
+  const folder = folderLabel.trim() || "Inbox";
+  const initials = useMemo(() => accountAvatarInitials(identity), [identity]);
+  const profileInitials = useMemo(
+    () => accountAvatarInitials(profilePrimary.trim() || identity),
+    [profilePrimary, identity]
+  );
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!profileOpen) return;
     const onDoc = (e: MouseEvent) => {
-      const el = menuWrapRef.current;
-      if (el && !el.contains(e.target as Node)) closeMenu();
+      const el = profileWrapRef.current;
+      if (el && !el.contains(e.target as Node)) setProfileOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeMenu();
+      if (e.key === "Escape") setProfileOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
@@ -93,73 +125,63 @@ export function OpenMailTopNav({
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
-  }, [menuOpen, closeMenu]);
+  }, [profileOpen]);
 
   return (
     <header
-      className="openmail-topnav relative z-10 flex h-12 shrink-0 items-stretch border-b border-white/[0.06] bg-[rgba(10,10,10,0.6)] backdrop-blur-md [-webkit-backdrop-filter:blur(12px)]"
+      className="openmail-topnav relative z-10 flex min-h-[52px] shrink-0 items-stretch border-b border-white/[0.06] bg-[color:var(--openmail-topnav-bg)] backdrop-blur-md [-webkit-backdrop-filter:blur(12px)]"
       role="banner"
     >
-      <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center px-3 sm:px-4">
-        <div ref={menuWrapRef} className="relative flex min-w-0 items-center gap-3">
+      <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-1.5 sm:px-4">
+        <div className="flex min-w-0 items-center">
           <button
             type="button"
             className={navIconBtn}
-            aria-label="Menu"
-            aria-expanded={menuOpen}
-            aria-haspopup="menu"
-            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={sidebarOpen ? "Hide folder list" : "Show folder list"}
+            aria-pressed={sidebarOpen}
+            onClick={() => {
+              setProfileOpen(false);
+              onToggleSidebar();
+            }}
           >
             <IconMenu className="h-[18px] w-[18px]" />
           </button>
-          {menuOpen ? (
+        </div>
+
+        <div className="flex min-h-0 max-w-[min(58vw,440px)] min-w-0 flex-col items-center justify-center px-2">
+          <div className="flex max-w-full items-center gap-2.5">
             <div
-              role="menu"
-              className="absolute left-0 top-[calc(100%+6px)] z-[60] min-w-[200px] rounded-xl border border-white/[0.08] bg-[#111111] py-1 shadow-[0_16px_48px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)]"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--accent)]/35 bg-gradient-to-br from-[var(--accent-soft)]/90 to-[#1a1a1e] text-[11px] font-bold tracking-tight text-[var(--text-main)] shadow-[0_0_20px_var(--accent-soft),0_0_1px_rgba(255,255,255,0.08)]"
+              aria-hidden
             >
-              <button
-                type="button"
-                role="menuitem"
-                className={menuItemClass}
-                onClick={() => {
-                  onNewEmail();
-                  closeMenu();
-                }}
-              >
-                New email
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                className={menuItemClass}
-                onClick={() => {
-                  onToggleSidebar();
-                  closeMenu();
-                }}
-              >
-                {sidebarOpen ? "Hide folders" : "Show folders"}
-              </button>
+              {initials.length >= 2 ? (
+                initials
+              ) : (
+                <IconUser className="h-[17px] w-[17px] text-[var(--text-main)]/90" />
+              )}
             </div>
-          ) : null}
-          <span className="select-none text-[13px] font-medium tracking-[0.02em] text-[var(--text-soft)] [text-shadow:0_0_20px_rgba(255,255,255,0.12),0_0_40px_rgba(255,255,255,0.04)]">
-            OpenMail
-          </span>
+            <p
+              className="min-w-0 truncate text-left text-[13px] font-semibold leading-snug tracking-tight text-[var(--text-main)]"
+              title={`${identity} · ${folder}`}
+            >
+              <span className="text-[var(--text-main)]">{identity}</span>
+              <span className="mx-1.5 text-[color:var(--text-soft)]/70" aria-hidden>
+                •
+              </span>
+              <span className="font-medium text-[color:var(--text-soft)]">{folder}</span>
+            </p>
+          </div>
         </div>
 
-        <div className="flex min-h-0 justify-center px-2">
-          {title ? (
-            <span className="max-w-[40vw] truncate text-center text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--text-soft)]/70">
-              {title}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="flex items-center justify-end gap-0.5">
+        <div className="flex min-w-0 items-center justify-end gap-0.5">
           <button
             type="button"
             className={navIconBtn}
-            aria-label="Search"
-            onClick={onSearchClick}
+            aria-label="Search mails"
+            onClick={() => {
+              setProfileOpen(false);
+              onFocusSearch();
+            }}
           >
             <IconSearch className="h-[18px] w-[18px]" />
           </button>
@@ -167,17 +189,48 @@ export function OpenMailTopNav({
             type="button"
             className={navIconBtn}
             aria-label="Settings"
-            onClick={onSettingsClick}
+            onClick={() => {
+              setProfileOpen(false);
+              onSettingsPanelOpen();
+            }}
           >
             <IconSettings className="h-[18px] w-[18px]" />
           </button>
-          <button
-            type="button"
-            className="ml-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.06] bg-white/[0.05] text-[10px] font-medium text-[var(--text-soft)] transition-colors duration-200 hover:border-white/[0.1] hover:bg-white/[0.08] hover:text-[var(--text-main)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/20"
-            aria-label="Account"
-          >
-            <span className="opacity-80">?</span>
-          </button>
+
+          <div ref={profileWrapRef} className="relative ml-0.5">
+            <button
+              type="button"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--accent)]/30 bg-gradient-to-br from-[var(--accent-soft)]/80 to-white/[0.05] text-[10px] font-bold tracking-tight text-[var(--text-main)] shadow-[0_0_16px_var(--accent-soft)] transition-colors duration-200 hover:border-[var(--accent)]/45 hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/20"
+              aria-label="Account"
+              aria-expanded={profileOpen}
+              aria-haspopup="dialog"
+              onClick={() => {
+                setProfileOpen((o) => !o);
+              }}
+            >
+              {profileInitials.length >= 2 ? (
+                profileInitials
+              ) : (
+                <IconUser className="h-[17px] w-[17px] text-[var(--text-soft)]" />
+              )}
+            </button>
+            {profileOpen ? (
+              <div
+                role="dialog"
+                aria-label="Signed-in account"
+                className="openmail-nav-popover absolute right-0 top-[calc(100%+6px)] z-[60] w-[min(280px,calc(100vw-24px))] rounded-xl border border-white/[0.08] bg-[color:var(--openmail-nav-popover-bg)] px-3 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)]"
+              >
+                <p className="truncate text-[13px] font-semibold text-[var(--text-main)]">
+                  {profilePrimary}
+                </p>
+                {profileSecondary?.trim() ? (
+                  <p className="mt-0.5 truncate text-[11px] text-[color:var(--text-soft)]">
+                    {profileSecondary.trim()}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </header>

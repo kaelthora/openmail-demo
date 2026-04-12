@@ -26,12 +26,7 @@ const OpenmailThemeContext = createContext<OpenmailThemeContextValue | null>(
 );
 
 function applyThemeToDocument(theme: OpenmailUiTheme): void {
-  const root = document.documentElement;
-  if (theme === "soft-dark") {
-    root.setAttribute("data-openmail-theme", "soft-dark");
-  } else {
-    root.removeAttribute("data-openmail-theme");
-  }
+  document.documentElement.setAttribute("data-openmail-theme", theme);
 }
 
 function readStoredTheme(): OpenmailUiTheme {

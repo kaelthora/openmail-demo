@@ -16,7 +16,8 @@ export type OpenmailSecurityContextValue = {
   ) => Promise<void>;
   handleAttachmentClick: (
     att: MailAttachmentItem,
-    mail: MailSecurityInput
+    mail: MailSecurityInput,
+    mailId: string
   ) => Promise<void>;
   analyzingAttachmentId: string | null;
   isAttachmentBlocked: (id: string) => boolean;

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { parseSmtpConfigJson } from "@/lib/accountConfigJson";
 import { prisma } from "@/lib/db";
+import { guardianEvaluate } from "@/lib/guardianEngine";
+import { recordGuardianTraceDev } from "@/lib/guardianTrace";
 import { sendEmail, sendEmailWithSmtpAccount } from "@/lib/smtp";
+import { IMAP_READ_ONLY } from "@/lib/imapReadOnly";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +17,8 @@ type SendBody = {
   subject?: unknown;
   body?: unknown;
   accountId?: unknown;
+  /** Set to true only after the user confirmed a Guardian `warn` in the client. */
+  guardianWarnAcknowledged?: unknown;
 };
 
 function asNonEmptyString(v: unknown, label: string): string {
@@ -58,6 +63,48 @@ export async function POST(request: Request) {
       );
     }
 
+    const gSend = guardianEvaluate("send_email", {
+      to,
+      subject: subjectRaw,
+      body,
+    });
+    recordGuardianTraceDev(gSend, "server:send");
+    const warnAck = json.guardianWarnAcknowledged === true;
+
+    if (gSend.decision === "block") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: gSend.reason,
+          guardian: {
+            decision: gSend.decision,
+            rule: gSend.rule,
+            riskLevel: gSend.riskLevel,
+            requiresExplicitUserConsent: gSend.requiresExplicitUserConsent,
+            criticalBlock: gSend.criticalBlock,
+          },
+        },
+        { status: 403 }
+      );
+    }
+
+    if (gSend.decision === "warn" && !warnAck) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: gSend.reason,
+          guardian: {
+            decision: gSend.decision,
+            rule: gSend.rule,
+            riskLevel: gSend.riskLevel,
+            requiresExplicitUserConsent: true,
+            criticalBlock: false,
+          },
+        },
+        { status: 403 }
+      );
+    }
+
     const aid =
       typeof json.accountId === "string" && json.accountId.trim()
         ? json.accountId.trim()
@@ -87,8 +134,9 @@ export async function POST(request: Request) {
       await sendEmail({ to, subject: subjectRaw, text: body });
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, imapReadOnly: IMAP_READ_ONLY });
   } catch (e) {
+    console.error("[openmail] POST /api/emails/send failed", e);
     const message = e instanceof Error ? e.message : "Send failed";
     const isConfig =
       message.includes("SMTP is not configured") ||
