@@ -16,6 +16,7 @@ import { MailAttachments } from "@/components/MailAttachments";
 import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import type { SecurityRiskLevel } from "@/app/openmail/components/security/types";
 import { RiskBadge } from "@/app/openmail/components/security/RiskBadge";
+import { useOpenmailTheme } from "@/app/openmail/OpenmailThemeProvider";
 import type { MailSecurityInput } from "@/lib/mailSecuritySignals";
 import type { MailAttachmentItem } from "@/lib/mailAttachmentItem";
 import {
@@ -433,6 +434,8 @@ function MailReadingView({
     onDismiss: () => void;
   } | null;
 }) {
+  const { theme } = useOpenmailTheme();
+  const isLightTheme = theme === "soft-intelligence-light";
   const securityInput = useMemo(() => toSecurityInput(mail), [mail]);
   const attachmentItems = useMemo(() => toAttachmentItems(mail), [mail]);
   const mailRisk = useMemo(() => getMailAiRiskBand(mail), [mail]);
@@ -516,27 +519,71 @@ function MailReadingView({
         ) : null}
       </header>
 
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-7 sm:px-10 sm:py-9">
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 py-7 sm:px-10 sm:py-9">
         {mailRisk !== "safe" ? (
           <div
-            className={`rounded-xl border px-4 py-3 text-[12px] leading-relaxed ${
+            className={
               mailRisk === "high"
-                ? "border-red-500/35 bg-red-500/[0.08] text-red-100/90"
-                : "border-amber-500/35 bg-amber-500/[0.08] text-amber-100/90"
-            }`}
-            role="status"
+                ? isLightTheme
+                  ? "mb-4 rounded-xl border-2 border-red-600 bg-[#fef2f2] px-4 py-3.5 text-[13px] leading-relaxed text-[#7f1d1d]"
+                  : "mb-4 rounded-xl border-2 border-red-500/60 bg-red-950/50 px-4 py-3.5 text-[12px] leading-relaxed text-red-100/95"
+                : isLightTheme
+                  ? "mb-4 rounded-xl border-2 border-[#ff9800] bg-[#fff4e5] px-4 py-3.5 shadow-none"
+                  : "mb-4 rounded-xl border-2 border-amber-500/75 bg-amber-950/55 px-4 py-3.5 text-[13px] leading-relaxed text-amber-50/95"
+            }
+            role="alert"
           >
             {mailRisk === "high" ? (
               <>
-                <span className="font-semibold">High risk — </span>
-                links are disabled and attachments are blocked. Do not bypass these
-                controls.
+                <p
+                  className={
+                    isLightTheme
+                      ? "text-[15px] font-bold text-[#991b1b]"
+                      : "text-[13px] font-bold text-red-100"
+                  }
+                >
+                  High risk — unsafe content
+                </p>
+                <p className="mt-2 text-[13px] leading-snug">
+                  Links are disabled and attachments are blocked. Do not bypass these
+                  controls.
+                </p>
               </>
             ) : (
               <>
-                <span className="font-semibold">Elevated risk — </span>
-                use links and attachments only through the secure sandbox after you
-                confirm each action.
+                <p
+                  className={
+                    isLightTheme
+                      ? "text-[15px] font-bold text-[#b45309]"
+                      : "text-[15px] font-bold text-amber-100"
+                  }
+                >
+                  ⚠️ Elevated risk detected
+                </p>
+                <p
+                  className={`mt-2 text-[13px] font-semibold leading-snug ${
+                    isLightTheme ? "text-[#7c2d12]" : "text-amber-100/90"
+                  }`}
+                >
+                  Review before you click. Typical reasons we show this:
+                </p>
+                <ul
+                  className={`mt-2 list-inside list-disc space-y-1.5 text-[13px] leading-snug ${
+                    isLightTheme ? "text-[#7c2d12]" : "text-amber-50/95"
+                  }`}
+                >
+                  <li>Suspicious link</li>
+                  <li>External redirection</li>
+                  <li>Potential phishing</li>
+                </ul>
+                <p
+                  className={`mt-3 text-[12px] leading-snug ${
+                    isLightTheme ? "text-[#7c2d12]" : "text-amber-100/85"
+                  }`}
+                >
+                  Use links and attachments only through the secure sandbox after you
+                  confirm each action.
+                </p>
               </>
             )}
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useOpenmailTheme } from "@/app/openmail/OpenmailThemeProvider";
 import type { HighRiskUiReasons } from "@/lib/mailSecuritySignals";
 import type { SecurityRiskLevel } from "./types";
 
@@ -43,11 +44,19 @@ const BTN_SECONDARY =
 const BTN_MAIL_GATE_HIGH_PRIMARY =
   "rounded-xl border border-red-400/55 bg-gradient-to-b from-red-600 to-red-700 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_28px_rgba(239,68,68,0.42)] transition-[filter,box-shadow] duration-150 hover:from-red-500 hover:to-red-600 hover:shadow-[0_0_36px_rgba(239,68,68,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400/55";
 
-/** Primary for mail open gate — medium risk. */
+/** Primary for mail open gate — medium risk (dark theme — visible glow). */
 const BTN_MAIL_GATE_MEDIUM_PRIMARY =
   "rounded-xl border border-orange-400/50 bg-gradient-to-b from-orange-600 to-orange-700 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_26px_rgba(249,115,22,0.38)] transition-[filter,box-shadow] duration-150 hover:from-orange-500 hover:to-orange-600 hover:shadow-[0_0_34px_rgba(249,115,22,0.48)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400/50";
 
+/** Light mode: clear CTA without heavy glow. */
+const BTN_MAIL_GATE_MEDIUM_PRIMARY_LIGHT =
+  "rounded-xl border-2 border-[#ea580c] bg-[#f97316] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#ea580c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c2410c]";
+
+const BTN_MAIL_GATE_CANCEL_LIGHT =
+  "rounded-xl border border-stone-400 bg-white px-4 py-2.5 text-sm font-medium text-stone-800 shadow-sm transition hover:bg-stone-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-400";
+
 const RISK_OVERLAY = "bg-black/60 backdrop-blur-sm";
+const RISK_OVERLAY_MEDIUM_LIGHT = "bg-black/45";
 
 export type SecurityModalProps =
   | {
@@ -100,6 +109,8 @@ function MailRiskGateModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { theme } = useOpenmailTheme();
+  const isLightTheme = theme === "soft-intelligence-light";
   const primaryRef = useRef<HTMLButtonElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const isHigh = tier === "high";
@@ -119,7 +130,9 @@ function MailRiskGateModal({
 
   const panelSkin = isHigh
     ? "border-[3px] border-red-600 bg-[#160808] [box-shadow:0_0_64px_rgba(220,38,38,0.5),inset_0_1px_0_rgba(255,255,255,0.06)]"
-    : "border-2 border-orange-500 [box-shadow:0_0_48px_rgba(249,115,22,0.42),0_0_88px_rgba(234,88,12,0.2),inset_0_1px_0_rgba(255,255,255,0.07)]";
+    : isLightTheme
+      ? "border-2 border-[#ff9800] bg-[#fff4e5] shadow-none"
+      : "border-2 border-orange-500 [box-shadow:0_0_48px_rgba(249,115,22,0.42),0_0_88px_rgba(234,88,12,0.2),inset_0_1px_0_rgba(255,255,255,0.07)]";
 
   const reasonRows: { ok: boolean; text: string }[] = [
     { ok: !!highAlert?.urgentFinancial, text: "Urgent financial request" },
@@ -135,7 +148,9 @@ function MailRiskGateModal({
   return (
     <>
       <div
-        className={`fixed inset-0 z-[100] ${RISK_OVERLAY}`}
+        className={`fixed inset-0 z-[100] ${
+          !isHigh && isLightTheme ? RISK_OVERLAY_MEDIUM_LIGHT : RISK_OVERLAY
+        }`}
         aria-hidden
         onClick={onCancel}
       />
@@ -158,11 +173,17 @@ function MailRiskGateModal({
             </span>
             <h2
               id="openmail-mail-risk-title"
-              className={`text-lg font-extrabold tracking-tight ${isHigh ? "text-red-100" : "text-white/95"}`}
+              className={`text-lg font-extrabold tracking-tight ${
+                isHigh
+                  ? "text-red-100"
+                  : isLightTheme
+                    ? "text-[#b45309]"
+                    : "text-white/95"
+              }`}
             >
               {isHigh
                 ? "HIGH RISK — Potential scam detected"
-                : "Elevated risk"}
+                : "⚠️ Elevated risk detected"}
             </h2>
           </div>
           {isHigh ? (
@@ -196,6 +217,21 @@ function MailRiskGateModal({
                   )}
                 </ul>
               </div>
+            </div>
+          ) : isLightTheme ? (
+            <div className="mt-1 space-y-2 text-left text-[13px] leading-snug text-[#7c2d12]">
+              <p className="font-semibold">
+                Review before you open — typical reasons:
+              </p>
+              <ul className="list-inside list-disc space-y-1 font-medium">
+                <li>Suspicious link</li>
+                <li>External redirection</li>
+                <li>Potential phishing</li>
+              </ul>
+              <p className="pt-1 text-[12px] font-medium text-[#7c2d12]">
+                Proceed only if you recognize and expect this message. Use the sandbox
+                for links and attachments.
+              </p>
             </div>
           ) : (
             <div className="space-y-3 text-center text-[13px] leading-relaxed text-white/80">
@@ -237,7 +273,13 @@ function MailRiskGateModal({
               <>
                 <button
                   type="button"
-                  className={isHigh ? BTN_MAIL_GATE_HIGH_PRIMARY : BTN_MAIL_GATE_MEDIUM_PRIMARY}
+                  className={
+                    isHigh
+                      ? BTN_MAIL_GATE_HIGH_PRIMARY
+                      : isLightTheme
+                        ? BTN_MAIL_GATE_MEDIUM_PRIMARY_LIGHT
+                        : BTN_MAIL_GATE_MEDIUM_PRIMARY
+                  }
                   onClick={onConfirm}
                 >
                   {isHigh ? "Open anyway (unsafe)" : "Open safely"}
@@ -245,7 +287,7 @@ function MailRiskGateModal({
                 <button
                   ref={cancelRef}
                   type="button"
-                  className={BTN_SECONDARY}
+                  className={isLightTheme && !isHigh ? BTN_MAIL_GATE_CANCEL_LIGHT : BTN_SECONDARY}
                   onClick={onCancel}
                 >
                   Cancel
