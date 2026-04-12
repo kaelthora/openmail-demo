@@ -117,6 +117,8 @@ type MainLayoutProps = {
     onMove: (folder: OpenmailSmartFolderId) => void;
     onArchive: () => void;
     onSpam: () => void;
+    /** When false, hide non-critical “Move to folder” (e.g. HIGH RISK mail selected). */
+    showMove?: boolean;
   } | null;
 };
 

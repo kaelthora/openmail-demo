@@ -105,6 +105,7 @@ type MailPanelProps = {
     onMove: (folder: OpenmailSmartFolderId) => void;
     onArchive: () => void;
     onSpam: () => void;
+    showMove?: boolean;
   } | null;
 };
 
@@ -988,6 +989,7 @@ export function MailPanel({
             onMove={listToolbar.onMove}
             onArchive={listToolbar.onArchive}
             onSpam={listToolbar.onSpam}
+            showMove={listToolbar.showMove !== false}
           />
         ) : null}
 

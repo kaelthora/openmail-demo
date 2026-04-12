@@ -40,7 +40,32 @@ export type SecuritySignals = {
   emotionalManipulation: boolean;
   /** When true, urgency amplifies to HIGH-tier handling. */
   emotionalManipulationUrgent: boolean;
+  /** Gift / prepaid card + urgency + authority language (common BEC). */
+  giftCardScam: boolean;
+  /** External sender claiming exec authority and requesting payment-like action. */
+  ceoAuthorityImpersonation: boolean;
+  /** Direct financial pressure (wire, urgent payment, send money). */
+  financialUrgencyScam: boolean;
+  /** Urgency + money cues from an external / unknown sender. */
+  urgencyMoneyExternalSender: boolean;
 };
+
+/** Explicit HIGH RISK modal / CORE bullets (subset of `SecuritySignals`). */
+export type HighRiskUiReasons = {
+  urgentFinancial: boolean;
+  impersonation: boolean;
+  socialEngineering: boolean;
+};
+
+export function deriveHighRiskUiReasons(s: SecuritySignals): HighRiskUiReasons {
+  const urgentFinancial =
+    s.giftCardScam ||
+    s.financialUrgencyScam ||
+    s.urgencyMoneyExternalSender;
+  const impersonation = s.brandImpersonation || s.ceoAuthorityImpersonation;
+  const socialEngineering = s.emotionalManipulation;
+  return { urgentFinancial, impersonation, socialEngineering };
+}
 
 export type SecurityAnalysisResult = {
   /** Global risk 0–100 */
@@ -107,6 +132,19 @@ function buildWhyBullets(
         ? "Urgent personal appeal with distress and money/help cues (possible emotional manipulation scam)"
         : "Personal distress and money/help/illness language from an unverified or external sender"
     );
+  }
+
+  if (signals.giftCardScam) {
+    bullets.push("Gift card / prepaid card request with urgency and authority cues");
+  }
+  if (signals.ceoAuthorityImpersonation && !signals.brandImpersonation) {
+    bullets.push("Sender claims authority and requests payment or sensitive action");
+  }
+  if (signals.financialUrgencyScam) {
+    bullets.push("Urgent financial or wire-transfer pressure");
+  }
+  if (signals.urgencyMoneyExternalSender) {
+    bullets.push("Urgent payment language from an external or unverified sender");
   }
 
   if (signals.contentRisk >= 35) {
@@ -440,6 +478,67 @@ function detectBrandImpersonation(
   return { hit: false, brand: null };
 }
 
+function detectGiftCardAuthorityScam(full: string): boolean {
+  const t = full.toLowerCase();
+  const gift =
+    /\b(gift\s*card|itunes|apple\s*(store\s*)?(card|gift)|amazon\s*card|google\s*play|steam\s*card|codes?\s*(for|to|below)|scratch\s*off|prepaid\s*(card|visa)|store\s*card|reload\s*pack)\b/i.test(
+      t
+    );
+  const urg =
+    /\b(urgent|immediately|asap|right\s*now|today|within\s+\d+|confidential|do\s*not\s*(tell|share|discuss|reply))\b/i.test(
+      t
+    );
+  const auth =
+    /\b(ceo|cfo|executive|director|president|manager|management|from\s+the\s+desk|head\s+of)\b/i.test(
+      t
+    );
+  return gift && urg && auth;
+}
+
+function detectCeoAuthorityImpersonationSignal(
+  full: string,
+  primaryEmail: string | null,
+  senderHost: string | null,
+  brandImpersonation: boolean
+): boolean {
+  if (brandImpersonation) return true;
+  if (!senderUnknownOrExternalForEmotionalScam(primaryEmail, senderHost)) {
+    return false;
+  }
+  const t = full.toLowerCase();
+  const authority =
+    /\b(ceo|cfo|chief|president|founder|executive|director|wire\s+transfer\s+request|kindly\s+process|this\s+is\s+(your\s+)?(ceo|boss)|writing\s+from\s+management)\b/i.test(
+      t
+    );
+  const financial =
+    /\b(wire|transfer|gift\s*card|bank\s*(details|account)|payment|send\s+funds|invoice|account\s+number|routing)\b/i.test(
+      t
+    );
+  return authority && financial;
+}
+
+function detectFinancialUrgencyScam(full: string): boolean {
+  return /\b(send\s+money|urgent\s+payment|urgent\s+wire|transfer\s+(the\s+)?funds|immediate\s+payment|pay\s+today|western\s+union|moneygram|send\s+\$|wire\s+me\s+the)\b/i.test(
+    full.toLowerCase()
+  );
+}
+
+function detectUrgencyMoneyExternalSender(
+  full: string,
+  primaryEmail: string | null,
+  senderHost: string | null
+): boolean {
+  if (!senderUnknownOrExternalForEmotionalScam(primaryEmail, senderHost)) {
+    return false;
+  }
+  const t = full.toLowerCase();
+  const money =
+    /\b(money|payment|wire|transfer|\$|invoice|gift\s*card|pay|bank)\b/i.test(t);
+  const urg =
+    /\b(urgent|immediately|asap|today|right\s+now|within\s+hours)\b/i.test(t);
+  return money && urg;
+}
+
 function reasonFromSignals(
   level: SecurityLevel,
   signals: SecuritySignals,
@@ -449,6 +548,15 @@ function reasonFromSignals(
     return `Brand impersonation (${signals.impersonatedBrand})`;
   }
   if (level === "high_risk") {
+    if (signals.giftCardScam) {
+      return "Gift card / authority scam pattern";
+    }
+    if (signals.financialUrgencyScam && signals.urgencyMoneyExternalSender) {
+      return "Urgent financial request from external sender";
+    }
+    if (signals.ceoAuthorityImpersonation && !signals.brandImpersonation) {
+      return "Possible CEO / impersonation payment request";
+    }
     if (signals.emotionalManipulation && signals.emotionalManipulationUrgent) {
       return "Urgent emotional manipulation / help scam (human scam pattern)";
     }
@@ -499,6 +607,20 @@ export function analyzeMailSecurity(input: MailSecurityInput): SecurityAnalysisR
 
   const emoDm = detectEmotionalManipulation(full, input.sender);
 
+  const giftCardScam = detectGiftCardAuthorityScam(full);
+  const ceoAuthorityImpersonation = detectCeoAuthorityImpersonationSignal(
+    full,
+    primaryEmail,
+    senderHost,
+    brandImpersonation
+  );
+  const financialUrgencyScam = detectFinancialUrgencyScam(full);
+  const urgencyMoneyExternalSender = detectUrgencyMoneyExternalSender(
+    full,
+    primaryEmail,
+    senderHost
+  );
+
   const domainLegitimacyRisk = scoreDomainLegitimacy(senderHost);
 
   const auth = simulateAuth(senderHost, brandImpersonation);
@@ -524,6 +646,10 @@ export function analyzeMailSecurity(input: MailSecurityInput): SecurityAnalysisR
     impersonatedBrand,
     emotionalManipulation: emoDm.active,
     emotionalManipulationUrgent: emoDm.active && emoDm.withUrgency,
+    giftCardScam,
+    ceoAuthorityImpersonation,
+    financialUrgencyScam,
+    urgencyMoneyExternalSender,
   };
 
   let riskScore = Math.min(
@@ -549,6 +675,31 @@ export function analyzeMailSecurity(input: MailSecurityInput): SecurityAnalysisR
         riskScore = Math.max(riskScore, 80);
       } else {
         riskScore = Math.max(riskScore, 40);
+      }
+    }
+
+    if (giftCardScam) {
+      riskScore += 42;
+      riskScore = Math.min(100, riskScore);
+      riskScore = Math.max(riskScore, 84);
+    }
+    if (ceoAuthorityImpersonation && !brandImpersonation) {
+      riskScore += 36;
+      riskScore = Math.min(100, riskScore);
+      riskScore = Math.max(riskScore, 80);
+    }
+    if (financialUrgencyScam) {
+      riskScore += 34;
+      riskScore = Math.min(100, riskScore);
+      riskScore = Math.max(riskScore, 78);
+    }
+    if (urgencyMoneyExternalSender) {
+      riskScore += 28;
+      riskScore = Math.min(100, riskScore);
+      if (financialUrgencyScam || giftCardScam) {
+        riskScore = Math.max(riskScore, 85);
+      } else {
+        riskScore = Math.max(riskScore, 44);
       }
     }
   }

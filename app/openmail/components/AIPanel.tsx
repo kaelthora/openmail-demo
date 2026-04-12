@@ -132,14 +132,15 @@ const CORE_RISK_CARD: Record<
   }
 > = {
   high: {
-    border: "border-red-500/50 shadow-[0_0_32px_rgba(239,68,68,0.12)]",
-    bar: "bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.5)]",
-    glow: "bg-gradient-to-br from-red-950/55 via-[#120808] to-[#0c0c0c]",
+    border: "border-[3px] border-red-600 shadow-[0_0_40px_rgba(220,38,38,0.35)]",
+    bar: "bg-red-600 shadow-[0_0_16px_rgba(220,38,38,0.65)]",
+    glow: "bg-gradient-to-br from-red-950/80 via-[#1a0505] to-[#0a0505]",
     badge:
-      "border-red-400/55 bg-red-600/30 text-red-50 ring-1 ring-red-400/25",
-    badgeLabel: "High risk",
-    actionShell: "border-red-500/50 bg-red-950/35 ring-1 ring-red-500/20",
-    actionHeading: "text-red-200/95",
+      "border-red-500 bg-[#450a0a] text-red-50 ring-2 ring-red-500/50",
+    badgeLabel: "HIGH RISK",
+    actionShell:
+      "border-2 border-red-700/90 bg-[#1c0a0a] ring-2 ring-red-900/40",
+    actionHeading: "text-red-100",
   },
   medium: {
     border: "border-amber-500/45 shadow-[0_0_28px_rgba(245,158,11,0.1)]",

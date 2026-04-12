@@ -1377,6 +1377,30 @@ function OpenMailPageContent() {
     setMailOpenRiskGate(null);
   }, []);
 
+  const handleMailGateBlockReport = useCallback(() => {
+    setMailOpenRiskGate((g) => {
+      if (!g) return null;
+      const id = g.mail.id;
+      queueMicrotask(() => {
+        setMails((prev) =>
+          prev.map((m) =>
+            m.id === id
+              ? {
+                  ...m,
+                  important: true,
+                  spam: true,
+                  linkQuarantine: true,
+                  read: true,
+                }
+              : m
+          )
+        );
+        toast.success("Reported as phishing. Message quarantined for review.");
+      });
+      return null;
+    });
+  }, [setMails, toast]);
+
   function handleEnterReading(mail: ProcessedMail) {
     const g = guardianEvaluate("open_mail", {
       mailId: mail.id,
@@ -2022,6 +2046,8 @@ function OpenMailPageContent() {
         onMove: handleListToolbarMove,
         onArchive: handleListToolbarArchive,
         onSpam: handleListToolbarSpam,
+        showMove:
+          selectedMail == null || selectedMail.securityLevel !== "high_risk",
       }}
       actionLabel={actionLabel}
       onProceed={handleProceed}
@@ -2096,6 +2122,16 @@ function OpenMailPageContent() {
         open
         variant="mailRiskGate"
         tier={mailOpenRiskGate.tier}
+        highAlert={
+          mailOpenRiskGate.tier === "high"
+            ? mailOpenRiskGate.mail.highRiskUi
+            : undefined
+        }
+        onBlockReport={
+          mailOpenRiskGate.tier === "high"
+            ? handleMailGateBlockReport
+            : undefined
+        }
         onConfirm={confirmMailOpenRiskGate}
         onCancel={cancelMailOpenRiskGate}
       />

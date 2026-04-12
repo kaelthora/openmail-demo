@@ -86,6 +86,7 @@ const SYSTEM_PROMPT = `You are a fast inbox triage assistant. Classify one email
 Rules:
 - risk "high": phishing, credential theft, malware/suspicious attachments, impersonation, urgent payment fraud, crypto seed requests, legal threats used to pressure action.
 - risk "high" also applies to urgent emotional manipulation scams: personal distress plus requests for money/help combined with urgency (human scams that need no links). Mention risk signal emotional_manipulation in reason when this fits.
+- risk "high" for gift-card / prepaid-card requests paired with urgency and executive authority (CEO/CFO), or urgent wire/send-money language from an external sender.
 - risk "medium": invoices/payments, account alerts, unsolicited links, mild pressure — user should verify sender before acting.
 - risk "medium" for emotional_manipulation without strong urgency: sob stories, illness, or financial distress from unknown/external senders asking for help — verify identity before any transfer.
 - risk "safe": routine personal/work mail, newsletters (if clearly bulk), automated receipts with no pressure.

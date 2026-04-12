@@ -1,4 +1,7 @@
-import type { SecurityLevel as MailSecurityLevel } from "@/lib/mailSecuritySignals";
+import type {
+  HighRiskUiReasons,
+  SecurityLevel as MailSecurityLevel,
+} from "@/lib/mailSecuritySignals";
 
 export type MailFolder = "inbox" | "sent" | "drafts" | "spam";
 
@@ -104,4 +107,6 @@ export type ProcessedMail = MailItem & {
   securityReason: string;
   securityAiSubline: string;
   securityWhyBullets: string[];
+  /** Structured HIGH RISK modal / CORE copy (from `deriveHighRiskUiReasons`). */
+  highRiskUi: HighRiskUiReasons;
 };

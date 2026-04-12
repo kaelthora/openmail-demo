@@ -1,4 +1,7 @@
-import { analyzeMailSecurity } from "@/lib/mailSecuritySignals";
+import {
+  analyzeMailSecurity,
+  deriveHighRiskUiReasons,
+} from "@/lib/mailSecuritySignals";
 import type { MailItem, ProcessedMail } from "@/lib/mailTypes";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
 
@@ -97,16 +100,6 @@ export function processMails(inputMails: MailItem[]): ProcessedMail[] {
         securityRiskScore = Math.min(securityRiskScore, 32);
       }
 
-      // emotional_manipulation: heuristic floor — politeness / “safe” AI must not clear it.
-      if (security.signals.emotionalManipulation) {
-        if (security.signals.emotionalManipulationUrgent) {
-          securityLevel = "high_risk";
-          securityRiskScore = Math.max(securityRiskScore, 82);
-        } else {
-          if (securityLevel === "safe") securityLevel = "suspicious";
-          securityRiskScore = Math.max(securityRiskScore, 48);
-        }
-      }
       const sum = sa.summary.trim();
       const reas = sa.reason?.trim() ?? "";
       if (sum) securityAiSubline = sum;
@@ -131,6 +124,29 @@ export function processMails(inputMails: MailItem[]): ProcessedMail[] {
         priority = "urgent";
       } else if (sa.intentUrgency === "medium" && priority === "low") {
         priority = "medium";
+      }
+    }
+
+    // Scam / impersonation heuristics — politeness / “safe” AI must not clear them.
+    const scamFloor =
+      security.signals.emotionalManipulation ||
+      security.signals.giftCardScam ||
+      security.signals.financialUrgencyScam ||
+      security.signals.ceoAuthorityImpersonation ||
+      security.signals.urgencyMoneyExternalSender;
+    if (scamFloor) {
+      if (
+        security.signals.emotionalManipulationUrgent ||
+        security.signals.giftCardScam ||
+        (security.signals.financialUrgencyScam &&
+          security.signals.urgencyMoneyExternalSender) ||
+        security.signals.brandImpersonation
+      ) {
+        securityLevel = "high_risk";
+        securityRiskScore = Math.max(securityRiskScore, 82);
+      } else {
+        if (securityLevel === "safe") securityLevel = "suspicious";
+        securityRiskScore = Math.max(securityRiskScore, 48);
       }
     }
 
@@ -176,6 +192,21 @@ export function processMails(inputMails: MailItem[]): ProcessedMail[] {
       ];
     }
 
+    let highRiskUi = deriveHighRiskUiReasons(security.signals);
+    if (OPENMAIL_DEMO_MODE && mail.demoClassification?.label === "BLOCKED") {
+      highRiskUi = {
+        urgentFinancial: true,
+        impersonation: true,
+        socialEngineering: true,
+      };
+    } else if (mail.linkQuarantine) {
+      highRiskUi = {
+        urgentFinancial: false,
+        impersonation: true,
+        socialEngineering: false,
+      };
+    }
+
     const base = {
       ...mail,
       priorityScore: priorityPoints,
@@ -188,6 +219,7 @@ export function processMails(inputMails: MailItem[]): ProcessedMail[] {
       securityReason,
       securityAiSubline,
       securityWhyBullets,
+      highRiskUi,
     };
 
     return {

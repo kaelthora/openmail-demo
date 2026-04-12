@@ -22,9 +22,9 @@ const STYLES: Record<
       "max-w-[9.5rem] truncate border-amber-500/50 bg-amber-500/12 text-amber-50/95 [box-shadow:0_0_18px_rgba(245,158,11,0.22)]",
   },
   dangerous: {
-    label: "BLOCKED",
+    label: "HIGH RISK",
     className:
-      "border-red-500/55 bg-red-500/16 text-red-50/95 [box-shadow:0_0_24px_rgba(248,113,113,0.38)]",
+      "border-red-600 bg-[#450a0a] text-red-50 [box-shadow:0_0_28px_rgba(220,38,38,0.55)] ring-1 ring-red-500/40",
   },
 };
 

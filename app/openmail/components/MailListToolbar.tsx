@@ -96,6 +96,8 @@ export type MailListToolbarProps = {
   onMove: (folder: OpenmailSmartFolderId) => void;
   onArchive: () => void;
   onSpam: () => void;
+  /** Show “Move to folder” control (hidden for HIGH RISK selection). Default true. */
+  showMove?: boolean;
 };
 
 export function MailListToolbar({
@@ -107,6 +109,7 @@ export function MailListToolbar({
   onMove,
   onArchive,
   onSpam,
+  showMove = true,
 }: MailListToolbarProps) {
   const [moveOpen, setMoveOpen] = useState(false);
   const moveRef = useRef<HTMLDivElement>(null);
@@ -121,6 +124,10 @@ export function MailListToolbar({
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, [moveOpen]);
+
+  useEffect(() => {
+    if (!showMove) setMoveOpen(false);
+  }, [showMove]);
 
   const pickMove = useCallback(
     (id: OpenmailSmartFolderId) => {
@@ -167,6 +174,7 @@ export function MailListToolbar({
         <IconTrash className="h-[18px] w-[18px]" />
       </button>
       <div className="relative" ref={moveRef}>
+        {showMove ? (
         <button
           type="button"
           className={iconBtn}
@@ -179,6 +187,7 @@ export function MailListToolbar({
         >
           <IconFolderMove className="h-[18px] w-[18px]" />
         </button>
+        ) : null}
         {moveOpen ? (
           <ul
             className="absolute left-0 top-[calc(100%+4px)] z-40 min-w-[10.5rem] rounded-[10px] border border-[var(--border)] bg-[var(--bg-surface)] py-1 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"

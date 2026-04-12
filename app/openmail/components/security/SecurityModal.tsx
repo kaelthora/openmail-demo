@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { HighRiskUiReasons } from "@/lib/mailSecuritySignals";
 import type { SecurityRiskLevel } from "./types";
 
 const PANEL: Record<
@@ -66,6 +67,10 @@ export type SecurityModalProps =
       variant: "mailRiskGate";
       /** High = stop wall; medium = warning. */
       tier: "high" | "medium";
+      /** When tier is high, which scam categories matched (drives explicit bullets). */
+      highAlert?: HighRiskUiReasons;
+      /** Primary action for high tier — quarantine / report (recommended). */
+      onBlockReport?: () => void;
       onConfirm: () => void;
       onCancel: () => void;
     }
@@ -76,21 +81,33 @@ export type SecurityModalProps =
     }
   | { open: false };
 
+const BTN_BLOCK_REPORT_PRIMARY =
+  "w-full rounded-xl border-2 border-red-700 bg-[#7f1d1d] px-4 py-3.5 text-[15px] font-bold tracking-tight text-white shadow-[0_4px_28px_rgba(185,28,28,0.55)] transition hover:bg-[#991b1b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400";
+
+const BTN_OPEN_ANYWAY_SECONDARY =
+  "w-full rounded-xl border border-white/30 bg-black/20 px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/30";
+
 function MailRiskGateModal({
   tier,
+  highAlert,
+  onBlockReport,
   onConfirm,
   onCancel,
 }: {
   tier: "high" | "medium";
+  highAlert?: HighRiskUiReasons;
+  onBlockReport?: () => void;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const primaryRef = useRef<HTMLButtonElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const isHigh = tier === "high";
+  const hasBlock = isHigh && typeof onBlockReport === "function";
 
   useEffect(() => {
-    cancelRef.current?.focus();
-  }, []);
+    (hasBlock ? primaryRef : cancelRef).current?.focus();
+  }, [hasBlock]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -101,8 +118,19 @@ function MailRiskGateModal({
   }, [onCancel]);
 
   const panelSkin = isHigh
-    ? "border-2 border-red-500 [box-shadow:0_0_56px_rgba(248,113,113,0.45),0_0_100px_rgba(239,68,68,0.15),inset_0_1px_0_rgba(255,255,255,0.06)]"
+    ? "border-[3px] border-red-600 bg-[#160808] [box-shadow:0_0_64px_rgba(220,38,38,0.5),inset_0_1px_0_rgba(255,255,255,0.06)]"
     : "border-2 border-orange-500 [box-shadow:0_0_48px_rgba(249,115,22,0.42),0_0_88px_rgba(234,88,12,0.2),inset_0_1px_0_rgba(255,255,255,0.07)]";
+
+  const reasonRows: { ok: boolean; text: string }[] = [
+    { ok: !!highAlert?.urgentFinancial, text: "Urgent financial request" },
+    { ok: !!highAlert?.impersonation, text: "Impersonation attempt" },
+    { ok: !!highAlert?.socialEngineering, text: "Social engineering" },
+  ];
+  const activeReasons = reasonRows.filter((r) => r.ok);
+  const fallbackReason =
+    isHigh && activeReasons.length === 0
+      ? [{ ok: true, text: "Automated checks flagged dangerous content or sender signals" }]
+      : activeReasons;
 
   return (
     <>
@@ -118,28 +146,56 @@ function MailRiskGateModal({
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="openmail-mail-risk-title"
-          className={`openmail-risk-modal-panel pointer-events-auto w-[min(92vw,440px)] rounded-2xl border bg-[rgba(10,12,14,0.96)] p-6 backdrop-blur-xl ${panelSkin}`}
+          className={`openmail-risk-modal-panel pointer-events-auto w-[min(92vw,460px)] rounded-2xl p-6 backdrop-blur-xl ${panelSkin}`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="mb-3 flex flex-col items-center gap-2 text-center">
+          <div className="mb-3 flex flex-col gap-2 text-center">
             <span
-              className={`text-2xl leading-none ${isHigh ? "drop-shadow-[0_0_12px_rgba(239,68,68,0.55)]" : "drop-shadow-[0_0_12px_rgba(249,115,22,0.45)]"}`}
+              className={`text-2xl leading-none ${isHigh ? "drop-shadow-[0_0_14px_rgba(239,68,68,0.65)]" : "drop-shadow-[0_0_12px_rgba(249,115,22,0.45)]"}`}
               aria-hidden
             >
               ⚠️
             </span>
             <h2
               id="openmail-mail-risk-title"
-              className="text-base font-semibold tracking-tight text-white/95"
+              className={`text-lg font-extrabold tracking-tight ${isHigh ? "text-red-100" : "text-white/95"}`}
             >
-              {isHigh ? "High risk detected" : "Elevated risk"}
+              {isHigh
+                ? "HIGH RISK — Potential scam detected"
+                : "Elevated risk"}
             </h2>
           </div>
           {isHigh ? (
-            <div className="space-y-3 text-center text-[13px] leading-relaxed text-white/80">
-              <p>This message is considered dangerous.</p>
-              <p>It may involve fraud, impersonation, or data theft.</p>
-              <p className="text-white/90">Opening it is not recommended.</p>
+            <div className="mt-1 space-y-3">
+              <p className="text-center text-[13px] font-medium leading-relaxed text-red-50/95">
+                This message may be a scam. Do not send money, gift cards, or sensitive
+                information.
+              </p>
+              <div
+                className="rounded-xl border border-red-800/80 bg-black/35 px-3 py-3"
+                role="list"
+                aria-label="Risk indicators"
+              >
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-red-200/90">
+                  Why we flagged it
+                </p>
+                <ul className="space-y-2 text-left text-[13px] font-semibold leading-snug text-white">
+                  {(activeReasons.length > 0 ? activeReasons : fallbackReason).map(
+                    (r) => (
+                      <li
+                        key={r.text}
+                        className="flex gap-2 border-l-2 border-red-500 pl-2"
+                        role="listitem"
+                      >
+                        <span className="text-red-400" aria-hidden>
+                          ●
+                        </span>
+                        <span>{r.text}</span>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
             </div>
           ) : (
             <div className="space-y-3 text-center text-[13px] leading-relaxed text-white/80">
@@ -151,21 +207,51 @@ function MailRiskGateModal({
             </div>
           )}
           <div className="mt-6 flex flex-col gap-2">
-            <button
-              type="button"
-              className={isHigh ? BTN_MAIL_GATE_HIGH_PRIMARY : BTN_MAIL_GATE_MEDIUM_PRIMARY}
-              onClick={onConfirm}
-            >
-              {isHigh ? "Open anyway (unsafe)" : "Open safely"}
-            </button>
-            <button
-              ref={cancelRef}
-              type="button"
-              className={BTN_SECONDARY}
-              onClick={onCancel}
-            >
-              Cancel
-            </button>
+            {isHigh && hasBlock ? (
+              <>
+                <button
+                  ref={primaryRef}
+                  type="button"
+                  className={BTN_BLOCK_REPORT_PRIMARY}
+                  onClick={() => onBlockReport?.()}
+                >
+                  Block &amp; report
+                </button>
+                <button
+                  type="button"
+                  className={BTN_OPEN_ANYWAY_SECONDARY}
+                  onClick={onConfirm}
+                >
+                  Open anyway
+                </button>
+                <button
+                  ref={cancelRef}
+                  type="button"
+                  className={BTN_SECONDARY}
+                  onClick={onCancel}
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={isHigh ? BTN_MAIL_GATE_HIGH_PRIMARY : BTN_MAIL_GATE_MEDIUM_PRIMARY}
+                  onClick={onConfirm}
+                >
+                  {isHigh ? "Open anyway (unsafe)" : "Open safely"}
+                </button>
+                <button
+                  ref={cancelRef}
+                  type="button"
+                  className={BTN_SECONDARY}
+                  onClick={onCancel}
+                >
+                  Cancel
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -216,6 +302,8 @@ export function SecurityModal(props: SecurityModalProps) {
     return (
       <MailRiskGateModal
         tier={props.tier}
+        highAlert={props.highAlert}
+        onBlockReport={props.onBlockReport}
         onConfirm={props.onConfirm}
         onCancel={props.onCancel}
       />
