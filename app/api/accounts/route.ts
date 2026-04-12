@@ -4,6 +4,7 @@ import {
   parseImapConfigJson,
   parseSmtpConfigJson,
 } from "@/lib/accountConfigJson";
+// DEMO MODE: Prisma disabled for Vercel deployment (stub in lib/db.ts)
 import { prisma } from "@/lib/db";
 import type { ImapAccountConfig, SmtpAccountConfig } from "@/lib/mailAccountConfig";
 

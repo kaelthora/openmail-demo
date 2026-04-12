@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { parseSmtpConfigJson } from "@/lib/accountConfigJson";
+// DEMO MODE: Prisma disabled for Vercel deployment (stub in lib/db.ts)
 import { prisma } from "@/lib/db";
 import { guardianEvaluate } from "@/lib/guardianEngine";
 import { recordGuardianTraceDev } from "@/lib/guardianTrace";

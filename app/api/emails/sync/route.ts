@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ingestFetchedEmails } from "@/lib/emailIngest";
 import { parseImapConfigJson } from "@/lib/accountConfigJson";
+// DEMO MODE: Prisma disabled for Vercel deployment (stub in lib/db.ts)
 import { prisma } from "@/lib/db";
 import { fetchEmails, fetchEmailsWithImap } from "@/lib/imap";
 

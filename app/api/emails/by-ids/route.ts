@@ -1,10 +1,26 @@
 import { NextResponse } from "next/server";
+// DEMO MODE: Prisma disabled for Vercel deployment (stub in lib/db.ts)
 import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MAX_IDS = 12;
+
+type ByIdEmailRow = {
+  id: string;
+  subject: string | null;
+  mailFrom: string | null;
+  summary: string | null;
+  action: string | null;
+  reason: string | null;
+  suggestions: unknown;
+  intent: string | null;
+  intentUrgency: string | null;
+  intentConfidence: number | null;
+  risk: string | null;
+  accountId: string | null;
+};
 
 function parseSuggestions(value: unknown): string[] {
   if (value == null) return [];
@@ -26,7 +42,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const rows = await prisma.email.findMany({
+    const rows = (await prisma.email.findMany({
       where: { id: { in: ids } },
       select: {
         id: true,
@@ -42,7 +58,7 @@ export async function GET(request: Request) {
         risk: true,
         accountId: true,
       },
-    });
+    })) as ByIdEmailRow[];
 
     const order = new Map(ids.map((id, i) => [id, i]));
     rows.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));

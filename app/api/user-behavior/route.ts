@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+// DEMO MODE: Prisma disabled for Vercel deployment (stub in lib/db.ts)
 import { prisma } from "@/lib/db";
 import { createEmptyMemory, parseBehaviorMemory } from "@/lib/userBehaviorMemory";
 
