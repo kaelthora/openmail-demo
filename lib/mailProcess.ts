@@ -96,6 +96,17 @@ export function processMails(inputMails: MailItem[]): ProcessedMail[] {
         securityLevel = "safe";
         securityRiskScore = Math.min(securityRiskScore, 32);
       }
+
+      // emotional_manipulation: heuristic floor — politeness / “safe” AI must not clear it.
+      if (security.signals.emotionalManipulation) {
+        if (security.signals.emotionalManipulationUrgent) {
+          securityLevel = "high_risk";
+          securityRiskScore = Math.max(securityRiskScore, 82);
+        } else {
+          if (securityLevel === "safe") securityLevel = "suspicious";
+          securityRiskScore = Math.max(securityRiskScore, 48);
+        }
+      }
       const sum = sa.summary.trim();
       const reas = sa.reason?.trim() ?? "";
       if (sum) securityAiSubline = sum;

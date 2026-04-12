@@ -18,6 +18,9 @@ export type MailSecurityInput = {
   mailAiRisk?: MailAiRiskBand;
 };
 
+/** Machine-readable risk signal id (e.g. traces, future API). */
+export type RiskSignalId = "emotional_manipulation";
+
 export type SecuritySignals = {
   /** 0 = looks legitimate, higher = worse */
   domainLegitimacyRisk: number;
@@ -30,6 +33,13 @@ export type SecuritySignals = {
   attachmentRisk: number;
   brandImpersonation: boolean;
   impersonatedBrand: string | null;
+  /**
+   * Personal distress + money/help/illness cues from an unverified or external sender
+   * (human scam / sob story — no links required). Id: `emotional_manipulation`.
+   */
+  emotionalManipulation: boolean;
+  /** When true, urgency amplifies to HIGH-tier handling. */
+  emotionalManipulationUrgent: boolean;
 };
 
 export type SecurityAnalysisResult = {
@@ -89,6 +99,14 @@ function buildWhyBullets(
     bullets.push("SPF/DKIM/DMARC don’t align with a trusted sender (simulated)");
   } else if (authFails === 1) {
     bullets.push("At least one auth check looks weak (simulated)");
+  }
+
+  if (signals.emotionalManipulation) {
+    bullets.push(
+      signals.emotionalManipulationUrgent
+        ? "Urgent personal appeal with distress and money/help cues (possible emotional manipulation scam)"
+        : "Personal distress and money/help/illness language from an unverified or external sender"
+    );
   }
 
   if (signals.contentRisk >= 35) {
@@ -231,6 +249,89 @@ function scoreDomainLegitimacy(host: string | null): number {
   return Math.min(60, r);
 }
 
+/** Freemail, disposable, or sketch hosts — stranger “help” scams often use these. */
+function senderUnknownOrExternalForEmotionalScam(
+  primaryEmail: string | null,
+  senderHost: string | null
+): boolean {
+  if (!primaryEmail || !senderHost) return true;
+  const host = senderHost.toLowerCase();
+  if (scoreDomainLegitimacy(host) >= 18) return true;
+  if (/\.(tk|ml|ga|cf|gq|xyz|top|click|link|buzz|work)$/i.test(host)) return true;
+  if (host.includes("notice.example") || host.includes("secure-verify")) return true;
+  if (host.length > 52) return true;
+  if (
+    /(^|\.)gmail\.com$/i.test(host) ||
+    /(^|\.)googlemail\.com$/i.test(host) ||
+    /(^|\.)yahoo\./i.test(host) ||
+    /(^|\.)hotmail\./i.test(host) ||
+    /(^|\.)outlook\.com$/i.test(host) ||
+    /(^|\.)live\.com$/i.test(host) ||
+    /(^|\.)icloud\.com$/i.test(host) ||
+    /(^|\.)proton(\.me|mail\.com)$/i.test(host) ||
+    /(^|\.)aol\.com$/i.test(host)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function hasUrgencyCue(t: string): boolean {
+  return /\b(urgent|urgently|immediately|right\s*now|right\s*away|asap|a\.s\.a\.p\.|time[\s-]*sensitive|don'?t\s*wait|hurry|emergency|rush)\b/i.test(
+    t
+  );
+}
+
+function hasPersonalDistressCue(t: string): boolean {
+  return /\b(i\s+have\s+no\s+money|no\s+money|can'?t\s+afford|cannot\s+afford|broke|desperate|my\s+(children|kids|child|son|daughter|mother|father|mom|dad|mommy|daddy|wife|husband|family)\b|family\s+is\s+sick|(\bare|\bis)\s+sick|sick\s+children|in\s+(the\s+)?hospital|illness|terminally|stranded|hungry|helpless|lost\s+everything)\b/i.test(
+    t
+  );
+}
+
+function hasMoneyHelpIllnessEmergencyCue(t: string): boolean {
+  return /\b(money|cash|wire(\s+transfer)?|bank\s*transfer|gift\s*card|venmo|zelle|paypal\s+me|loan|donat|financial(\s+help)?|medical|surgery|doctor|prescription|please\s+help|need\s+help|send\s+help|asking\s+for\s+help|urgent\s+help)\b/i.test(
+    t
+  );
+}
+
+function matchesEmotionalManipulationContent(t: string): boolean {
+  const urgency = hasUrgencyCue(t);
+  const distress = hasPersonalDistressCue(t);
+  const mhi = hasMoneyHelpIllnessEmergencyCue(t);
+  if (distress && (mhi || urgency)) return true;
+  if (urgency && /\b(help\s+needed|send\s+help|need\s+help)\b/i.test(t)) return true;
+  if (/\bplease\s+send\s+help\b/i.test(t)) return true;
+  if (/\burgent\s+help\s+needed\b/i.test(t)) return true;
+  return false;
+}
+
+export type EmotionalManipulationDetection = {
+  signal: RiskSignalId;
+  active: boolean;
+  withUrgency: boolean;
+};
+
+/**
+ * Social-engineering “emotional_manipulation”: distress + money/help/illness, often with urgency,
+ * from an unknown or external sender. Politeness alone does not clear this signal.
+ */
+export function detectEmotionalManipulation(
+  fullText: string,
+  senderLine?: string | null
+): EmotionalManipulationDetection {
+  const primary = extractPrimaryEmail(senderLine ?? undefined);
+  const host = hostFromEmail(primary);
+  const t = fullText.toLowerCase();
+  if (!senderUnknownOrExternalForEmotionalScam(primary, host)) {
+    return { signal: "emotional_manipulation", active: false, withUrgency: false };
+  }
+  if (!matchesEmotionalManipulationContent(t)) {
+    return { signal: "emotional_manipulation", active: false, withUrgency: false };
+  }
+  const urgent = hasUrgencyCue(t);
+  return { signal: "emotional_manipulation", active: true, withUrgency: urgent };
+}
+
 function simulateAuth(host: string | null, brandImpersonation: boolean): {
   spf: SecuritySignals["spf"];
   dkim: SecuritySignals["dkim"];
@@ -348,6 +449,9 @@ function reasonFromSignals(
     return `Brand impersonation (${signals.impersonatedBrand})`;
   }
   if (level === "high_risk") {
+    if (signals.emotionalManipulation && signals.emotionalManipulationUrgent) {
+      return "Urgent emotional manipulation / help scam (human scam pattern)";
+    }
     if (signals.contentRisk >= 35) return "Possible phishing attempt";
     if (signals.linkMismatchScore >= 22) return "Suspicious links";
     if (signals.attachmentRisk >= 20) return "Risky attachment";
@@ -361,6 +465,9 @@ function reasonFromSignals(
     return riskScore >= 85 ? "Critical risk score" : "High risk score";
   }
   if (level === "suspicious") {
+    if (signals.emotionalManipulation && !signals.emotionalManipulationUrgent) {
+      return "Possible emotional manipulation scam (verify sender out-of-band)";
+    }
     if (signals.domainLegitimacyRisk >= 22) return "Unusual sender domain";
     if (signals.linkMismatchScore >= 12) return "Link / sender mismatch";
     if (signals.dmarc === "fail" || signals.spf === "fail") return "Weak sender auth";
@@ -390,6 +497,8 @@ export function analyzeMailSecurity(input: MailSecurityInput): SecurityAnalysisR
     senderHost
   );
 
+  const emoDm = detectEmotionalManipulation(full, input.sender);
+
   const domainLegitimacyRisk = scoreDomainLegitimacy(senderHost);
 
   const auth = simulateAuth(senderHost, brandImpersonation);
@@ -413,6 +522,8 @@ export function analyzeMailSecurity(input: MailSecurityInput): SecurityAnalysisR
     attachmentRisk,
     brandImpersonation,
     impersonatedBrand,
+    emotionalManipulation: emoDm.active,
+    emotionalManipulationUrgent: emoDm.active && emoDm.withUrgency,
   };
 
   let riskScore = Math.min(
@@ -431,6 +542,15 @@ export function analyzeMailSecurity(input: MailSecurityInput): SecurityAnalysisR
     riskScore = 100;
   } else {
     riskScore = Math.min(100, Math.max(0, Math.round(riskScore)));
+    if (emoDm.active) {
+      riskScore += emoDm.withUrgency ? 38 : 26;
+      riskScore = Math.min(100, riskScore);
+      if (emoDm.withUrgency) {
+        riskScore = Math.max(riskScore, 80);
+      } else {
+        riskScore = Math.max(riskScore, 40);
+      }
+    }
   }
 
   let securityLevel: SecurityLevel = "safe";

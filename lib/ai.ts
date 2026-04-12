@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { detectEmotionalManipulation } from "@/lib/mailSecuritySignals";
 import {
   inferIntentLocal,
   parseIntentConfidence,
@@ -33,6 +34,8 @@ export type EmailAnalyzeAttachment = {
 export type EmailAnalyzeInput = {
   subject: string | null;
   body: string;
+  /** From line for sender-aware heuristics (e.g. emotional_manipulation). */
+  from?: string | null;
   attachments?: EmailAnalyzeAttachment[];
 };
 
@@ -82,8 +85,11 @@ const ANALYSIS_JSON_SCHEMA = {
 const SYSTEM_PROMPT = `You are a fast inbox triage assistant. Classify one email for security and handling.
 Rules:
 - risk "high": phishing, credential theft, malware/suspicious attachments, impersonation, urgent payment fraud, crypto seed requests, legal threats used to pressure action.
+- risk "high" also applies to urgent emotional manipulation scams: personal distress plus requests for money/help combined with urgency (human scams that need no links). Mention risk signal emotional_manipulation in reason when this fits.
 - risk "medium": invoices/payments, account alerts, unsolicited links, mild pressure — user should verify sender before acting.
+- risk "medium" for emotional_manipulation without strong urgency: sob stories, illness, or financial distress from unknown/external senders asking for help — verify identity before any transfer.
 - risk "safe": routine personal/work mail, newsletters (if clearly bulk), automated receipts with no pressure.
+- Politeness ("please", "thank you", kind tone) alone never proves safety — do not downgrade risk solely for polite language.
 - action "ignore" only for obvious bulk/marketing/no-reply noise that needs no response.
 - action "escalate" for high risk or serious compliance/security incidents.
 - action "reply" for normal threads and medium-risk where a cautious reply may be appropriate.
@@ -213,6 +219,8 @@ export function analyzeEmailHeuristic(input: EmailAnalyzeInput): EmailAnalysis {
   const raw = `${input.subject ?? ""}\n\n${input.body}${attachNote}`.trim();
   const text = raw.toLowerCase();
 
+  const emo = detectEmotionalManipulation(raw, input.from);
+
   const HIGH =
     /\b(phish|phishing|wire transfer|urgent.*(password|verify|account)|verify your (account|identity)|crypto.*wallet|seed phrase|gift card.*(code|pin)|\bmalware\b|compromised account|click (here|now).*immediately)\b/i;
   const MEDIUM =
@@ -227,7 +235,18 @@ export function analyzeEmailHeuristic(input: EmailAnalyzeInput): EmailAnalysis {
   let reason =
     "No strong risk or automation signals — treat as normal correspondence.";
 
-  if (IGNORE.test(text)) {
+  if (emo.active) {
+    risk = emo.withUrgency ? "high" : "medium";
+    action = emo.withUrgency ? "escalate" : "reply";
+    reason = emo.withUrgency
+      ? "Risk signal emotional_manipulation: urgent personal appeal with distress and money/help cues — verify the sender through a known channel before sending money or information."
+      : "Risk signal emotional_manipulation: distress and money/help/illness language from an unverified or external sender — confirm identity before acting.";
+    if (HIGH.test(text) || (ESCALATE.test(text) && !IGNORE.test(text))) {
+      risk = "high";
+      action = "escalate";
+      reason = `${reason} Additional high-risk pattern matched.`;
+    }
+  } else if (IGNORE.test(text)) {
     risk = "safe";
     action = "ignore";
     reason = "Looks like bulk, marketing, or automated mail — usually safe to skip.";
@@ -278,6 +297,9 @@ async function callOpenAIAnalysis(
 ): Promise<EmailAnalysis> {
   const userContent = [
     `Subject: ${input.subject?.trim() || "(no subject)"}`,
+    input.from?.trim()
+      ? `From: ${input.from.trim()}`
+      : "From: (not provided)",
     `Attachments (metadata only): ${formatAttachments(input.attachments)}`,
     "",
     "Body:",
