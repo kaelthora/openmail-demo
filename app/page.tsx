@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const featureLines = [
   "Detects intent",
@@ -10,10 +10,6 @@ const featureLines = [
 ];
 
 export default function Page() {
-  const router = useRouter();
-
-  const go = () => router.push("/openmail");
-
   return (
     <div className="openmail-landing flex h-[100dvh] max-h-[100dvh] w-full flex-col overflow-hidden text-white subpixel-antialiased antialiased">
       {/* Base + premium halo stack */}
@@ -69,13 +65,13 @@ export default function Page() {
                     className="openmail-landing-cta-glow pointer-events-none absolute -inset-7 rounded-full blur-3xl"
                     aria-hidden
                   />
-                  <button
-                    type="button"
-                    className="openmail-landing-cta relative rounded-[11px] px-6 py-3 text-[12.5px] font-semibold tracking-[0.06em] text-white sm:px-8 sm:py-3.5 sm:text-[13px] motion-reduce:transition-none"
-                    onClick={go}
+                  <Link
+                    href="/openmail"
+                    prefetch={false}
+                    className="openmail-landing-cta relative inline-flex items-center justify-center rounded-[11px] px-6 py-3 text-[12.5px] font-semibold tracking-[0.06em] text-white no-underline sm:px-8 sm:py-3.5 sm:text-[13px] motion-reduce:transition-none"
                   >
                     Enter protected inbox
-                  </button>
+                  </Link>
                 </div>
 
                 <ul className="space-y-1.5 text-[11px] leading-[1.55] tracking-[0.04em] text-white/58 sm:text-[12px]">

@@ -1,7 +1,26 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+/**
+ * No redirect from "/" to "/openmail" — the app lives only at `/openmail` after an explicit navigation.
+ * "/" is served without Basic Auth so the marketing landing is visible first.
+ */
+/** Paths served without Basic Auth (landing + static files used by it). */
+function isPublicMarketingOrAsset(pathname: string): boolean {
+  if (pathname === '/') return true
+  if (pathname === '/openmail-bg.png' || pathname === '/favicon.ico') return true
+  if (pathname === '/openmail-notifications-sw.js') return true
+  if (pathname.startsWith('/icons/')) return true
+  if (pathname === '/file.svg' || pathname === '/window.svg' || pathname === '/vercel.svg')
+    return true
+  return false
+}
+
 export function middleware(request: NextRequest) {
+  if (isPublicMarketingOrAsset(request.nextUrl.pathname)) {
+    return NextResponse.next()
+  }
+
   const auth = request.headers.get('authorization')
 
   const BASIC_AUTH_USER = 'demo'
