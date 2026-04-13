@@ -3,10 +3,11 @@
 import Link from "next/link";
 
 const featureLines = [
-  "Detects intent",
-  "Flags risk",
-  "Suggests actions",
-  "Blocks threats",
+  "Detects scams",
+  "Flags manipulation",
+  "Suggests safe actions",
+  "Blocks risky behavior",
+  "Before you act.",
 ];
 
 export default function Page() {
@@ -51,11 +52,16 @@ export default function Page() {
                   </h1>
                   <p className="mx-auto max-w-[26rem] text-pretty text-[clamp(0.8rem,2.1vw,1.05rem)] leading-[1.45]">
                     <span className="text-white/72">
-                      Encryption protects data.
+                      An ethical inbox powered by human expertise and real-time AI.
+                    </span>
+                    <br />
+                    <span className="text-white/72">
+                      We don&apos;t just read emails.
                     </span>
                     <br />
                     <span className="font-medium text-white/92">
-                      OpenMail protects decisions you would have gotten wrong.
+                      We understand intent, detect manipulation, and prevent mistakes before they
+                      happen.
                     </span>
                   </p>
                 </header>
@@ -75,13 +81,23 @@ export default function Page() {
                 </div>
 
                 <ul className="space-y-1.5 text-[11px] leading-[1.55] tracking-[0.04em] text-white/58 sm:text-[12px]">
-                  <li>Reads your emails</li>
-                  <li>Understands intent</li>
-                  <li>Prevents mistakes</li>
+                  <li>AI-assisted. Human-designed. Ethically built.</li>
                 </ul>
 
                 <p className="max-w-[24rem] text-pretty text-[11.5px] leading-[1.5] text-white/72 sm:text-[12.5px]">
-                  Every day, you trust emails you didn&apos;t verify.
+                  OpenMail is not just software.
+                  <br />
+                  <br />
+                  It&apos;s the combination of:
+                  <br />
+                  • real-world security experience
+                  <br />
+                  • and AI that never gets tired, emotional, or distracted
+                  <br />
+                  <br />
+                  Together, they reduce risk where humans fail:
+                  <br />
+                  urgency, pressure, deception.
                 </p>
               </div>
             </div>
@@ -96,16 +112,14 @@ export default function Page() {
               How email works today
             </h2>
             <div className="space-y-2 text-[11px] leading-[1.62] sm:text-[12px] sm:leading-[1.68]">
-              <p className="text-white/78">
-                Email was built to deliver messages.
+              <p className="text-white/78">Zero tracking. No data exploitation. Ever.</p>
+              <p className="text-white/82">Your emails stay yours.</p>
+              <p className="text-white/88">Your decisions stay yours.</p>
+              <p className="font-medium text-white/95">
+                OpenMail exists to protect — not to observe.
               </p>
-              <p className="text-white/82">Not to evaluate them.</p>
-              <p className="text-white/88">Not to protect you.</p>
-              <p className="font-medium text-white/95">Not to think.</p>
-              <p className="pt-1 text-white/76">So you do it yourself.</p>
-              <p className="text-[10.5px] text-white/58 sm:text-[11.5px]">
-                Fast. Under pressure. With incomplete signals.
-              </p>
+              <p className="pt-1 text-white/76">{"\u00a0"}</p>
+              <p className="text-[10.5px] text-white/58 sm:text-[11.5px]">{"\u00a0"}</p>
             </div>
           </section>
 
@@ -119,10 +133,19 @@ export default function Page() {
             </h2>
             <div className="space-y-1.5">
               <p className="text-[12.5px] font-medium leading-snug text-white/90 sm:text-[13px]">
-                OpenMail is not another email client.
+                A human sees patterns.
+                <br />
+                AI sees everything.
               </p>
               <p className="text-[11.5px] leading-[1.55] text-sky-200/88 sm:text-[12.5px]">
-                It&apos;s a decision engine for your inbox.
+                OpenMail combines both:
+                <br />
+                • Human logic → what matters
+                <br />
+                • AI analysis → what you might miss
+                <br />
+                <br />
+                This is where mistakes disappear.
               </p>
             </div>
             <ul className="w-full space-y-1.5 text-[11.5px] leading-[1.5] text-white/72 sm:text-[12px]">
@@ -169,7 +192,7 @@ export default function Page() {
               </span>
             </p>
             <p className="max-w-[22rem] text-pretty text-[10px] leading-[1.5] tracking-[0.02em] text-white/48 sm:text-[11px]">
-              Before you even realize you had to.
+              {"\u00a0"}
             </p>
           </footer>
         </div>
