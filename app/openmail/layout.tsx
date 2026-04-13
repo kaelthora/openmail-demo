@@ -1,3 +1,5 @@
+import Script from "next/script";
+import { getOpenmailThemeBootScript } from "@/lib/openmailThemeBootScript";
 import { GuardianInterceptProvider } from "./GuardianInterceptProvider";
 import { GuardianTraceProvider } from "./GuardianTraceProvider";
 import MailStoreProvider from "./MailStoreProvider";
@@ -13,26 +15,33 @@ export default function OpenMailLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <OpenmailThemeProvider>
-      <OpenmailPreferencesProvider>
-        <UserBehaviorProvider>
-          <GuardianTraceProvider>
-            <GuardianInterceptProvider>
-              <MailStoreProvider>
-                <SmartNotificationsProvider>
-                  <AttentionEngineProvider>
-                    <OpenmailToastProvider>
-                      <OpenmailSecurityProvider demoMode>
-                        {children}
-                      </OpenmailSecurityProvider>
-                    </OpenmailToastProvider>
-                  </AttentionEngineProvider>
-                </SmartNotificationsProvider>
-              </MailStoreProvider>
-            </GuardianInterceptProvider>
-          </GuardianTraceProvider>
-        </UserBehaviorProvider>
-      </OpenmailPreferencesProvider>
-    </OpenmailThemeProvider>
+    <>
+      <Script
+        id="openmail-theme-boot"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: getOpenmailThemeBootScript() }}
+      />
+      <OpenmailThemeProvider>
+        <OpenmailPreferencesProvider>
+          <UserBehaviorProvider>
+            <GuardianTraceProvider>
+              <GuardianInterceptProvider>
+                <MailStoreProvider>
+                  <SmartNotificationsProvider>
+                    <AttentionEngineProvider>
+                      <OpenmailToastProvider>
+                        <OpenmailSecurityProvider demoMode>
+                          {children}
+                        </OpenmailSecurityProvider>
+                      </OpenmailToastProvider>
+                    </AttentionEngineProvider>
+                  </SmartNotificationsProvider>
+                </MailStoreProvider>
+              </GuardianInterceptProvider>
+            </GuardianTraceProvider>
+          </UserBehaviorProvider>
+        </OpenmailPreferencesProvider>
+      </OpenmailThemeProvider>
+    </>
   );
 }

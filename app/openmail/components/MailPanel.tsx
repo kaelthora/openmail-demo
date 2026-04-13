@@ -1077,7 +1077,7 @@ export function MailPanel({
               {listLoading ? (
                 <MailListSkeleton rows={6} density={density} />
               ) : inboxOnboardingUiActive ? (
-                <div className="openmail-list-state-card card border-[var(--accent)]/20 bg-[#0c0c0c] p-2">
+                <div className="openmail-list-state-card card border-[var(--accent)]/20 bg-[var(--openmail-list-inner)] p-2">
                   <MailListInboxOnboarding
                     onConnectGmail={onInboxConnectGmail ?? (() => {})}
                     onManualSetup={onInboxManualSetup ?? (() => {})}
@@ -1087,7 +1087,7 @@ export function MailPanel({
                   />
                 </div>
               ) : effectiveListFetchError ? (
-                <div className="openmail-list-state-card card border-red-500/20 bg-[#0c0c0c] p-2">
+                <div className="openmail-list-state-card card border-red-500/20 bg-[var(--openmail-list-inner)] p-2">
                   <MailListApiError
                     message={effectiveListFetchError}
                     hideForOnboarding={inboxOnboardingUiActive}
@@ -1095,7 +1095,7 @@ export function MailPanel({
                   />
                 </div>
               ) : displayedMails.length === 0 ? (
-                <div className="openmail-list-state-card card border-white/[0.06] bg-[#0c0c0c] p-2">
+                <div className="openmail-list-state-card card border-white/[0.06] bg-[var(--openmail-list-inner)] p-2">
                   <MailListEmptyState
                     isFiltered={mails.length > 0 && displayedMails.length === 0}
                     folderLabel={folderLabel}

@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -38,16 +39,26 @@ function readStoredTheme(): OpenmailUiTheme {
   }
 }
 
+/** Prefer `html[data-openmail-theme]` (set by boot script) so React matches CSS on first paint. */
+function readThemeFromDocumentOrStorage(): OpenmailUiTheme {
+  if (typeof window === "undefined") return OPENMAIL_THEME_DEFAULT;
+  const attr = document.documentElement.getAttribute("data-openmail-theme");
+  if (attr === "soft-dark" || attr === "soft-intelligence-light") {
+    return attr;
+  }
+  return readStoredTheme();
+}
+
 export function OpenmailThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<OpenmailUiTheme>(
     OPENMAIL_THEME_DEFAULT
   );
   const [prefsReady, setPrefsReady] = useState(false);
 
-  useEffect(() => {
-    const stored = readStoredTheme();
-    setThemeState(stored);
-    applyThemeToDocument(stored);
+  useLayoutEffect(() => {
+    const initial = readThemeFromDocumentOrStorage();
+    setThemeState(initial);
+    applyThemeToDocument(initial);
     setPrefsReady(true);
   }, []);
 
