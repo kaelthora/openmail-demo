@@ -51,13 +51,6 @@ const navBtnIdle =
 const navBtnActive =
   "bg-[var(--accent-soft)] text-[var(--text-main)] shadow-[0_0_12px_var(--accent-soft)]";
 
-const segClass =
-  "rounded-lg border border-white/[0.08] bg-[#0c0c0c]/90 px-3 py-2 text-[11px] font-medium transition-colors duration-200";
-const segOn =
-  "border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)]";
-const segOff =
-  "text-[color:var(--text-soft)] hover:border-white/[0.12] hover:text-[var(--text-main)]";
-
 function ToggleRow({
   label,
   description,
@@ -893,6 +886,7 @@ export function OpenmailSettingsPanel({
   const [entered, setEntered] = useState(false);
 
   const { theme, setTheme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
   const prefs = useOpenmailPreferences();
   const { enableSmartNotifications } = useSmartNotifications();
   const toast = useOpenmailToast();
@@ -1239,8 +1233,14 @@ export function OpenmailSettingsPanel({
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          className={`${segClass} flex-1 ${
-                            prefs.display.density === "compact" ? segOn : segOff
+                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-medium transition-colors duration-200 ${
+                            isLight
+                              ? prefs.display.density === "compact"
+                                ? "bg-white text-gray-900 border border-gray-200"
+                                : "bg-gray-100 text-gray-600 border border-gray-200"
+                              : prefs.display.density === "compact"
+                                ? "bg-[#0c0c0c] text-white"
+                                : "bg-[#0c0c0c]/60 text-white/60"
                           }`}
                           onClick={() =>
                             prefs.updateDisplay({ density: "compact" })
@@ -1250,10 +1250,14 @@ export function OpenmailSettingsPanel({
                         </button>
                         <button
                           type="button"
-                          className={`${segClass} flex-1 ${
-                            prefs.display.density === "comfortable"
-                              ? segOn
-                              : segOff
+                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-medium transition-colors duration-200 ${
+                            isLight
+                              ? prefs.display.density === "comfortable"
+                                ? "bg-white text-gray-900 border border-gray-200"
+                                : "bg-gray-100 text-gray-600 border border-gray-200"
+                              : prefs.display.density === "comfortable"
+                                ? "bg-[#0c0c0c] text-white"
+                                : "bg-[#0c0c0c]/60 text-white/60"
                           }`}
                           onClick={() =>
                             prefs.updateDisplay({ density: "comfortable" })
@@ -1393,8 +1397,14 @@ export function OpenmailSettingsPanel({
                         <button
                           key={tone}
                           type="button"
-                          className={`${segClass} ${
-                            prefs.ai.defaultTone === tone ? segOn : segOff
+                          className={`rounded-lg px-3 py-2 text-[11px] font-medium transition-colors duration-200 ${
+                            isLight
+                              ? prefs.ai.defaultTone === tone
+                                ? "bg-white text-gray-900 border border-gray-200"
+                                : "bg-gray-100 text-gray-600 border border-gray-200"
+                              : prefs.ai.defaultTone === tone
+                                ? "bg-[#0c0c0c] text-white"
+                                : "bg-[#0c0c0c]/60 text-white/60"
                           }`}
                           onClick={() => prefs.updateAi({ defaultTone: tone })}
                         >
