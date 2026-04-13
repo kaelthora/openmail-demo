@@ -15,7 +15,6 @@ import { useOpenmailToast } from "../OpenmailToastProvider";
 import { useSmartNotifications } from "../SmartNotificationsProvider";
 import type { OpenmailUiTheme } from "@/lib/openmailTheme";
 import type { SettingsSection } from "@/lib/openmailSettingsPrefs";
-import { OPENMAIL_LIGHT_SEGMENT } from "@/app/openmail/openmailLightSegmentClasses";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
 import { GUARDIAN_ETHICAL_GUARDRAILS } from "@/lib/guardianEngine";
 import {
@@ -64,9 +63,9 @@ const themeChoiceBase =
 
 function classForSunThemeSwitch(theme: OpenmailUiTheme, isLightUi: boolean): string {
   if (isLightUi) {
-    return `${themeChoiceBase} ${
-      theme === "soft-intelligence-light" ? "om-light-seg-active" : "om-light-seg-idle"
-    }`;
+    return theme === "soft-intelligence-light"
+      ? `${themeChoiceBase} om-light-seg-active`
+      : `${themeChoiceBase} om-light-seg-idle`;
   }
   return `${themeChoiceBase} ${
     theme === "soft-intelligence-light"
@@ -77,7 +76,9 @@ function classForSunThemeSwitch(theme: OpenmailUiTheme, isLightUi: boolean): str
 
 function classForMoonThemeSwitch(theme: OpenmailUiTheme, isLightUi: boolean): string {
   if (isLightUi) {
-    return `${themeChoiceBase} ${theme === "soft-dark" ? "om-light-seg-active" : "om-light-seg-idle"}`;
+    return theme === "soft-dark"
+      ? `${themeChoiceBase} om-light-seg-active`
+      : `${themeChoiceBase} om-light-seg-idle`;
   }
   return `${themeChoiceBase} ${
     theme === "soft-dark"
@@ -430,11 +431,13 @@ function SettingsAccountsServer({
     ? "rounded-xl border border-black/[0.08] bg-[#f3f4f6] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
     : "rounded-xl border border-white/[0.08] bg-[#0a0a0a] p-4";
   const segBtn = "flex-1 rounded-lg border px-3 py-2 text-[11px] font-medium transition-colors duration-200";
+  const lightSegTr =
+    "transition-[background-color,border-color,color,box-shadow] duration-200";
   const segActive = isLight
-    ? OPENMAIL_LIGHT_SEGMENT.flexActive
+    ? `om-light-seg-active flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-semibold ${lightSegTr}`
     : `${segBtn} border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)]`;
   const segIdle = isLight
-    ? OPENMAIL_LIGHT_SEGMENT.flexInactive
+    ? `om-light-seg-idle flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-medium ${lightSegTr}`
     : `${segBtn} border-white/[0.08] bg-[#0c0c0c] text-[color:var(--text-soft)] hover:border-white/[0.12] hover:text-[var(--text-main)]`;
   const formErrBox = isLight
     ? "mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-900"
@@ -1346,8 +1349,8 @@ export function OpenmailSettingsPanel({
                           className={
                             isLightTheme
                               ? prefs.display.density === "compact"
-                                ? OPENMAIL_LIGHT_SEGMENT.flexActive
-                                : OPENMAIL_LIGHT_SEGMENT.flexInactive
+                                ? "om-light-seg-active flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
+                                : "om-light-seg-idle flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
                               : `${segClass} flex-1 ${
                                   prefs.display.density === "compact"
                                     ? segOn
@@ -1365,8 +1368,8 @@ export function OpenmailSettingsPanel({
                           className={
                             isLightTheme
                               ? prefs.display.density === "comfortable"
-                                ? OPENMAIL_LIGHT_SEGMENT.flexActive
-                                : OPENMAIL_LIGHT_SEGMENT.flexInactive
+                                ? "om-light-seg-active flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
+                                : "om-light-seg-idle flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
                               : `${segClass} flex-1 ${
                                   prefs.display.density === "comfortable"
                                     ? segOn
@@ -1514,8 +1517,8 @@ export function OpenmailSettingsPanel({
                           className={
                             isLightTheme
                               ? prefs.ai.defaultTone === tone
-                                ? OPENMAIL_LIGHT_SEGMENT.wrapActive
-                                : OPENMAIL_LIGHT_SEGMENT.wrapInactive
+                                ? "om-light-seg-active rounded-lg px-3 py-2 text-left text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
+                                : "om-light-seg-idle rounded-lg px-3 py-2 text-left text-[11px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
                               : `${segClass} ${
                                   prefs.ai.defaultTone === tone ? segOn : segOff
                                 }`

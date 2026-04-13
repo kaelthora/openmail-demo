@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ProcessedMail } from "@/lib/mailTypes";
 import { buildCoreDetectionReasons, coreMailPreviewPlain } from "@/lib/openmailCoreUi";
-import { OPENMAIL_LIGHT_SEGMENT } from "@/app/openmail/openmailLightSegmentClasses";
 import { getReplyAssistUiState } from "@/lib/openmailAutoReplyUi";
 import {
   guardianAutoResponseDescription,
@@ -931,8 +930,8 @@ export function AIPanel({
                             className={
                               isLightTheme
                                 ? replyTone === tone
-                                  ? OPENMAIL_LIGHT_SEGMENT.toneActive
-                                  : OPENMAIL_LIGHT_SEGMENT.toneInactive
+                                  ? "om-light-seg-active rounded-full px-3 py-1 text-center text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
+                                  : "om-light-seg-idle rounded-full px-3 py-1 text-center text-[11px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
                                 : `openmail-reply-tone-chip rounded-full border px-3 py-1 text-[11px] font-medium transition-[background-color,border-color,box-shadow,color] duration-150 ease-out ${
                                     replyTone === tone
                                       ? "openmail-reply-tone-chip--selected border-[var(--accent)]/50 bg-[var(--accent-soft)]/35 text-[color:var(--text-main)]"

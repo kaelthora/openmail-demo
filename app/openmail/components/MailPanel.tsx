@@ -26,7 +26,6 @@ import {
   MailListInboxOnboarding,
   MailListSkeleton,
 } from "./MailPanelStates";
-import { OPENMAIL_LIGHT_SEGMENT } from "@/app/openmail/openmailLightSegmentClasses";
 import type { OpenmailAutoResolveKind } from "@/lib/openmailAutoResolve";
 import {
   buildThreadSituations,
@@ -963,8 +962,8 @@ export function MailPanel({
                 className={
                   isLightTheme
                     ? density === "compact"
-                      ? OPENMAIL_LIGHT_SEGMENT.toolbarActive
-                      : OPENMAIL_LIGHT_SEGMENT.toolbarInactive
+                      ? "om-light-seg-active rounded-[6px] px-2 py-1 text-left text-[10px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
+                      : "om-light-seg-idle rounded-[6px] px-2 py-1 text-left text-[10px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
                     : `rounded-[6px] px-2 py-1 text-[10px] font-medium ${
                         density === "compact"
                           ? "bg-[var(--accent-soft)] text-[var(--text-main)]"
@@ -980,8 +979,8 @@ export function MailPanel({
                 className={
                   isLightTheme
                     ? density === "comfortable"
-                      ? OPENMAIL_LIGHT_SEGMENT.toolbarActive
-                      : OPENMAIL_LIGHT_SEGMENT.toolbarInactive
+                      ? "om-light-seg-active rounded-[6px] px-2 py-1 text-left text-[10px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
+                      : "om-light-seg-idle rounded-[6px] px-2 py-1 text-left text-[10px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
                     : `rounded-[6px] px-2 py-1 text-[10px] font-medium ${
                         density === "comfortable"
                           ? "bg-[var(--accent-soft)] text-[var(--text-main)]"
