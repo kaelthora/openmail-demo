@@ -3,11 +3,11 @@
 import Link from "next/link";
 
 const featureLines = [
-  "Detects scams",
-  "Flags manipulation",
-  "Suggests safe actions",
-  "Blocks risky behavior",
-  "Before you act.",
+  "Spots scams in seconds",
+  "Flags manipulation fast",
+  "Suggests safer next steps",
+  "Blocks reckless replies",
+  "Pauses you before Send",
 ];
 
 export default function Page() {
@@ -52,16 +52,15 @@ export default function Page() {
                   </h1>
                   <p className="mx-auto max-w-[26rem] text-pretty text-[clamp(0.8rem,2.1vw,1.05rem)] leading-[1.45]">
                     <span className="text-white/72">
-                      An ethical inbox powered by human expertise and real-time AI.
+                      Ethical inbox: experts plus live AI.
                     </span>
                     <br />
                     <span className="text-white/72">
-                      We don&apos;t just read emails.
+                      We don&apos;t just read your mail.
                     </span>
                     <br />
                     <span className="font-medium text-white/92">
-                      We understand intent, detect manipulation, and prevent mistakes before they
-                      happen.
+                      We catch intent, bias, and pressure.
                     </span>
                   </p>
                 </header>
@@ -81,23 +80,21 @@ export default function Page() {
                 </div>
 
                 <ul className="space-y-1.5 text-[11px] leading-[1.55] tracking-[0.04em] text-white/58 sm:text-[12px]">
-                  <li>AI-assisted. Human-designed. Ethically built.</li>
+                  <li>
+                    AI assists. Humans stay in charge.
+                    <br />
+                    Ethics ships with every build.
+                  </li>
                 </ul>
 
                 <p className="max-w-[24rem] text-pretty text-[11.5px] leading-[1.5] text-white/72 sm:text-[12.5px]">
-                  OpenMail is not just software.
+                  Not just software—a live stance.
                   <br />
+                  Veterans meet tireless machine focus.
                   <br />
-                  It&apos;s the combination of:
+                  They catch what hurry hides.
                   <br />
-                  • real-world security experience
-                  <br />
-                  • and AI that never gets tired, emotional, or distracted
-                  <br />
-                  <br />
-                  Together, they reduce risk where humans fail:
-                  <br />
-                  urgency, pressure, deception.
+                  Urgency fades. Deception stalls early.
                 </p>
               </div>
             </div>
@@ -112,14 +109,14 @@ export default function Page() {
               How email works today
             </h2>
             <div className="space-y-2 text-[11px] leading-[1.62] sm:text-[12px] sm:leading-[1.68]">
-              <p className="text-white/78">Zero tracking. No data exploitation. Ever.</p>
-              <p className="text-white/82">Your emails stay yours.</p>
-              <p className="text-white/88">Your decisions stay yours.</p>
-              <p className="font-medium text-white/95">
-                OpenMail exists to protect — not to observe.
+              <p className="text-white/78">Zero tracking. No resale. Ever.</p>
+              <p className="text-white/82">Your mail never trains ad graphs.</p>
+              <p className="text-white/88">Your choices stay fully yours.</p>
+              <p className="font-medium text-white/95">We protect inbox peace—not profiles.</p>
+              <p className="pt-1 text-white/76">No silent audience deals here.</p>
+              <p className="text-[10.5px] text-white/58 sm:text-[11.5px]">
+                Ethics over engagement tricks.
               </p>
-              <p className="pt-1 text-white/76">{"\u00a0"}</p>
-              <p className="text-[10.5px] text-white/58 sm:text-[11.5px]">{"\u00a0"}</p>
             </div>
           </section>
 
@@ -133,19 +130,16 @@ export default function Page() {
             </h2>
             <div className="space-y-1.5">
               <p className="text-[12.5px] font-medium leading-snug text-white/90 sm:text-[13px]">
-                A human sees patterns.
+                Humans pattern-match under stress.
                 <br />
-                AI sees everything.
+                Machines read every line cold.
               </p>
               <p className="text-[11.5px] leading-[1.55] text-sky-200/88 sm:text-[12.5px]">
-                OpenMail combines both:
+                Two lenses. One honest read.
                 <br />
-                • Human logic → what matters
+                Stakes first—then full-text AI.
                 <br />
-                • AI analysis → what you might miss
-                <br />
-                <br />
-                This is where mistakes disappear.
+                That&apos;s how mistakes die here.
               </p>
             </div>
             <ul className="w-full space-y-1.5 text-[11.5px] leading-[1.5] text-white/72 sm:text-[12px]">
@@ -175,8 +169,9 @@ export default function Page() {
                   🧪 DEMO PREVIEW
                 </p>
                 <p className="max-w-[22rem] text-[10.5px] leading-[1.55] text-white/65 sm:text-[11.5px]">
-                  Live preview · in development · Gmail-optimized. Some features
-                  are simulated; the system is evolving.
+                  Live preview—Gmail-tuned, still evolving.
+                  <br />
+                  Some flows stay demo-only today.
                 </p>
               </div>
             </aside>
@@ -185,14 +180,14 @@ export default function Page() {
           {/* 5 — Closing */}
           <footer className="flex w-full max-w-[26rem] flex-col items-center gap-2.5 pb-1 pt-1 text-center sm:gap-3">
             <p className="max-w-[24rem] text-pretty text-[clamp(0.85rem,2.2vw,1.05rem)] font-semibold leading-[1.48] tracking-[-0.018em] text-white">
-              You don&apos;t need a better inbox.
+              You don&apos;t need a shinier inbox.
               <br />
               <span className="font-semibold text-sky-100/96 drop-shadow-[0_0_18px_rgba(56,189,248,0.18)]">
-                You need a system that thinks before you act.
+                You need sense before you hit Send.
               </span>
             </p>
-            <p className="max-w-[22rem] text-pretty text-[10px] leading-[1.5] tracking-[0.02em] text-white/48 sm:text-[11px]">
-              {"\u00a0"}
+            <p className="max-w-[22rem] text-pretty text-[10px] leading-[1.5] tracking-[0.02em] text-white/48 sm:text-[11.5px]">
+              One calm beat beats regret.
             </p>
           </footer>
         </div>
