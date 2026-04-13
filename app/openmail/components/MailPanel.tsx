@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
@@ -51,6 +52,26 @@ import {
   OPENMAIL_SMART_LIST_TABS,
   type OpenmailSmartListTabId,
 } from "@/lib/openmailListSmartTabs";
+
+function segmentButtonDocLightForceStyle(
+  isActive: boolean
+): CSSProperties | undefined {
+  const isLight =
+    typeof document !== "undefined" &&
+    document.documentElement.dataset.openmailTheme === "soft-intelligence-light";
+  if (!isLight) return undefined;
+  return isActive
+    ? {
+        background: "#ffffff",
+        color: "#111827",
+        border: "1px solid rgba(0,0,0,0.08)",
+      }
+    : {
+        background: "rgba(0,0,0,0.04)",
+        color: "rgba(0,0,0,0.6)",
+        border: "1px solid rgba(0,0,0,0.06)",
+      };
+}
 
 export type AutoResolvedMailboxEntry = {
   id: string;
@@ -710,6 +731,10 @@ export function MailPanel({
     if (folderLabel !== "Inbox") setSmartListTab("inbox");
   }, [folderLabel]);
 
+  useEffect(() => {
+    console.log("BUTTON SOURCE:", "app/openmail/components/MailPanel.tsx");
+  }, []);
+
   const autoHandledMailIds = useMemo(() => {
     const ids = new Set<string>();
     for (const e of autoResolvedEntries ?? []) {
@@ -977,6 +1002,7 @@ export function MailPanel({
               <button
                 type="button"
                 className={getButtonClass(density === "compact")}
+                style={segmentButtonDocLightForceStyle(density === "compact")}
                 onClick={() => setDensity("compact")}
               >
                 Compact
@@ -984,6 +1010,7 @@ export function MailPanel({
               <button
                 type="button"
                 className={getButtonClass(density === "comfortable")}
+                style={segmentButtonDocLightForceStyle(density === "comfortable")}
                 onClick={() => setDensity("comfortable")}
               >
                 Comfortable

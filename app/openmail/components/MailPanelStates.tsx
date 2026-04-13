@@ -1,6 +1,28 @@
 "use client";
 
+import { useEffect } from "react";
+import type { CSSProperties } from "react";
 import { useOpenmailTheme } from "../OpenmailThemeProvider";
+
+function segmentButtonDocLightForceStyle(
+  isActive: boolean
+): CSSProperties | undefined {
+  const isLight =
+    typeof document !== "undefined" &&
+    document.documentElement.dataset.openmailTheme === "soft-intelligence-light";
+  if (!isLight) return undefined;
+  return isActive
+    ? {
+        background: "#ffffff",
+        color: "#111827",
+        border: "1px solid rgba(0,0,0,0.08)",
+      }
+    : {
+        background: "rgba(0,0,0,0.04)",
+        color: "rgba(0,0,0,0.6)",
+        border: "1px solid rgba(0,0,0,0.06)",
+      };
+}
 
 type MailListSkeletonProps = {
   rows?: number;
@@ -91,6 +113,10 @@ export function MailListInboxOnboarding({
   const { theme } = useOpenmailTheme();
   const isLight = theme === "soft-intelligence-light";
 
+  useEffect(() => {
+    console.log("BUTTON SOURCE:", "app/openmail/components/MailPanelStates.tsx");
+  }, []);
+
   function getButtonClass(active: boolean) {
     if (isLight) {
       return active
@@ -102,6 +128,7 @@ export function MailListInboxOnboarding({
       ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
       : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
   }
+
   return (
     <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 px-3 py-10 text-center">
       <div
@@ -134,6 +161,7 @@ export function MailListInboxOnboarding({
         <button
           type="button"
           className={getButtonClass(true)}
+          style={segmentButtonDocLightForceStyle(true)}
           onClick={() => void onConnectGmail()}
         >
           Connect Gmail
@@ -141,6 +169,7 @@ export function MailListInboxOnboarding({
         <button
           type="button"
           className={getButtonClass(false)}
+          style={segmentButtonDocLightForceStyle(false)}
           onClick={() => void onManualSetup()}
         >
           Manual setup

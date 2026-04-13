@@ -6,6 +6,7 @@ import {
   useId,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import { useOpenmailDocumentTheme, useOpenmailTheme } from "../OpenmailThemeProvider";
@@ -28,6 +29,26 @@ import {
   type MailTransportSecurity,
   type OpenMailAccountProfile,
 } from "@/lib/mailAccountConfig";
+
+function segmentButtonDocLightForceStyle(
+  isActive: boolean
+): CSSProperties | undefined {
+  const isLight =
+    typeof document !== "undefined" &&
+    document.documentElement.dataset.openmailTheme === "soft-intelligence-light";
+  if (!isLight) return undefined;
+  return isActive
+    ? {
+        background: "#ffffff",
+        color: "#111827",
+        border: "1px solid rgba(0,0,0,0.08)",
+      }
+    : {
+        background: "rgba(0,0,0,0.04)",
+        color: "rgba(0,0,0,0.6)",
+        border: "1px solid rgba(0,0,0,0.06)",
+      };
+}
 
 type OpenmailSettingsPanelProps = {
   open: boolean;
@@ -449,6 +470,13 @@ function SettingsAccountsServer({
     : "mb-3 text-[11px] leading-relaxed text-[color:var(--text-soft)]";
 
   useEffect(() => {
+    console.log(
+      "BUTTON SOURCE:",
+      "app/openmail/components/OpenmailSettingsPanel.tsx#SettingsAccountsServer"
+    );
+  }, []);
+
+  useEffect(() => {
     if (!settingsOpen || !accountsActive) return;
     void refreshServerAccounts();
   }, [settingsOpen, accountsActive, refreshServerAccounts]);
@@ -761,6 +789,7 @@ function SettingsAccountsServer({
           <button
             type="button"
             className={getButtonClass(addMode === "quick")}
+            style={segmentButtonDocLightForceStyle(addMode === "quick")}
             onClick={() => setAddMode("quick")}
           >
             Quick connect
@@ -768,6 +797,7 @@ function SettingsAccountsServer({
           <button
             type="button"
             className={getButtonClass(addMode === "manual")}
+            style={segmentButtonDocLightForceStyle(addMode === "manual")}
             onClick={() => setAddMode("manual")}
           >
             Manual
@@ -964,6 +994,7 @@ export function OpenmailSettingsPanel({
       ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
       : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
   }
+
   const navBtnIdleResolved = isLightTheme
     ? "text-[#555] hover:bg-black/[0.04] hover:text-[#111827]"
     : navBtnIdle;
@@ -972,6 +1003,14 @@ export function OpenmailSettingsPanel({
   const toast = useOpenmailToast();
   const { traces: guardianTraces, clear: clearGuardianTrace } =
     useGuardianTrace();
+
+  useEffect(() => {
+    if (!open) return;
+    console.log(
+      "BUTTON SOURCE:",
+      "app/openmail/components/OpenmailSettingsPanel.tsx#OpenmailSettingsPanel"
+    );
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -1361,6 +1400,9 @@ export function OpenmailSettingsPanel({
                           className={getButtonClass(
                             prefs.display.density === "compact"
                           )}
+                          style={segmentButtonDocLightForceStyle(
+                            prefs.display.density === "compact"
+                          )}
                           onClick={() =>
                             prefs.updateDisplay({ density: "compact" })
                           }
@@ -1370,6 +1412,9 @@ export function OpenmailSettingsPanel({
                         <button
                           type="button"
                           className={getButtonClass(
+                            prefs.display.density === "comfortable"
+                          )}
+                          style={segmentButtonDocLightForceStyle(
                             prefs.display.density === "comfortable"
                           )}
                           onClick={() =>
@@ -1511,6 +1556,9 @@ export function OpenmailSettingsPanel({
                           key={tone}
                           type="button"
                           className={getButtonClass(
+                            prefs.ai.defaultTone === tone
+                          )}
+                          style={segmentButtonDocLightForceStyle(
                             prefs.ai.defaultTone === tone
                           )}
                           onClick={() => prefs.updateAi({ defaultTone: tone })}

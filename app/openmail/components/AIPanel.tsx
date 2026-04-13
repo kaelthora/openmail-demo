@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import type { ProcessedMail } from "@/lib/mailTypes";
 import { buildCoreDetectionReasons, coreMailPreviewPlain } from "@/lib/openmailCoreUi";
 import { getReplyAssistUiState } from "@/lib/openmailAutoReplyUi";
@@ -120,6 +128,26 @@ function decisionEngineHeadline(band: CoreRiskBand): string {
     return "Review suggestions, edit your draft, then send—nothing leaves until you confirm.";
   }
   return "Select a message to see the best next move.";
+}
+
+function segmentButtonDocLightForceStyle(
+  isActive: boolean
+): CSSProperties | undefined {
+  const isLight =
+    typeof document !== "undefined" &&
+    document.documentElement.dataset.openmailTheme === "soft-intelligence-light";
+  if (!isLight) return undefined;
+  return isActive
+    ? {
+        background: "#ffffff",
+        color: "#111827",
+        border: "1px solid rgba(0,0,0,0.08)",
+      }
+    : {
+        background: "rgba(0,0,0,0.04)",
+        color: "rgba(0,0,0,0.6)",
+        border: "1px solid rgba(0,0,0,0.06)",
+      };
 }
 
 const CORE_RISK_CARD: Record<
@@ -648,6 +676,10 @@ export function AIPanel({
   selectedMailIdRef.current = selectedMail?.id ?? null;
 
   useEffect(() => {
+    console.log("BUTTON SOURCE:", "app/openmail/components/AIPanel.tsx");
+  }, []);
+
+  useEffect(() => {
     setUserTyping(false);
     suggestionPreviewBaseRef.current = null;
     suggestionPreviewIndexRef.current = null;
@@ -945,6 +977,9 @@ export function AIPanel({
                             key={tone}
                             type="button"
                             className={getButtonClass(replyTone === tone)}
+                            style={segmentButtonDocLightForceStyle(
+                              replyTone === tone
+                            )}
                             onClick={() => onToneChange(tone)}
                           >
                             {tone}
