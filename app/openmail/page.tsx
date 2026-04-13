@@ -23,6 +23,7 @@ import { useGuardianTrace } from "./GuardianTraceProvider";
 import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import type { OpenmailSidebarFolderId } from "@/lib/openmailNavFolders";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
+import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
 import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
 import { useUserBehavior } from "./UserBehaviorProvider";
 import { useAttentionEngine } from "./AttentionEngineProvider";
@@ -368,6 +369,7 @@ function OpenMailPageContent() {
     sendComposeMail,
     mailsLoading,
     mailsFetchError,
+    inboxSetupRequired,
     refreshMailsFromApi,
     syncFromImap,
     isSyncing,
@@ -1995,6 +1997,21 @@ function OpenMailPageContent() {
     [autoResolveLog]
   );
 
+  const showInboxOnboarding = useMemo(
+    () =>
+      !OPENMAIL_DEMO_MODE &&
+      activeFolder === "inbox" &&
+      (inboxSetupRequired ||
+        serverMailAccounts.length === 0 ||
+        isLegacyImapEnvMissingMessage(mailsFetchError ?? "")),
+    [
+      activeFolder,
+      inboxSetupRequired,
+      serverMailAccounts.length,
+      mailsFetchError,
+    ]
+  );
+
   return (
     <>
     <MainLayout
@@ -2024,7 +2041,10 @@ function OpenMailPageContent() {
       onExitReading={handleExitReading}
       folderLabel={folderLabel}
       listLoading={activeFolder === "inbox" && mailsLoading}
-      listFetchError={activeFolder === "inbox" ? mailsFetchError : null}
+      listFetchError={
+        activeFolder === "inbox" ? mailsFetchError : null
+      }
+      showInboxOnboarding={showInboxOnboarding}
       onRetryListFetch={async () => {
         const r = await refreshMailsFromApi();
         if (r.ok) toast.success("Inbox loaded");

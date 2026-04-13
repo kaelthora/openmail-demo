@@ -23,6 +23,7 @@ import {
   ImapSyncErrorBanner,
   MailListApiError,
   MailListEmptyState,
+  MailListInboxOnboarding,
   MailListSkeleton,
 } from "./MailPanelStates";
 import type { OpenmailAutoResolveKind } from "@/lib/openmailAutoResolve";
@@ -35,6 +36,9 @@ import {
   type SituationUrgency,
 } from "@/lib/threadSituations";
 import { useAttentionEngine } from "../AttentionEngineProvider";
+import { useMailStore } from "../MailStoreProvider";
+import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
+import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
 import type { TimeCompressionPanelProps } from "@/lib/openmailTimeCompression";
 import { SmartAutoFileInlineBar } from "./SmartAutoFileInlineBar";
 import { MailListToolbar } from "./MailListToolbar";
@@ -97,6 +101,10 @@ type MailPanelProps = {
     onPickFolder: (folder: OpenmailSmartFolderId) => void;
     onDismiss: () => void;
   } | null;
+  /** First-time: no legacy env and no saved mailbox — neutral onboarding instead of error. */
+  showInboxOnboarding?: boolean;
+  onInboxConnectGmail?: () => void;
+  onInboxManualSetup?: () => void;
   /** Gmail-style icon row above the thread list. */
   listToolbar?: {
     onRefresh: () => void;
@@ -637,7 +645,20 @@ export function MailPanel({
   timeCompression,
   smartFilingPrompt = null,
   listToolbar = null,
+  showInboxOnboarding = false,
+  onInboxConnectGmail,
+  onInboxManualSetup,
 }: MailPanelProps) {
+  const { mailsFetchError: storeMailsFetchError } = useMailStore();
+  const listErrorCombined = (listFetchError ?? storeMailsFetchError ?? "").trim();
+  const inboxOnboardingUiActive =
+    showInboxOnboarding ||
+    (!OPENMAIL_DEMO_MODE &&
+      folderLabel === "Inbox" &&
+      isLegacyImapEnvMissingMessage(listErrorCombined));
+  const effectiveListFetchError = inboxOnboardingUiActive
+    ? null
+    : (listFetchError ?? storeMailsFetchError ?? null);
   const { setOrderedMailIds, onRowPointerEnter, onRowPointerLeave, onListScroll } =
     useAttentionEngine();
   const [search, setSearch] = useState("");
@@ -976,7 +997,8 @@ export function MailPanel({
               disabled={
                 timeCompression.busy ||
                 listLoading ||
-                !!listFetchError ||
+                !!effectiveListFetchError ||
+                inboxOnboardingUiActive ||
                 displayedMails.length === 0
               }
             >
@@ -1026,7 +1048,7 @@ export function MailPanel({
           </div>
         ) : null}
 
-        {listToolbar ? (
+        {listToolbar && !inboxOnboardingUiActive ? (
           <MailListToolbar
             disabled={!selectedMail}
             refreshBusy={listToolbar.refreshBusy}
@@ -1051,12 +1073,24 @@ export function MailPanel({
               className={`openmail-thread-list flex min-h-0 flex-1 flex-col ${gapClass} overflow-y-auto`}
               onScroll={(e) => onListScroll(e.currentTarget.scrollTop)}
             >
+              {/* Priority: loading → onboarding (exclusive) → error → empty → list */}
               {listLoading ? (
                 <MailListSkeleton rows={6} density={density} />
-              ) : listFetchError ? (
+              ) : inboxOnboardingUiActive ? (
+                <div className="openmail-list-state-card card border-[var(--accent)]/20 bg-[#0c0c0c] p-2">
+                  <MailListInboxOnboarding
+                    onConnectGmail={onInboxConnectGmail ?? (() => {})}
+                    onManualSetup={onInboxManualSetup ?? (() => {})}
+                    onRetryCheck={
+                      onRetryListFetch ? () => void onRetryListFetch() : undefined
+                    }
+                  />
+                </div>
+              ) : effectiveListFetchError ? (
                 <div className="openmail-list-state-card card border-red-500/20 bg-[#0c0c0c] p-2">
                   <MailListApiError
-                    message={listFetchError}
+                    message={effectiveListFetchError}
+                    hideForOnboarding={inboxOnboardingUiActive}
                     onRetry={onRetryListFetch ? () => void onRetryListFetch() : undefined}
                   />
                 </div>

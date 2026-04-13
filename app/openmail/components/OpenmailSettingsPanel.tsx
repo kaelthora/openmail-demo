@@ -32,6 +32,9 @@ import {
 type OpenmailSettingsPanelProps = {
   open: boolean;
   onClose: () => void;
+  /** When opening Settings → Accounts from inbox onboarding, pre-select Quick vs Manual. */
+  accountsInitialAddMode?: "quick" | "manual" | null;
+  onAccountsInitialAddModeConsumed?: () => void;
 };
 
 const NAV: Array<{ id: SettingsSection; label: string }> = [
@@ -303,9 +306,13 @@ const SEC_OPTS: MailTransportSecurity[] = ["ssl", "tls", "none"];
 function SettingsAccountsServer({
   settingsOpen,
   accountsActive,
+  accountsInitialAddMode,
+  onAccountsInitialAddModeConsumed,
 }: {
   settingsOpen: boolean;
   accountsActive: boolean;
+  accountsInitialAddMode?: "quick" | "manual" | null;
+  onAccountsInitialAddModeConsumed?: () => void;
 }) {
   const { theme } = useOpenmailTheme();
   const isLight = theme === "soft-intelligence-light";
@@ -389,6 +396,17 @@ function SettingsAccountsServer({
     if (!settingsOpen || !accountsActive) return;
     void refreshServerAccounts();
   }, [settingsOpen, accountsActive, refreshServerAccounts]);
+
+  useEffect(() => {
+    if (!settingsOpen || !accountsActive || !accountsInitialAddMode) return;
+    setAddMode(accountsInitialAddMode);
+    onAccountsInitialAddModeConsumed?.();
+  }, [
+    settingsOpen,
+    accountsActive,
+    accountsInitialAddMode,
+    onAccountsInitialAddModeConsumed,
+  ]);
 
   const persistConnectedAccount = useCallback(
     async (profile: OpenMailAccountProfile) => {
@@ -866,6 +884,8 @@ function SettingsAccountsServer({
 export function OpenmailSettingsPanel({
   open,
   onClose,
+  accountsInitialAddMode = null,
+  onAccountsInitialAddModeConsumed,
 }: OpenmailSettingsPanelProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -1003,6 +1023,10 @@ export function OpenmailSettingsPanel({
                     <SettingsAccountsServer
                       settingsOpen={open}
                       accountsActive={prefs.activeSection === "accounts"}
+                      accountsInitialAddMode={accountsInitialAddMode}
+                      onAccountsInitialAddModeConsumed={
+                        onAccountsInitialAddModeConsumed
+                      }
                     />
                   )}
                 </SettingSectionCard>

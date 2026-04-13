@@ -31,6 +31,7 @@ import type {
   ServerInboxScope,
   ServerMailAccountSummary,
 } from "@/lib/serverInboxTypes";
+import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
 
 const INBOX_SCOPE_KEY = "openmail-inbox-scope-v1";
 
@@ -48,7 +49,9 @@ export type MailStoreValue = {
     silent?: boolean;
     /** When set, load this inbox without waiting for `inboxScope` state (e.g. Settings). */
     accountId?: ServerInboxScope;
-  }) => Promise<{ ok: boolean; error?: string }>;
+  }) => Promise<{ ok: boolean; error?: string; setupRequired?: boolean }>;
+  /** Legacy inbox with no `EMAIL_*` env — show connect-mailbox UI (no saved Prisma accounts). */
+  inboxSetupRequired: boolean;
   /** Prisma-backed mailboxes */
   serverMailAccounts: ServerMailAccountSummary[];
   inboxScope: ServerInboxScope;
@@ -105,6 +108,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   const [syncError, setSyncError] = useState<string | null>(null);
   const [mailsLoading, setMailsLoading] = useState(!OPENMAIL_DEMO_MODE);
   const [mailsFetchError, setMailsFetchError] = useState<string | null>(null);
+  const [inboxSetupRequired, setInboxSetupRequired] = useState(false);
   const [serverMailAccounts, setServerMailAccounts] = useState<
     ServerMailAccountSummary[]
   >([]);
@@ -146,12 +150,32 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       const data = (await res.json()) as {
         emails?: EmailListItem[];
         error?: string;
+        setupRequired?: boolean;
       };
       if (!res.ok) {
         const msg = data.error || "Could not load messages";
+        /** Legacy inbox without env: older servers returned 503 + EMAIL_* text — treat as setup, not outage. */
+        const legacyEnvMissing =
+          scope === "legacy" && isLegacyImapEnvMissingMessage(msg);
+        if (legacyEnvMissing) {
+          setInboxSetupRequired(true);
+          setMailsFetchError(null);
+          setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
+          setSelectedMailId("");
+          return { ok: true, setupRequired: true };
+        }
+        setInboxSetupRequired(false);
         if (!silent) setMailsFetchError(msg);
         return { ok: false, error: msg };
       }
+      if (data.setupRequired === true) {
+        setInboxSetupRequired(true);
+        setMailsFetchError(null);
+        setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
+        setSelectedMailId("");
+        return { ok: true, setupRequired: true };
+      }
+      setInboxSetupRequired(false);
       const incoming = (data.emails ?? []).map(emailApiItemToMailItem);
       setMails((prev) => {
         const rest = prev.filter((m) => m.folder !== "inbox");
@@ -170,6 +194,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       if (silent && aborted) {
         return { ok: true };
       }
+      setInboxSetupRequired(false);
       const msg = e instanceof Error ? e.message : "Could not load messages";
       if (!silent) setMailsFetchError(msg);
       return { ok: false, error: msg };
@@ -267,6 +292,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     setAccount(null);
     setSyncError(null);
     setMailsFetchError(null);
+    setInboxSetupRequired(false);
     if (OPENMAIL_DEMO_MODE) {
       setMailsLoading(false);
       setMails(OPENMAIL_DEMO_MAIL_ITEMS);
@@ -728,6 +754,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       mailsHydrated,
       mailsLoading,
       mailsFetchError,
+      inboxSetupRequired,
       refreshMailsFromApi,
       serverMailAccounts,
       inboxScope,
@@ -760,6 +787,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       mailsHydrated,
       mailsLoading,
       mailsFetchError,
+      inboxSetupRequired,
       refreshMailsFromApi,
       serverMailAccounts,
       inboxScope,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { EmailListItem } from "@/lib/emailListTypes";
+import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
 import { listInboxEmailListItems } from "@/lib/mailInboxFetch";
 
 export type ParsedInboxScope =
@@ -69,6 +70,13 @@ export async function jsonMailInboxListResponse(
     return NextResponse.json({ emails });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to load mail";
+    /** Legacy IMAP with no env vars — first-run, not a server outage. */
+    if (accountId == null && isLegacyImapEnvMissingMessage(message)) {
+      return NextResponse.json({
+        emails: [] as EmailListItem[],
+        setupRequired: true,
+      });
+    }
     const status = inboxFetchErrorStatus(message);
     return NextResponse.json(
       { error: message, emails: [] as EmailListItem[] },

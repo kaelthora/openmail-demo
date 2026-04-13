@@ -8,6 +8,9 @@ import type { TimeCompressionPanelProps } from "@/lib/openmailTimeCompression";
 import type { SettingsSection } from "@/lib/openmailSettingsPrefs";
 import type { GuardianAutoResponseMode } from "@/lib/guardianAutoResponse";
 import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
+import { useMailStore } from "../MailStoreProvider";
+import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
+import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
 import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
 import { ComposeEmailModal, type ComposeEmailDraft } from "./ComposeEmailModal";
 import { OpenmailSettingsPanel } from "./OpenmailSettingsPanel";
@@ -46,6 +49,8 @@ type MainLayoutProps = {
   folderLabel: string;
   listLoading?: boolean;
   listFetchError?: string | null;
+  /** No env + no saved mailbox — inbox list shows connect flow instead of error. */
+  showInboxOnboarding?: boolean;
   onRetryListFetch?: () => void | Promise<void>;
   /** Show DB/sync hint when inbox is empty (non-demo) */
   inboxEmptyHintDb?: boolean;
@@ -150,6 +155,7 @@ export function MainLayout({
   folderLabel,
   listLoading = false,
   listFetchError = null,
+  showInboxOnboarding = false,
   onRetryListFetch,
   inboxEmptyHintDb = false,
   imapSyncError = null,
@@ -199,20 +205,53 @@ export function MainLayout({
   quickClassifyPrompt,
   listToolbar = null,
 }: MainLayoutProps) {
+  const { mailsFetchError: storeListFetchError } = useMailStore();
+  const listErrorCombined = listFetchError ?? storeListFetchError ?? null;
+  /** Prop OR legacy env message in store (fixes silent refresh leaving stale error). */
+  const inboxOnboardingUiActive =
+    showInboxOnboarding ||
+    (!OPENMAIL_DEMO_MODE &&
+      !!listErrorCombined &&
+      isLegacyImapEnvMissingMessage(listErrorCombined));
+  const effectiveListFetchError = inboxOnboardingUiActive
+    ? null
+    : (listFetchError ?? null);
   const prefs = useOpenmailPreferences();
   const listSearchInputRef = useRef<HTMLInputElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const toggleSidebar = useCallback(() => setSidebarOpen((o) => !o), []);
   const [composeOpen, setComposeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [accountsAddModeIntent, setAccountsAddModeIntent] = useState<
+    "quick" | "manual" | null
+  >(null);
 
   const openSettingsSection = useCallback(
     (section: SettingsSection) => {
       prefs.setActiveSection(section);
+      setAccountsAddModeIntent(null);
       setSettingsOpen(true);
     },
     [prefs]
   );
+
+  const openAccountsConnectFlow = useCallback(
+    (mode: "quick" | "manual") => {
+      prefs.setActiveSection("accounts");
+      setAccountsAddModeIntent(mode);
+      setSettingsOpen(true);
+    },
+    [prefs]
+  );
+
+  const handleCloseSettings = useCallback(() => {
+    setSettingsOpen(false);
+    setAccountsAddModeIntent(null);
+  }, []);
+
+  const consumeAccountsAddModeIntent = useCallback(() => {
+    setAccountsAddModeIntent(null);
+  }, []);
 
   const focusListSearch = useCallback(() => {
     const el = listSearchInputRef.current;
@@ -229,7 +268,10 @@ export function MainLayout({
         sidebarOpen={sidebarOpen}
         onToggleSidebar={toggleSidebar}
         onFocusSearch={focusListSearch}
-        onSettingsPanelOpen={() => setSettingsOpen(true)}
+        onSettingsPanelOpen={() => {
+          setAccountsAddModeIntent(null);
+          setSettingsOpen(true);
+        }}
         profilePrimary={navProfilePrimary}
         profileSecondary={navProfileSecondary}
       />
@@ -264,7 +306,10 @@ export function MainLayout({
             onExitReading={onExitReading}
             folderLabel={folderLabel}
             listLoading={listLoading}
-            listFetchError={listFetchError}
+            listFetchError={effectiveListFetchError}
+            showInboxOnboarding={inboxOnboardingUiActive}
+            onInboxConnectGmail={() => openAccountsConnectFlow("quick")}
+            onInboxManualSetup={() => openAccountsConnectFlow("manual")}
             onRetryListFetch={onRetryListFetch}
             inboxEmptyHintDb={inboxEmptyHintDb}
             imapSyncError={imapSyncError}
@@ -327,7 +372,9 @@ export function MainLayout({
       />
       <OpenmailSettingsPanel
         open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
+        onClose={handleCloseSettings}
+        accountsInitialAddMode={accountsAddModeIntent}
+        onAccountsInitialAddModeConsumed={consumeAccountsAddModeIntent}
       />
     </div>
   );
