@@ -1,4 +1,5 @@
 import type { ProcessedMail } from "@/lib/mailTypes";
+import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import { rawIntentConfidence } from "@/lib/openmailCoreUi";
 
 /** Matches `CoreRecommendedAction` in the OpenMail app. */
@@ -23,9 +24,8 @@ export type ReplyAssistUiState = {
 
 function securityBlocksTrustedSend(mail: ProcessedMail | null): boolean {
   if (!mail) return true;
-  if (mail.securityLevel === "high_risk") return true;
+  if (getMailAiRiskBand(mail) === "high") return true;
   if (mail.linkQuarantine) return true;
-  if (mail.syncedAi?.risk === "high") return true;
   return false;
 }
 

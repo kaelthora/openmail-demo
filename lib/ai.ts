@@ -1,5 +1,9 @@
 import OpenAI from "openai";
-import { detectEmotionalManipulation } from "@/lib/mailSecuritySignals";
+import { logRedacted, warnRedacted } from "@/lib/zeroTracking";
+import {
+  analyzeZeroTolerance,
+  detectEmotionalManipulation,
+} from "@/lib/mailSecuritySignals";
 import {
   inferIntentLocal,
   parseIntentConfidence,
@@ -268,6 +272,16 @@ export function analyzeEmailHeuristic(input: EmailAnalyzeInput): EmailAnalysis {
       "Financial or account-related language — verify sender before sharing data or paying.";
   }
 
+  const zt = analyzeZeroTolerance(raw);
+  if (zt.forceHigh) {
+    risk = "high";
+    action = "escalate";
+    reason =
+      zt.signalCount >= 2
+        ? `Multiple zero-tolerance scam signals (${zt.signalCount}): urgency, financial pressure, authority impersonation, emotional manipulation, or suspicious links. Human validation required — do not auto-send.`
+        : `Zero-tolerance scam signal: urgency, financial pressure, authority impersonation, emotional manipulation, or suspicious link. Verify through a known channel before replying.`;
+  }
+
   const preview = raw.replace(/\s+/g, " ").slice(0, 160);
   const shortPreview =
     preview.length < raw.length ? `${preview}…` : preview || "(empty message)";
@@ -281,6 +295,12 @@ export function analyzeEmailHeuristic(input: EmailAnalyzeInput): EmailAnalysis {
           : `Routine message: ${shortPreview}`;
 
   const inferred = inferIntentLocal(input, risk, action);
+  const intentConfidence = zt.forceHigh
+    ? Math.max(
+        inferred.intentConfidence,
+        zt.signalCount >= 2 ? 0.9 : 0.88
+      )
+    : inferred.intentConfidence;
   return {
     risk,
     summary,
@@ -289,7 +309,7 @@ export function analyzeEmailHeuristic(input: EmailAnalyzeInput): EmailAnalysis {
     reason,
     intent: inferred.intent,
     intentUrgency: inferred.intentUrgency,
-    intentConfidence: inferred.intentConfidence,
+    intentConfidence,
   };
 }
 
@@ -309,13 +329,7 @@ async function callOpenAIAnalysis(
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model: null,
-      promptLength: userContent.length,
-      route: "analyzeEmail",
-      reason: "OPENAI_API_KEY unset",
-    });
+    logRedacted();
     return analyzeEmailHeuristic(input);
   }
 
@@ -345,13 +359,7 @@ async function callOpenAIAnalysis(
 
   const text = completion.choices[0]?.message?.content;
   if (!text) {
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model,
-      promptLength: userContent.length,
-      route: "analyzeEmail",
-      reason: "empty model content",
-    });
+    logRedacted();
     return analyzeEmailHeuristic(input);
   }
 
@@ -359,34 +367,17 @@ async function callOpenAIAnalysis(
   try {
     parsed = JSON.parse(text) as unknown;
   } catch {
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model,
-      promptLength: userContent.length,
-      route: "analyzeEmail",
-      reason: "JSON parse failed",
-    });
+    logRedacted();
     return analyzeEmailHeuristic(input);
   }
 
   const normalized = normalizeAnalysis(parsed, input);
   if (!normalized) {
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model,
-      promptLength: userContent.length,
-      route: "analyzeEmail",
-      reason: "normalizeAnalysis rejected payload",
-    });
+    logRedacted();
     return analyzeEmailHeuristic(input);
   }
 
-  console.log("AI SOURCE:", {
-    usingOpenAI: true,
-    model,
-    promptLength: userContent.length,
-    route: "analyzeEmail",
-  });
+  logRedacted();
   return normalized;
 }
 
@@ -399,20 +390,9 @@ export async function analyzeEmail(
 ): Promise<EmailAnalysis> {
   try {
     return await callOpenAIAnalysis(input);
-  } catch (e) {
-    const bodyLen = truncateBody(input.body || "").length;
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model: process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini",
-      promptLength: bodyLen,
-      route: "analyzeEmail",
-      reason: "exception",
-      error: e instanceof Error ? e.message : String(e),
-    });
-    console.warn(
-      "[openmail] analyzeEmail LLM failed, using heuristic:",
-      e instanceof Error ? e.message : e
-    );
+  } catch {
+    logRedacted();
+    warnRedacted("[openmail] analyzeEmail LLM failed, using heuristic");
     return analyzeEmailHeuristic(input);
   }
 }
@@ -430,13 +410,7 @@ export type GenerateReplyInput = {
 export async function generateReply(input: GenerateReplyInput): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model: null,
-      promptLength: 0,
-      route: "generateReply",
-      reason: "OPENAI_API_KEY unset",
-    });
+    logRedacted();
     throw new Error("OPENAI_API_KEY is not configured");
   }
 
@@ -477,22 +451,11 @@ export async function generateReply(input: GenerateReplyInput): Promise<string> 
 
   const text = completion.choices[0]?.message?.content?.trim();
   if (!text) {
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model,
-      promptLength: prompt.length,
-      route: "generateReply",
-      reason: "empty model response",
-    });
+    logRedacted();
     throw new Error("Empty model response");
   }
 
-  console.log("AI SOURCE:", {
-    usingOpenAI: true,
-    model,
-    promptLength: prompt.length,
-    route: "generateReply",
-  });
+  logRedacted();
 
   return text;
 }
@@ -523,13 +486,7 @@ export async function generateReplySuggestions(
 ): Promise<string[]> {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model: null,
-      promptLength: 0,
-      route: "generateReplySuggestions",
-      reason: "OPENAI_API_KEY unset",
-    });
+    logRedacted();
     throw new Error("OPENAI_API_KEY is not configured");
   }
 
@@ -575,13 +532,7 @@ export async function generateReplySuggestions(
 
   const raw = completion.choices[0]?.message?.content?.trim();
   if (!raw) {
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model,
-      promptLength: prompt.length,
-      route: "generateReplySuggestions",
-      reason: "empty model response",
-    });
+    logRedacted();
     throw new Error("Empty model response");
   }
 
@@ -602,12 +553,7 @@ export async function generateReplySuggestions(
     throw new Error("Model returned too few replies");
   }
 
-  console.log("AI SOURCE:", {
-    usingOpenAI: true,
-    model,
-    promptLength: prompt.length,
-    route: "generateReplySuggestions",
-  });
+  logRedacted();
 
   return cleaned.slice(0, 4);
 }
@@ -655,13 +601,7 @@ export async function generateGuardianSafeReply(
   const fallback = guardianSafeReplyFallback(input);
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
-    console.log("AI SOURCE:", {
-      usingOpenAI: false,
-      model: null,
-      promptLength: input.email.length,
-      route: "generateGuardianSafeReply",
-      reason: "OPENAI_API_KEY unset",
-    });
+    logRedacted();
     return fallback;
   }
 
@@ -708,29 +648,15 @@ export async function generateGuardianSafeReply(
 
     const text = completion.choices[0]?.message?.content?.trim();
     if (!text) {
-      console.log("AI SOURCE:", {
-        usingOpenAI: false,
-        model,
-        promptLength: userPrompt.length,
-        route: "generateGuardianSafeReply",
-        reason: "empty model response",
-      });
+      logRedacted();
       return fallback;
     }
 
-    console.log("AI SOURCE:", {
-      usingOpenAI: true,
-      model,
-      promptLength: userPrompt.length,
-      route: "generateGuardianSafeReply",
-    });
+    logRedacted();
 
     return text.replace(/\s+/g, " ").trim();
   } catch (e) {
-    console.warn(
-      "[openmail] generateGuardianSafeReply failed, using fallback:",
-      e instanceof Error ? e.message : e
-    );
+    warnRedacted("[openmail] generateGuardianSafeReply failed, using fallback");
     return fallback;
   }
 }

@@ -48,6 +48,13 @@ export type SecuritySignals = {
   financialUrgencyScam: boolean;
   /** Urgency + money cues from an external / unknown sender. */
   urgencyMoneyExternalSender: boolean;
+  /**
+   * Zero-tolerance scam bundle: urgency / financial / authority / emotional / credential-style hosts.
+   * Any hit forces HIGH risk in analysis (cannot present as neutral).
+   */
+  zeroToleranceHit: boolean;
+  /** Count of distinct zero-tolerance categories matched (drives confidence floor). */
+  zeroToleranceSignalCount: number;
 };
 
 /** Explicit HIGH RISK modal / CORE bullets (subset of `SecuritySignals`). */
@@ -61,9 +68,10 @@ export function deriveHighRiskUiReasons(s: SecuritySignals): HighRiskUiReasons {
   const urgentFinancial =
     s.giftCardScam ||
     s.financialUrgencyScam ||
-    s.urgencyMoneyExternalSender;
+    s.urgencyMoneyExternalSender ||
+    s.zeroToleranceHit;
   const impersonation = s.brandImpersonation || s.ceoAuthorityImpersonation;
-  const socialEngineering = s.emotionalManipulation;
+  const socialEngineering = s.emotionalManipulation || s.zeroToleranceHit;
   return { urgentFinancial, impersonation, socialEngineering };
 }
 
@@ -124,6 +132,12 @@ function buildWhyBullets(
     bullets.push("SPF/DKIM/DMARC don’t align with a trusted sender (simulated)");
   } else if (authFails === 1) {
     bullets.push("At least one auth check looks weak (simulated)");
+  }
+
+  if (signals.zeroToleranceHit) {
+    bullets.push(
+      "Zero-tolerance policy: urgency, financial pressure, impersonation, emotional manipulation, or risky link host detected"
+    );
   }
 
   if (signals.emotionalManipulation) {
@@ -315,9 +329,77 @@ function senderUnknownOrExternalForEmotionalScam(
 }
 
 function hasUrgencyCue(t: string): boolean {
-  return /\b(urgent|urgently|immediately|right\s*now|right\s*away|asap|a\.s\.a\.p\.|time[\s-]*sensitive|don'?t\s*wait|hurry|emergency|rush)\b/i.test(
+  return /\b(urgent|urgently|immediately|right\s*now|right\s*away|asap|a\.s\.a\.p\.|time[\s-]*sensitive|don'?t\s*wait|hurry|emergency|rush)\b|\bnow\b/i.test(
     t
   );
+}
+
+/** Legitimate major providers — credential subdomains are common and not auto-HIGH here. */
+const ZT_TRUSTED_MAIL_HOST =
+  /(\.|^)(google|gmail|gstatic|microsoft|office|live|outlook|apple|icloud|amazon|github|cloudflare)\./i;
+
+/**
+ * Zero-tolerance scam signals: any category alone forces HIGH risk (no neutral pass-through).
+ * Domains: flag credential-phish style hosts unless clearly a major trusted provider.
+ */
+export function analyzeZeroTolerance(full: string): {
+  forceHigh: boolean;
+  signalCount: number;
+  urgencyLanguage: boolean;
+  financialRequest: boolean;
+  authorityImpersonation: boolean;
+  emotionalPhrase: boolean;
+  suspiciousLinkHost: boolean;
+} {
+  const t = full.toLowerCase();
+  const urgencyLanguage =
+    /\b(urgent|urgently|immediately|\basap\b|a\.s\.a\.p\.)\b/i.test(t) ||
+    /\bnow\b/i.test(t);
+  const financialRequest =
+    /\b(gift\s*cards?|gift\s*card)\b/i.test(t) ||
+    /\b(wire|iban)\b/i.test(t) ||
+    /\b(wire\s+transfer|bank\s+transfer|money\s+transfer)\b/i.test(t) ||
+    (/\btransfer\b/i.test(t) &&
+      /\b(bank|payment|fund|account|money|\$|€|£)\b/i.test(t));
+  const authorityImpersonation = /\b(ceo|boss|manager)\b/i.test(t);
+  const emotionalPhrase =
+    /\bplease\s+help\b/i.test(t) ||
+    /\bmy\s+children\b/i.test(t) ||
+    /\bemergency\b/i.test(t);
+
+  const hosts = extractUrlHosts(full);
+  const suspiciousLinkHost = hosts.some((h) => zeroToleranceSuspiciousHost(h));
+
+  const parts = [
+    urgencyLanguage,
+    financialRequest,
+    authorityImpersonation,
+    emotionalPhrase,
+    suspiciousLinkHost,
+  ];
+  const signalCount = parts.filter(Boolean).length;
+  const forceHigh = parts.some(Boolean);
+  return {
+    forceHigh,
+    signalCount,
+    urgencyLanguage,
+    financialRequest,
+    authorityImpersonation,
+    emotionalPhrase,
+    suspiciousLinkHost,
+  };
+}
+
+function zeroToleranceSuspiciousHost(host: string): boolean {
+  const h = host.toLowerCase().trim();
+  if (!h) return false;
+  if (ZT_TRUSTED_MAIL_HOST.test(h) && !/\.(tk|ml|gq|xyz|top|click|link)$/i.test(h)) {
+    return false;
+  }
+  if (/\.(tk|ml|ga|gq|xyz|top|click|link|buzz|work)$/i.test(h)) {
+    return /login|secure|verify|account|auth/i.test(h);
+  }
+  return /(^|[.-])(login|secure|verify|account)([.-]|$)/i.test(h) || /[-](login|secure|verify|account)[-.]/i.test(h);
 }
 
 function hasPersonalDistressCue(t: string): boolean {
@@ -548,6 +630,9 @@ function reasonFromSignals(
     return `Brand impersonation (${signals.impersonatedBrand})`;
   }
   if (level === "high_risk") {
+    if (signals.zeroToleranceHit) {
+      return "Zero-tolerance scam / manipulation signals detected";
+    }
     if (signals.giftCardScam) {
       return "Gift card / authority scam pattern";
     }
@@ -596,6 +681,8 @@ export function analyzeMailSecurity(input: MailSecurityInput): SecurityAnalysisR
     input.preview ?? "",
     input.content ?? "",
   ].join("\n");
+
+  const zt = analyzeZeroTolerance(full);
 
   const primaryEmail = extractPrimaryEmail(input.sender);
   const senderHost = hostFromEmail(primaryEmail);
@@ -650,6 +737,8 @@ export function analyzeMailSecurity(input: MailSecurityInput): SecurityAnalysisR
     ceoAuthorityImpersonation,
     financialUrgencyScam,
     urgencyMoneyExternalSender,
+    zeroToleranceHit: zt.forceHigh,
+    zeroToleranceSignalCount: zt.signalCount,
   };
 
   let riskScore = Math.min(
@@ -704,8 +793,12 @@ export function analyzeMailSecurity(input: MailSecurityInput): SecurityAnalysisR
     }
   }
 
+  if (zt.forceHigh) {
+    riskScore = Math.max(riskScore, zt.signalCount >= 2 ? 96 : 90);
+  }
+
   let securityLevel: SecurityLevel = "safe";
-  if (brandImpersonation || riskScore >= 78) {
+  if (brandImpersonation || riskScore >= 78 || zt.forceHigh) {
     securityLevel = "high_risk";
   } else if (riskScore >= 36) {
     securityLevel = "suspicious";

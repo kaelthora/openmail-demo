@@ -7,17 +7,35 @@ export type LinkDisplayTier = "safe" | "suspicious" | "blocked";
 /** Badge tier for attachments (matches UI `SecurityRiskLevel`). */
 export type AttachmentBadgeTier = "safe" | "suspicious" | "dangerous";
 
+const BAND_RANK: Record<MailAiRiskBand, number> = {
+  safe: 0,
+  medium: 1,
+  high: 2,
+};
+
+function maxMailAiRiskBand(
+  a: MailAiRiskBand,
+  b: MailAiRiskBand
+): MailAiRiskBand {
+  return BAND_RANK[a] >= BAND_RANK[b] ? a : b;
+}
+
 /**
- * Mail-level AI risk: prefers synced `analyzeEmail` output, then processed security level.
+ * Mail-level AI risk: merges synced `analyzeEmail` output with processed security level.
+ * Heuristic/high_risk flags cannot be downgraded by a “safe” synced classification.
  */
 export function getMailAiRiskBand(
   mail: Pick<ProcessedMail, "syncedAi" | "securityLevel">
 ): MailAiRiskBand {
   const r = mail.syncedAi?.risk;
-  if (r === "high" || r === "medium" || r === "safe") return r;
-  if (mail.securityLevel === "high_risk") return "high";
-  if (mail.securityLevel === "suspicious") return "medium";
-  return "safe";
+  let band: MailAiRiskBand =
+    r === "high" || r === "medium" || r === "safe" ? r : "safe";
+  if (mail.securityLevel === "high_risk") {
+    band = maxMailAiRiskBand(band, "high");
+  } else if (mail.securityLevel === "suspicious") {
+    band = maxMailAiRiskBand(band, "medium");
+  }
+  return band;
 }
 
 /**

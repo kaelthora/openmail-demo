@@ -694,7 +694,7 @@ function OpenMailPageContent() {
         );
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Send failed";
-        console.error("[openmail] compose send failed", e);
+        console.error("[openmail] compose send failed [redacted]");
         toast.error(msg);
         throw e;
       }

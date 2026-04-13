@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-
 type LengthMode = "short" | "detailed";
 
 type ComposeControlPanelProps = {
@@ -15,9 +13,6 @@ type ComposeControlPanelProps = {
 
 function ComposeControlPanel(props: ComposeControlPanelProps) {
   void props;
-  useEffect(() => {
-    console.log("ComposeControlPanel mounted");
-  }, []);
 
   return (
     <div

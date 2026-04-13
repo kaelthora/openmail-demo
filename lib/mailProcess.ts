@@ -127,13 +127,27 @@ export function processMails(inputMails: MailItem[]): ProcessedMail[] {
       }
     }
 
+    /** Zero-tolerance scam signals cannot be downgraded by AI “safe” classification. */
+    if (security.signals.zeroToleranceHit) {
+      securityLevel = "high_risk";
+      securityRiskScore = Math.max(
+        securityRiskScore,
+        security.signals.zeroToleranceSignalCount >= 2 ? 94 : 88
+      );
+      intentConfidence = Math.max(
+        intentConfidence,
+        security.signals.zeroToleranceSignalCount >= 2 ? 0.92 : 0.88
+      );
+    }
+
     // Scam / impersonation heuristics — politeness / “safe” AI must not clear them.
     const scamFloor =
       security.signals.emotionalManipulation ||
       security.signals.giftCardScam ||
       security.signals.financialUrgencyScam ||
       security.signals.ceoAuthorityImpersonation ||
-      security.signals.urgencyMoneyExternalSender;
+      security.signals.urgencyMoneyExternalSender ||
+      security.signals.zeroToleranceHit;
     if (scamFloor) {
       if (
         security.signals.emotionalManipulationUrgent ||

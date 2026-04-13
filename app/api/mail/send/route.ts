@@ -232,8 +232,8 @@ export async function POST(request: Request) {
         references
       );
       await appendToSentMailbox(account, raw);
-    } catch (appendError) {
-      console.warn("[mail/send] Could not append to IMAP sent folder", appendError);
+    } catch {
+      console.warn("[mail/send] Could not append to IMAP sent folder [redacted]");
     }
 
     return NextResponse.json({ ok: true, imapReadOnly: IMAP_READ_ONLY });

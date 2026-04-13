@@ -10,6 +10,7 @@ import {
 } from "@/lib/guardianAutoResponse";
 import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
 import { useOpenmailTheme } from "../OpenmailThemeProvider";
+import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
 
 type AIPanelProps = {
@@ -57,8 +58,9 @@ type CoreRiskBand = "high" | "medium" | "safe" | "idle";
 
 function coreRiskBand(mail: ProcessedMail | null): CoreRiskBand {
   if (!mail) return "idle";
-  if (mail.securityLevel === "high_risk") return "high";
-  if (mail.securityLevel === "suspicious") return "medium";
+  const band = getMailAiRiskBand(mail);
+  if (band === "high") return "high";
+  if (band === "medium") return "medium";
   return "safe";
 }
 
@@ -568,6 +570,7 @@ export function AIPanel({
   const [prefillSurfaceAnim, setPrefillSurfaceAnim] = useState(false);
   const [acceptedSuggestionIndex, setAcceptedSuggestionIndex] = useState<number | null>(null);
   const [decisionToReplyCue, setDecisionToReplyCue] = useState(false);
+  const [highRiskSendAck, setHighRiskSendAck] = useState(false);
   const glowClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const acceptClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const decisionToReplyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -579,6 +582,7 @@ export function AIPanel({
 
   useEffect(() => {
     setUserTyping(false);
+    setHighRiskSendAck(false);
     suggestionPreviewBaseRef.current = null;
     suggestionPreviewIndexRef.current = null;
   }, [selectedMail?.id]);
@@ -689,6 +693,16 @@ export function AIPanel({
     [selectedMail, recommendedCoreAction, draftTrimmed]
   );
 
+  const decisionEngineBand = useMemo(
+    () => coreRiskBand(selectedMail),
+    [selectedMail]
+  );
+  const highRiskUiLock = decisionEngineBand === "high";
+  /** High-risk threads need an explicit ack before Send / composer actions (zero-tolerance). */
+  const coreSendBlocked =
+    guardianAutoResponseMode === "block" &&
+    !(highRiskUiLock && highRiskSendAck);
+
   const hasRecommendedAction = recommendedCoreAction != null;
 
   const handleSuggestionClick = useCallback(
@@ -743,11 +757,7 @@ export function AIPanel({
   const handleProceedClick = useCallback(async () => {
     await onProceed();
     const r = recommendedCoreAction;
-    if (
-      guardianAutoResponseMode === "block" &&
-      r !== "ignore" &&
-      r !== "escalate"
-    ) {
+    if (coreSendBlocked && r !== "ignore" && r !== "escalate") {
       return;
     }
     if (
@@ -770,15 +780,10 @@ export function AIPanel({
     flashSuggestionAccepted,
     onProceed,
     recommendedCoreAction,
-    guardianAutoResponseMode,
+    coreSendBlocked,
   ]);
 
-  const guardianBlocksCoreSend = guardianAutoResponseMode === "block";
-
-  const decisionEngineBand = useMemo(
-    () => coreRiskBand(selectedMail),
-    [selectedMail]
-  );
+  const guardianBlocksCoreSend = coreSendBlocked;
   const hideLegacyProceedButton =
     aiPrefs.autoAnalyze && selectedMail && decisionEngineBand === "safe";
 
@@ -840,6 +845,14 @@ export function AIPanel({
           ) : null}
 
           <div className="openmail-ai-reply-stack mt-6 flex min-h-0 min-w-0 flex-1 flex-col border-t border-[var(--border)] pt-7">
+            {selectedMail && highRiskUiLock ? (
+              <div
+                className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2.5 text-[12px] font-semibold leading-snug text-red-100 shadow-[0_0_20px_rgba(220,38,38,0.12)]"
+                role="status"
+              >
+                ⚠️ High risk message — likely scam or manipulation attempt
+              </div>
+            ) : null}
             <div
               className={`openmail-ai-reply-pane flex min-h-0 flex-1 flex-col rounded-[12px] border p-4 transition-[box-shadow,background-color,border-color,transform] duration-200 ease-out sm:p-5 ${
                 decisionToReplyCue
@@ -879,9 +892,10 @@ export function AIPanel({
                       </div>
                       <div
                         className={`rounded-[12px] border ${
-                          guardianAutoResponseMode === "block"
+                          coreSendBlocked
                             ? "border-red-500/35 bg-red-950/20 px-3.5 py-3"
-                            : guardianAutoResponseMode === "require_validation"
+                            : guardianAutoResponseMode === "require_validation" ||
+                                guardianAutoResponseMode === "block"
                               ? "border-[rgba(255,180,0,0.2)] bg-[rgba(255,180,0,0.08)] px-4 py-3.5"
                               : "border-emerald-500/30 bg-emerald-950/15 px-3.5 py-3"
                         }`}
@@ -894,7 +908,8 @@ export function AIPanel({
                           ) : null}
                           <span
                             className={`min-w-0 flex-1 font-medium leading-[1.45] ${
-                              guardianAutoResponseMode === "require_validation"
+                              guardianAutoResponseMode === "require_validation" ||
+                              guardianAutoResponseMode === "block"
                                 ? "text-[11px] text-[color:var(--text-main)] opacity-[0.9]"
                                 : "text-[10px] leading-snug text-[color:var(--text-soft)]"
                             }`}
@@ -928,7 +943,11 @@ export function AIPanel({
                             <button
                               key={`${index}-${suggestion.slice(0, 24)}`}
                               type="button"
-                              disabled={aiReplyLoading || guardianDraftLoading}
+                              disabled={
+                                aiReplyLoading ||
+                                guardianDraftLoading ||
+                                coreSendBlocked
+                              }
                               aria-current={isBest ? "true" : undefined}
                               aria-label={isBest ? `Best suggestion: ${suggestion}` : undefined}
                               title="Hover to preview. Click to insert into your draft (not sent until you tap Send)."
@@ -969,7 +988,8 @@ export function AIPanel({
                                 aiReplyLoading ||
                                 guardianDraftLoading ||
                                 sending ||
-                                proceedBusy
+                                proceedBusy ||
+                                coreSendBlocked
                               }
                               title="Friendly, professional drafts to help you write faster"
                               onClick={() => void onGenerateAiReply()}
@@ -991,10 +1011,10 @@ export function AIPanel({
                                 guardianDraftLoading ||
                                 sending ||
                                 proceedBusy ||
-                                guardianAutoResponseMode === "block"
+                                coreSendBlocked
                               }
                               title={
-                                guardianAutoResponseMode === "block"
+                                coreSendBlocked
                                   ? guardianAutoResponseDescription("block")
                                   : "Defensive wording: verify identity, refuse risky asks — does not send"
                               }
@@ -1043,7 +1063,7 @@ export function AIPanel({
                           sending ||
                           aiReplyLoading ||
                           guardianDraftLoading ||
-                          guardianBlocksCoreSend
+                          coreSendBlocked
                         }
                       >
                         {proceedBusy || sending ? "Working…" : CORE_ONE_TAP_CTA}
@@ -1083,7 +1103,7 @@ export function AIPanel({
                           aiReplyLoading ||
                           guardianDraftLoading ||
                           !draftTrimmed ||
-                          guardianAutoResponseMode === "block"
+                          coreSendBlocked
                         ) {
                           return;
                         }
@@ -1103,6 +1123,20 @@ export function AIPanel({
             </div>
 
             <div className="openmail-ai-footer sticky bottom-0 z-10 mt-4 shrink-0 border-t border-[var(--border)] bg-[color:var(--openmail-ai-chrome)] pt-4 backdrop-blur-[2px]">
+              {selectedMail && highRiskUiLock ? (
+                <label className="mb-3 flex cursor-pointer items-start gap-2.5 rounded-lg border border-red-500/35 bg-red-950/25 px-3 py-2.5">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-3.5 w-3.5 shrink-0 rounded border-red-400/60 text-red-600 focus:ring-red-500/40"
+                    checked={highRiskSendAck}
+                    onChange={(e) => setHighRiskSendAck(e.target.checked)}
+                  />
+                  <span className="text-[11px] font-medium leading-snug text-[color:var(--text-main)]">
+                    I understand this message may be fraudulent or manipulative. I still want to
+                    compose or send a reply.
+                  </span>
+                </label>
+              ) : null}
               {sendError ? (
                 <div className="mb-2 text-center text-xs leading-snug text-red-300">{sendError}</div>
               ) : sendSuccess ? (
@@ -1125,7 +1159,7 @@ export function AIPanel({
                   guardianDraftLoading ||
                   !draftTrimmed ||
                   !selectedMail ||
-                  guardianBlocksCoreSend
+                  coreSendBlocked
                 }
               >
                 {sending ? "Sending…" : "Send reply"}

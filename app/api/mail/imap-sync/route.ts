@@ -38,9 +38,7 @@ export async function POST(request: Request) {
   const client = createImapClientFromConfig(account.imap);
 
   try {
-    console.info(
-      `[openmail][IMAP] imap-sync connect ${account.imap.host}:${account.imap.port} folder=${folder}`
-    );
+    console.info("[openmail][IMAP] imap-sync [redacted]");
     await client.connect();
     let openedMailbox: string | null = null;
     const candidates = imapMailboxCandidates(folder, account.imap.host);
@@ -48,15 +46,10 @@ export async function POST(request: Request) {
       try {
         await client.mailboxOpen(mailboxName, imapMailboxOpenOptions());
         openedMailbox = mailboxName;
-        console.info(
-          `[openmail][IMAP] imap-sync opened "${mailboxName}" exists=${client.mailbox ? client.mailbox.exists : "?"}`
-        );
+        console.info("[openmail][IMAP] imap-sync [redacted]");
         break;
-      } catch (e) {
-        console.warn(
-          `[openmail][IMAP] imap-sync cannot open "${mailboxName}":`,
-          e instanceof Error ? e.message : e
-        );
+      } catch {
+        console.warn("[openmail][IMAP] imap-sync [redacted]");
       }
     }
     if (!openedMailbox) {
@@ -157,13 +150,11 @@ export async function POST(request: Request) {
 
     out.reverse();
 
-    console.info(
-      `[openmail][IMAP] imap-sync: fetched ${out.length} message(s) from "${openedMailbox}"`
-    );
+    console.info("[openmail][IMAP] imap-sync [redacted]");
 
     return NextResponse.json({ messages: out });
   } catch (e) {
-    console.error("[openmail][IMAP] imap-sync failed:", e);
+    console.error("[openmail][IMAP] imap-sync failed [redacted]");
     try {
       await client.logout();
     } catch {

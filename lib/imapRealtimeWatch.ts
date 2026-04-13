@@ -50,8 +50,8 @@ async function oneImapSession(): Promise<void> {
   const enqueue = (fromSeq: number, toSeq: number) => {
     chain = chain
       .then(() => ingestSequenceRange(client, fromSeq, toSeq, lastSeen))
-      .catch((err) => {
-        console.error("[openmail] realtime ingest:", err);
+      .catch(() => {
+        console.error("[openmail] realtime ingest [redacted]");
       });
   };
 
@@ -63,17 +63,12 @@ async function oneImapSession(): Promise<void> {
       await client.mailboxOpen(p, imapMailboxOpenOptions());
       openedInbox = p;
       break;
-    } catch (e) {
-      console.warn(
-        `[openmail] IMAP watch: mailboxOpen "${p}":`,
-        e instanceof Error ? e.message : e
-      );
+    } catch {
+      console.warn("[openmail] IMAP watch [redacted]");
     }
   }
   if (!openedInbox) {
-    console.error(
-      `[openmail] IMAP watch: could not open INBOX (tried ${inboxPaths.join(", ")})`
-    );
+    console.error("[openmail] IMAP watch [redacted]");
     await safeLogout(client);
     return;
   }
@@ -108,8 +103,8 @@ async function oneImapSession(): Promise<void> {
         const cnt = st.messages;
         if (typeof cnt !== "number" || cnt <= lastSeen.current) return;
         enqueue(lastSeen.current + 1, cnt);
-      } catch (e) {
-        console.warn("[openmail] IMAP poll:", e);
+      } catch {
+        console.warn("[openmail] IMAP poll [redacted]");
       }
     })();
   }, POLL_MS);
@@ -150,7 +145,7 @@ async function runWatchLoop(): Promise<void> {
       backoff = INITIAL_BACKOFF_MS;
     } catch (e) {
       const detail = e instanceof Error ? e.message : String(e);
-      console.warn("[openmail] IMAP watch:", detail);
+      console.warn("[openmail] IMAP watch [redacted]");
       emitMailRealtime({
         type: "imap_status",
         state: "reconnecting",

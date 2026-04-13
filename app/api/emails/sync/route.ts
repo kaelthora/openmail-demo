@@ -19,24 +19,16 @@ export async function POST(request: Request) {
   try {
     const scope = accountId ?? null;
     if (accountId) {
-      console.info(
-        `[openmail][IMAP] emails/sync: accountId=${accountId} (shared mailInboxFetch)`
-      );
+      console.info("[openmail][IMAP] emails/sync [redacted]");
     } else {
-      console.info(
-        `[openmail][IMAP] emails/sync: legacy mode — Gmail IMAP (EMAIL_USER / EMAIL_PASS)`
-      );
+      console.info("[openmail][IMAP] emails/sync [redacted]");
     }
     const fetched = await fetchInboxFetchedEmails(scope);
-    console.info(
-      `[openmail][IMAP] emails/sync: fetched ${fetched.length} message(s) from INBOX`
-    );
+    console.info("[openmail][IMAP] emails/sync [redacted]");
     const { inserted } = await ingestFetchedEmails(fetched, {
       accountId: scope,
     });
-    console.info(
-      `[openmail][IMAP] emails/sync: inserted ${inserted} new row(s) into database`
-    );
+    console.info("[openmail][IMAP] emails/sync [redacted]");
     return NextResponse.json({
       success: true,
       count: inserted,

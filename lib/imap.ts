@@ -15,11 +15,11 @@ const IMAP_CONN_MS = 60_000;
 const IMAP_GREET_MS = 25_000;
 const IMAP_SOCKET_MS = 120_000;
 
-function logImap(level: "info" | "warn" | "error", msg: string, extra?: unknown): void {
-  const line = `[openmail][IMAP] ${msg}`;
-  if (level === "info") console.info(line, extra ?? "");
-  else if (level === "warn") console.warn(line, extra ?? "");
-  else console.error(line, extra ?? "");
+function logImap(level: "info" | "warn" | "error", _msg: string, _extra?: unknown): void {
+  const line = "[openmail][IMAP] [redacted]";
+  if (level === "info") console.info(line);
+  else if (level === "warn") console.warn(line);
+  else console.error(line);
 }
 
 /** True when server-side IMAP env credentials are present (Gmail INBOX). */

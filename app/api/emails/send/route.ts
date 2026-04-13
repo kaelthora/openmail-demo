@@ -137,7 +137,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, imapReadOnly: IMAP_READ_ONLY });
   } catch (e) {
-    console.error("[openmail] POST /api/emails/send failed", e);
+    console.error("[openmail] POST /api/emails/send failed [redacted]");
     const message = e instanceof Error ? e.message : "Send failed";
     const isConfig =
       message.includes("SMTP is not configured") ||

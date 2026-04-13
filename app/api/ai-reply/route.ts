@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const reply = await generateReply({ email, tone, risk });
     return NextResponse.json({ reply });
   } catch (e) {
-    console.error("[api/ai-reply]", e);
+    console.error("[api/ai-reply] [redacted]");
     const message =
       e instanceof Error ? e.message : "Failed to generate reply";
     return NextResponse.json({ error: message }, { status: 500 });

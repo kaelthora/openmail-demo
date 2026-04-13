@@ -127,10 +127,7 @@ export function GuardianInterceptProvider({ children }: { children: ReactNode })
       if (!active) return;
       const trimmed = reason.trim();
       if (trimmed.length > 0) {
-        console.info(
-          `[openmail][Guardian] Request override (${active.kind}):`,
-          trimmed.slice(0, 500)
-        );
+        console.info("[openmail][Guardian] Request override [redacted]");
       }
       closeAndPump(active, "proceed");
     },

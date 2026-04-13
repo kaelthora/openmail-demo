@@ -7,6 +7,7 @@ import {
   type MailTransportSecurity,
 } from "@/lib/mailAccountConfig";
 import { guardImapFlowClient, imapMailboxOpenOptions } from "@/lib/imapReadOnly";
+import { assertNoTrackingUrl } from "@/lib/zeroTracking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,7 +48,9 @@ function parseServerBlock(xml: string, type: "imap" | "smtp") {
 async function resolveAutoConfig(email: string) {
   const domain = extractDomain(email);
   if (!domain) throw new Error("Invalid email domain");
-  const res = await fetch(`https://autoconfig.thunderbird.net/v1.1/${domain}`, {
+  const autoconfigUrl = `https://autoconfig.thunderbird.net/v1.1/${domain}`;
+  assertNoTrackingUrl(autoconfigUrl, "mail-autoconfig");
+  const res = await fetch(autoconfigUrl, {
     cache: "no-store",
     signal: AbortSignal.timeout(10000),
   });
@@ -98,14 +101,6 @@ function buildProfileFromAuto(email: string, password: string, auto: Awaited<Ret
 }
 
 async function verifyImap(account: OpenMailAccountProfile) {
-  console.log("[connect-account] IMAP EMAIL:", account.email);
-  console.log("[connect-account] IMAP CONFIG:", {
-    host: account.imap.host,
-    port: account.imap.port,
-    secure: account.imap.security === "ssl",
-    security: account.imap.security,
-    username: account.imap.username,
-  });
   const client = guardImapFlowClient(
     new ImapFlow({
       host: account.imap.host.trim(),
@@ -151,9 +146,7 @@ async function verifySmtp(account: OpenMailAccountProfile) {
 }
 
 export async function POST(request: Request) {
-  console.log("=== CONNECT ACCOUNT START ===");
   try {
-    console.log("[connect-account] API HIT");
     let body: ConnectBody;
     try {
       body = await request.json();
@@ -209,20 +202,11 @@ export async function POST(request: Request) {
       account = buildProfileFromAuto(email, password, auto);
     }
 
-    console.log("[connect-account] CONNECTING...");
     await verifyImap(account);
-    console.log("[connect-account] CONNECTED SUCCESS");
     await verifySmtp(account);
     return NextResponse.json({ ok: true, account });
   } catch (e) {
-    console.error("=== IMAP ERROR ===");
-    console.error(e);
-    if (e instanceof Error) {
-      console.error("MESSAGE:", e.message);
-      console.error("STACK:", e.stack);
-    } else {
-      console.error("MESSAGE:", String(e));
-    }
+    console.error("[connect-account] [redacted]");
     const raw = e instanceof Error ? e.message : "Could not connect";
     const lower = raw.toLowerCase();
     const friendly = lower.includes("auth")

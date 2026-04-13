@@ -42,10 +42,7 @@ export function assertImapWriteAllowed(operation?: string): void {
   if (!IMAP_READ_ONLY) return;
   const err = new Error(BLOCK_MSG);
   if (process.env.NODE_ENV !== "production") {
-    console.warn(
-      `[openmail] Blocked IMAP write${operation ? ` (${operation})` : ""}`,
-      err.stack ?? err.message
-    );
+    console.warn("[openmail] Blocked IMAP write [redacted]");
   }
   throw err;
 }

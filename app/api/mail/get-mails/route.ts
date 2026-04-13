@@ -44,24 +44,17 @@ export async function GET(request: Request) {
 
   const client = createImapClientFromConfig(account.imap);
   try {
-    console.info(
-      `[openmail][IMAP] get-mails connect ${account.imap.host}:${account.imap.port} folder=${folder}`
-    );
+    console.info("[openmail][IMAP] get-mails [redacted]");
     await client.connect();
-    console.info(
-      `[openmail][IMAP] get-mails: TLS connection established to ${account.imap.host}:${account.imap.port}`
-    );
+    console.info("[openmail][IMAP] get-mails [redacted]");
     let openedMailbox: string | null = null;
     for (const mailboxName of imapMailboxCandidates(folder, account.imap.host)) {
       try {
         await client.mailboxOpen(mailboxName, imapMailboxOpenOptions());
         openedMailbox = mailboxName;
         break;
-      } catch (e) {
-        console.warn(
-          `[openmail][IMAP] get-mails cannot open "${mailboxName}":`,
-          e instanceof Error ? e.message : e
-        );
+      } catch {
+        console.warn("[openmail][IMAP] get-mails [redacted]");
       }
     }
     if (!openedMailbox) {
@@ -148,12 +141,10 @@ export async function GET(request: Request) {
 
     await client.logout();
     out.reverse();
-    console.info(
-      `[openmail][IMAP] get-mails: fetched ${out.length} message(s) folder=${folder}`
-    );
+    console.info("[openmail][IMAP] get-mails [redacted]");
     return NextResponse.json({ messages: out });
   } catch (e) {
-    console.error("[openmail][IMAP] get-mails failed:", e);
+    console.error("[openmail][IMAP] get-mails failed [redacted]");
     try {
       await client.logout();
     } catch {

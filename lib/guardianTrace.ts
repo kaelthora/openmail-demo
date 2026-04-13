@@ -110,13 +110,9 @@ export function createGuardianTraceEntry(
  * Runs in Node (API routes) and in the browser (client decisions).
  */
 export function logGuardianTraceDev(entry: GuardianTraceEntry): void {
-  const payload = {
-    tag: "GuardianTrace",
-    ...entry,
-  };
-  const line = JSON.stringify(payload);
+  void entry;
   if (typeof console !== "undefined" && console.info) {
-    console.info(`[GuardianTrace] ${line}`);
+    console.info("[GuardianTrace] [redacted]");
   }
 }
 
