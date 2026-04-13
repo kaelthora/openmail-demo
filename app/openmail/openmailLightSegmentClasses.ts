@@ -1,6 +1,7 @@
 /**
- * Light segmented controls — pair with `om-light-seg-active` / `om-light-seg-idle`
- * in `globals.css` under `html[data-openmail-theme="soft-intelligence-light"]` (!important).
+ * Light segmented controls — same semantics as Settings → Accounts:
+ * `om-light-seg-active` = selected (Quick connect grey), `om-light-seg-idle` = unselected (Manual white).
+ * Defined in `globals.css` under `html[data-openmail-theme="soft-intelligence-light"]` (!important).
  * Tailwind: layout/typography only — do not add bg-*, border-white/*, or dark fills here
  * (they fight the global segment styles).
  */

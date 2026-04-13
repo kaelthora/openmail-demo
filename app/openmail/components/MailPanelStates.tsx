@@ -123,7 +123,7 @@ export function MailListInboxOnboarding({
           type="button"
           className={
             isLight
-              ? "openmail-inbox-connect-gmail-btn om-light-seg-idle w-full rounded-[10px] px-4 py-2.5 text-xs font-semibold sm:flex-1"
+              ? "openmail-inbox-connect-gmail-btn om-light-seg-active w-full rounded-[10px] px-4 py-2.5 text-xs font-semibold sm:flex-1"
               : "w-full rounded-[10px] border border-[var(--accent)]/45 bg-[var(--accent-soft)] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-[filter,opacity] hover:brightness-[1.03] sm:flex-1"
           }
           onClick={() => void onConnectGmail()}
@@ -134,7 +134,7 @@ export function MailListInboxOnboarding({
           type="button"
           className={
             isLight
-              ? "openmail-inbox-manual-setup-btn om-light-seg-active w-full rounded-[10px] px-4 py-2.5 text-xs font-semibold sm:flex-1"
+              ? "openmail-inbox-manual-setup-btn om-light-seg-idle w-full rounded-[10px] px-4 py-2.5 text-xs font-semibold sm:flex-1"
               : "w-full rounded-[10px] border border-white/[0.1] bg-[#141414] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 sm:flex-1"
           }
           onClick={() => void onManualSetup()}

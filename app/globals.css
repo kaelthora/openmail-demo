@@ -538,26 +538,31 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-list-state-card.ca
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
-/* Inbox onboarding — backup if Tailwind wins over om-light-* */
+/* Inbox onboarding — same palette as Accounts Quick (grey) / Manual (white) */
 html[data-openmail-theme="soft-intelligence-light"] button.openmail-inbox-connect-gmail-btn {
-  background: rgba(0, 0, 0, 0.04) !important;
-  background-color: rgba(0, 0, 0, 0.04) !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  box-shadow: none !important;
+  background: #e8eaef !important;
+  background-color: #e8eaef !important;
+  color: #1e293b !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.openmail-inbox-connect-gmail-btn:hover:not(:disabled) {
+  background: #dfe3e9 !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] button.openmail-inbox-manual-setup-btn {
   background: #ffffff !important;
   background-color: #ffffff !important;
-  color: #111827 !important;
+  color: #64748b !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: none !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] button.openmail-inbox-manual-setup-btn:hover:not(:disabled) {
   background: #f8fafc !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 html[data-openmail-theme="soft-dark"] button.openmail-inbox-manual-setup-btn {
@@ -781,28 +786,41 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-settings-panel {
   box-shadow: -8px 0 40px rgba(0, 0, 0, 0.06);
 }
 
-/* Light — segmented controls (high specificity so Tailwind utilities cannot win) */
+/*
+ * Light segmented controls — matches Settings → Accounts:
+ *   om-light-seg-active  = selected “Quick connect” (elegant cool grey)
+ *   om-light-seg-idle    = unselected “Manual” (white, softer label)
+ */
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-active,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-active,
 html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-active,
 html[data-openmail-theme="soft-intelligence-light"] .om-light-seg-active {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
+  background: #e8eaef !important;
+  background-color: #e8eaef !important;
   background-image: none !important;
-  color: #111827 !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  color: #1e293b !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-active:hover:not(:disabled),
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-active:hover:not(:disabled),
+html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-active:hover:not(:disabled),
+html[data-openmail-theme="soft-intelligence-light"] .om-light-seg-active:hover:not(:disabled) {
+  background: #dfe3e9 !important;
+  background-color: #dfe3e9 !important;
+  color: #0f172a !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-idle,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-idle,
 html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-idle,
 html[data-openmail-theme="soft-intelligence-light"] .om-light-seg-idle {
-  background: rgba(0, 0, 0, 0.04) !important;
-  background-color: rgba(0, 0, 0, 0.04) !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
   background-image: none !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  color: #64748b !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: none !important;
 }
 
@@ -810,9 +828,9 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-idle:hover:not(:disabled),
 html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-idle:hover:not(:disabled),
 html[data-openmail-theme="soft-intelligence-light"] .om-light-seg-idle:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.06) !important;
-  background-color: rgba(0, 0, 0, 0.06) !important;
-  color: rgba(0, 0, 0, 0.72) !important;
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  color: #475569 !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .om-light-theme-rail {
@@ -20955,21 +20973,21 @@ body:has(.app-layout.theme-nova) .ai-insight-panel.glass-panel.ai-insight-panel-
 /* ========== OpenMail light segments — MUST stay last (Tailwind v4 injects utilities after @import) ========== */
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-active,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-active {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
+  background: #e8eaef !important;
+  background-color: #e8eaef !important;
   background-image: none !important;
-  color: #111827 !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  color: #1e293b !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-idle,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-idle {
-  background: rgba(0, 0, 0, 0.04) !important;
-  background-color: rgba(0, 0, 0, 0.04) !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
   background-image: none !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-  border-color: rgba(0, 0, 0, 0.06) !important;
+  color: #64748b !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
   box-shadow: none !important;
 }
 
