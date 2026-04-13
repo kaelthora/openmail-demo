@@ -538,17 +538,26 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-list-state-card.ca
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
-/* Inbox onboarding — Manual setup: html theme is source of truth (fixes React vs document drift) */
-html[data-openmail-theme="soft-intelligence-light"] button.openmail-inbox-manual-setup-btn {
-  background: transparent !important;
-  color: rgba(0, 0, 0, 0.75) !important;
-  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+/* Inbox onboarding — backup if Tailwind wins over om-light-* */
+html[data-openmail-theme="soft-intelligence-light"] button.openmail-inbox-connect-gmail-btn {
+  background: rgba(0, 0, 0, 0.04) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
   box-shadow: none !important;
 }
 
+html[data-openmail-theme="soft-intelligence-light"] button.openmail-inbox-manual-setup-btn {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
 html[data-openmail-theme="soft-intelligence-light"] button.openmail-inbox-manual-setup-btn:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.04) !important;
-  border-color: rgba(0, 0, 0, 0.25) !important;
+  background: #f8fafc !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
 }
 
 html[data-openmail-theme="soft-dark"] button.openmail-inbox-manual-setup-btn {
@@ -772,25 +781,37 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-settings-panel {
   box-shadow: -8px 0 40px rgba(0, 0, 0, 0.06);
 }
 
-/* Light — segmented controls: force palette over Tailwind (bg-*, border-*, shadows on same node) */
+/* Light — segmented controls (high specificity so Tailwind utilities cannot win) */
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-active,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-active,
+html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-active,
 html[data-openmail-theme="soft-intelligence-light"] .om-light-seg-active {
   background: #ffffff !important;
+  background-color: #ffffff !important;
   background-image: none !important;
   color: #111827 !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
 }
 
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-idle,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-idle,
+html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-idle,
 html[data-openmail-theme="soft-intelligence-light"] .om-light-seg-idle {
   background: rgba(0, 0, 0, 0.04) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
   background-image: none !important;
   color: rgba(0, 0, 0, 0.6) !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
   box-shadow: none !important;
 }
 
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-idle:hover:not(:disabled),
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-idle:hover:not(:disabled),
+html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-idle:hover:not(:disabled),
 html[data-openmail-theme="soft-intelligence-light"] .om-light-seg-idle:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.06) !important;
+  background-color: rgba(0, 0, 0, 0.06) !important;
   color: rgba(0, 0, 0, 0.72) !important;
 }
 
@@ -1253,7 +1274,9 @@ html[data-openmail-theme="soft-intelligence-light"] .settings-card {
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
 }
 
-html[data-openmail-theme="soft-intelligence-light"] button.openmail-theme-choice[data-active="false"] {
+/* Do not override om-light-seg-* on theme switcher (same specificity as older rule) */
+html[data-openmail-theme="soft-intelligence-light"]
+  button.openmail-theme-choice[data-active="false"]:not(.om-light-seg-idle):not(.om-light-seg-active) {
   background: rgba(255, 255, 255, 0.96) !important;
   border-color: rgba(0, 0, 0, 0.08) !important;
 }
@@ -20927,4 +20950,30 @@ body:has(.app-layout.theme-nova) .ai-insight-panel.glass-panel.ai-insight-panel-
   text-shadow:
     0 0 6px rgba(160, 28, 45, 0.2),
     0 0 14px rgba(0, 0, 0, 0.35);
+}
+
+/* ========== OpenMail light segments — MUST stay last (Tailwind v4 injects utilities after @import) ========== */
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-active,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-active {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #111827 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.om-light-seg-idle,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app .om-light-seg-idle {
+  background: rgba(0, 0, 0, 0.04) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  background-image: none !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  box-shadow: none !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.openmail-inbox-connect-gmail-btn,
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app button.openmail-inbox-manual-setup-btn {
+  background-image: none !important;
 }

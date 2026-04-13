@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useOpenmailTheme } from "../OpenmailThemeProvider";
+import { useOpenmailDocumentTheme, useOpenmailTheme } from "../OpenmailThemeProvider";
 import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
 import { useMailStore } from "../MailStoreProvider";
 import { useOpenmailToast } from "../OpenmailToastProvider";
@@ -61,27 +61,27 @@ const segOff =
 const themeChoiceBase =
   "openmail-theme-choice flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200";
 
-function classForSunThemeSwitch(theme: OpenmailUiTheme, isLightUi: boolean): string {
+function classForSunThemeSwitch(docTheme: OpenmailUiTheme, isLightUi: boolean): string {
   if (isLightUi) {
-    return theme === "soft-intelligence-light"
+    return docTheme === "soft-intelligence-light"
       ? `${themeChoiceBase} om-light-seg-active`
       : `${themeChoiceBase} om-light-seg-idle`;
   }
   return `${themeChoiceBase} ${
-    theme === "soft-intelligence-light"
+    docTheme === "soft-intelligence-light"
       ? "border border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)] shadow-[0_0_12px_var(--accent-soft)]"
       : "border border-transparent text-[color:var(--text-soft)] hover:bg-white/[0.06] hover:text-[var(--text-main)]"
   }`;
 }
 
-function classForMoonThemeSwitch(theme: OpenmailUiTheme, isLightUi: boolean): string {
+function classForMoonThemeSwitch(docTheme: OpenmailUiTheme, isLightUi: boolean): string {
   if (isLightUi) {
-    return theme === "soft-dark"
+    return docTheme === "soft-dark"
       ? `${themeChoiceBase} om-light-seg-active`
       : `${themeChoiceBase} om-light-seg-idle`;
   }
   return `${themeChoiceBase} ${
-    theme === "soft-dark"
+    docTheme === "soft-dark"
       ? "border border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)] shadow-[0_0_12px_var(--accent-soft)]"
       : "border border-transparent text-[color:var(--text-soft)] hover:bg-white/[0.06] hover:text-[var(--text-main)]"
   }`;
@@ -98,8 +98,8 @@ function ToggleRow({
   on: boolean;
   onToggle: () => void;
 }) {
-  const { theme } = useOpenmailTheme();
-  const isLight = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLight = docTheme === "soft-intelligence-light";
   return (
     <div className="toggle-row flex items-center justify-between gap-3 py-5">
       <div className="min-w-0 flex-1 pr-1">
@@ -142,8 +142,8 @@ function SettingSectionCard({
   description?: string;
   children: ReactNode;
 }) {
-  const { theme } = useOpenmailTheme();
-  const isLight = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLight = docTheme === "soft-intelligence-light";
   const shell = isLight
     ? "settings-card overflow-hidden rounded-2xl border border-black/10 bg-white p-4 shadow-sm"
     : "settings-card overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#111111] to-[#0c0c0c] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
@@ -223,8 +223,8 @@ const fieldInputClass =
 
 function SettingsAccountsDemo() {
   const prefs = useOpenmailPreferences();
-  const { theme } = useOpenmailTheme();
-  const isLight = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLight = docTheme === "soft-intelligence-light";
   const demoEmpty = isLight
     ? "rounded-xl border border-dashed border-black/15 bg-white px-3.5 py-6 text-center text-[12px] text-[#555]"
     : "rounded-xl border border-dashed border-white/[0.1] bg-[#0a0a0a]/60 px-3.5 py-6 text-center text-[12px] text-[color:var(--text-soft)]";
@@ -370,8 +370,8 @@ function SettingsAccountsServer({
   accountsInitialAddMode?: "quick" | "manual" | null;
   onAccountsInitialAddModeConsumed?: () => void;
 }) {
-  const { theme } = useOpenmailTheme();
-  const isLight = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLight = docTheme === "soft-intelligence-light";
   const toast = useOpenmailToast();
   const {
     serverMailAccounts,
@@ -951,7 +951,8 @@ export function OpenmailSettingsPanel({
   const [entered, setEntered] = useState(false);
 
   const { theme, setTheme } = useOpenmailTheme();
-  const isLightTheme = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLightTheme = docTheme === "soft-intelligence-light";
   const navBtnIdleResolved = isLightTheme
     ? "text-[#555] hover:bg-black/[0.04] hover:text-[#111827]"
     : navBtnIdle;
@@ -1319,20 +1320,20 @@ export function OpenmailSettingsPanel({
                       >
                         <button
                           type="button"
-                          data-active={theme === "soft-intelligence-light" ? "true" : "false"}
+                          data-active={docTheme === "soft-intelligence-light" ? "true" : "false"}
                           title="Light"
                           aria-label="Light theme"
-                          className={classForSunThemeSwitch(theme, isLightTheme)}
+                          className={classForSunThemeSwitch(docTheme, isLightTheme)}
                           onClick={() => setTheme("soft-intelligence-light")}
                         >
                           <IconSun className="h-[18px] w-[18px]" />
                         </button>
                         <button
                           type="button"
-                          data-active={theme === "soft-dark" ? "true" : "false"}
+                          data-active={docTheme === "soft-dark" ? "true" : "false"}
                           title="Soft dark"
                           aria-label="Soft dark theme"
-                          className={classForMoonThemeSwitch(theme, isLightTheme)}
+                          className={classForMoonThemeSwitch(docTheme, isLightTheme)}
                           onClick={() => setTheme("soft-dark")}
                         >
                           <IconMoon className="h-[18px] w-[18px]" />

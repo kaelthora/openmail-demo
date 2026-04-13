@@ -8,6 +8,7 @@ import {
   useLayoutEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import {
@@ -91,4 +92,31 @@ export function useOpenmailTheme(): OpenmailThemeContextValue {
     throw new Error("useOpenmailTheme must be used within OpenmailThemeProvider");
   }
   return ctx;
+}
+
+function subscribeOpenmailDocumentTheme(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const el = document.documentElement;
+  const mo = new MutationObserver(onStoreChange);
+  mo.observe(el, { attributes: true, attributeFilter: ["data-openmail-theme"] });
+  return () => mo.disconnect();
+}
+
+function readOpenmailDocumentTheme(): OpenmailUiTheme {
+  if (typeof window === "undefined") return OPENMAIL_THEME_DEFAULT;
+  const attr = document.documentElement.getAttribute("data-openmail-theme");
+  if (attr === "soft-dark" || attr === "soft-intelligence-light") return attr;
+  return readStoredTheme();
+}
+
+/**
+ * Theme as on `document.documentElement` — matches CSS `html[data-openmail-theme]` and
+ * boot script. Use for light/dark *styling* branches so segmented controls never desync from globals.
+ */
+export function useOpenmailDocumentTheme(): OpenmailUiTheme {
+  return useSyncExternalStore(
+    subscribeOpenmailDocumentTheme,
+    readOpenmailDocumentTheme,
+    () => OPENMAIL_THEME_DEFAULT
+  );
 }

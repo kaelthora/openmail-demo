@@ -16,7 +16,10 @@ import { MailAttachments } from "@/components/MailAttachments";
 import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import type { SecurityRiskLevel } from "@/app/openmail/components/security/types";
 import { RiskBadge } from "@/app/openmail/components/security/RiskBadge";
-import { useOpenmailTheme } from "@/app/openmail/OpenmailThemeProvider";
+import {
+  useOpenmailDocumentTheme,
+  useOpenmailTheme,
+} from "@/app/openmail/OpenmailThemeProvider";
 import type { MailSecurityInput } from "@/lib/mailSecuritySignals";
 import type { MailAttachmentItem } from "@/lib/mailAttachmentItem";
 import {
@@ -450,8 +453,8 @@ function MailReadingView({
     onDismiss: () => void;
   } | null;
 }) {
-  const { theme } = useOpenmailTheme();
-  const isLightTheme = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLightTheme = docTheme === "soft-intelligence-light";
   const readingQuickBtn = isLightTheme ? readingQuickBtnLight : readingQuickBtnDark;
   const securityInput = useMemo(() => toSecurityInput(mail), [mail]);
   const attachmentItems = useMemo(() => toAttachmentItems(mail), [mail]);
@@ -668,8 +671,8 @@ export function MailPanel({
   onInboxConnectGmail,
   onInboxManualSetup,
 }: MailPanelProps) {
-  const { theme } = useOpenmailTheme();
-  const isLightTheme = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLightTheme = docTheme === "soft-intelligence-light";
   const { mailsFetchError: storeMailsFetchError } = useMailStore();
   const listErrorCombined = (listFetchError ?? storeMailsFetchError ?? "").trim();
   const inboxOnboardingUiActive =

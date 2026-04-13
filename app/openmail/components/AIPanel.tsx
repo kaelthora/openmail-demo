@@ -9,7 +9,7 @@ import {
   type GuardianAutoResponseMode,
 } from "@/lib/guardianAutoResponse";
 import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
-import { useOpenmailTheme } from "../OpenmailThemeProvider";
+import { useOpenmailDocumentTheme, useOpenmailTheme } from "../OpenmailThemeProvider";
 import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
 
 type AIPanelProps = {
@@ -267,8 +267,8 @@ function CoreAiRiskCard({
   /** Hide when the primary action already clears the thread (e.g. ignore). */
   safeShowArchive?: boolean;
 }) {
-  const { theme } = useOpenmailTheme();
-  const isLight = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLight = docTheme === "soft-intelligence-light";
   const band = coreRiskBand(mail);
   const skin = isLight ? CORE_RISK_CARD_LIGHT[band] : CORE_RISK_CARD[band];
   const deSecondaryClass = isLight ? DE_SECONDARY_LIGHT : DE_SECONDARY;
@@ -613,7 +613,8 @@ export function AIPanel({
   void onCoreReplyWithSuggestion;
   const { ai: aiPrefs } = useOpenmailPreferences();
   const { theme } = useOpenmailTheme();
-  const isLightTheme = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLightTheme = docTheme === "soft-intelligence-light";
   const [insertAnim, setInsertAnim] = useState(false);
   const [suggestionGlow, setSuggestionGlow] = useState(false);
   const [userTyping, setUserTyping] = useState(false);
