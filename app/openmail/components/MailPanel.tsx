@@ -26,6 +26,7 @@ import {
   MailListInboxOnboarding,
   MailListSkeleton,
 } from "./MailPanelStates";
+import { OPENMAIL_LIGHT_SEGMENT } from "@/lib/openmailLightSegmentStyle";
 import type { OpenmailAutoResolveKind } from "@/lib/openmailAutoResolve";
 import {
   buildThreadSituations,
@@ -649,6 +650,8 @@ export function MailPanel({
   onInboxConnectGmail,
   onInboxManualSetup,
 }: MailPanelProps) {
+  const { theme } = useOpenmailTheme();
+  const isLightTheme = theme === "soft-intelligence-light";
   const { mailsFetchError: storeMailsFetchError } = useMailStore();
   const listErrorCombined = (listFetchError ?? storeMailsFetchError ?? "").trim();
   const inboxOnboardingUiActive =
@@ -938,22 +941,34 @@ export function MailPanel({
             <div className="flex rounded-[8px] border border-[var(--border)] p-0.5">
               <button
                 type="button"
-                className={`rounded-[6px] px-2 py-1 text-[10px] font-medium ${
-                  density === "compact"
-                    ? "bg-[var(--accent-soft)] text-[var(--text-main)]"
-                    : "text-[color:var(--text-soft)]"
-                }`}
+                className={
+                  isLightTheme
+                    ? density === "compact"
+                      ? OPENMAIL_LIGHT_SEGMENT.toolbarActive
+                      : OPENMAIL_LIGHT_SEGMENT.toolbarInactive
+                    : `rounded-[6px] px-2 py-1 text-[10px] font-medium ${
+                        density === "compact"
+                          ? "bg-[var(--accent-soft)] text-[var(--text-main)]"
+                          : "text-[color:var(--text-soft)]"
+                      }`
+                }
                 onClick={() => setDensity("compact")}
               >
                 Compact
               </button>
               <button
                 type="button"
-                className={`rounded-[6px] px-2 py-1 text-[10px] font-medium ${
-                  density === "comfortable"
-                    ? "bg-[var(--accent-soft)] text-[var(--text-main)]"
-                    : "text-[color:var(--text-soft)]"
-                }`}
+                className={
+                  isLightTheme
+                    ? density === "comfortable"
+                      ? OPENMAIL_LIGHT_SEGMENT.toolbarActive
+                      : OPENMAIL_LIGHT_SEGMENT.toolbarInactive
+                    : `rounded-[6px] px-2 py-1 text-[10px] font-medium ${
+                        density === "comfortable"
+                          ? "bg-[var(--accent-soft)] text-[var(--text-main)]"
+                          : "text-[color:var(--text-soft)]"
+                      }`
+                }
                 onClick={() => setDensity("comfortable")}
               >
                 Comfortable

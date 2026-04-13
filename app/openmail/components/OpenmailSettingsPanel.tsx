@@ -15,6 +15,7 @@ import { useOpenmailToast } from "../OpenmailToastProvider";
 import { useSmartNotifications } from "../SmartNotificationsProvider";
 import type { OpenmailUiTheme } from "@/lib/openmailTheme";
 import type { SettingsSection } from "@/lib/openmailSettingsPrefs";
+import { OPENMAIL_LIGHT_SEGMENT } from "@/lib/openmailLightSegmentStyle";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
 import { GUARDIAN_ETHICAL_GUARDRAILS } from "@/lib/guardianEngine";
 import {
@@ -376,10 +377,10 @@ function SettingsAccountsServer({
     : "rounded-xl border border-white/[0.08] bg-[#0a0a0a] p-4";
   const segBtn = "flex-1 rounded-lg border px-3 py-2 text-[11px] font-medium transition-colors duration-200";
   const segActive = isLight
-    ? `${segBtn} border-[var(--openmail-border-accent-strong)] bg-[var(--accent-soft)] font-semibold text-[#1a1a1a] shadow-sm`
+    ? OPENMAIL_LIGHT_SEGMENT.flexActive
     : `${segBtn} border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)]`;
   const segIdle = isLight
-    ? `${segBtn} border-black/10 bg-white text-[#555] hover:border-black/15 hover:bg-[#fafafa]`
+    ? OPENMAIL_LIGHT_SEGMENT.flexInactive
     : `${segBtn} border-white/[0.08] bg-[#0c0c0c] text-[color:var(--text-soft)] hover:border-white/[0.12] hover:text-[var(--text-main)]`;
   const formErrBox = isLight
     ? "mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-900"
@@ -893,6 +894,7 @@ export function OpenmailSettingsPanel({
   const [entered, setEntered] = useState(false);
 
   const { theme, setTheme } = useOpenmailTheme();
+  const isLightTheme = theme === "soft-intelligence-light";
   const prefs = useOpenmailPreferences();
   const { enableSmartNotifications } = useSmartNotifications();
   const toast = useOpenmailToast();
@@ -1239,9 +1241,17 @@ export function OpenmailSettingsPanel({
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          className={`${segClass} flex-1 ${
-                            prefs.display.density === "compact" ? segOn : segOff
-                          }`}
+                          className={
+                            isLightTheme
+                              ? prefs.display.density === "compact"
+                                ? OPENMAIL_LIGHT_SEGMENT.flexActive
+                                : OPENMAIL_LIGHT_SEGMENT.flexInactive
+                              : `${segClass} flex-1 ${
+                                  prefs.display.density === "compact"
+                                    ? segOn
+                                    : segOff
+                                }`
+                          }
                           onClick={() =>
                             prefs.updateDisplay({ density: "compact" })
                           }
@@ -1250,11 +1260,17 @@ export function OpenmailSettingsPanel({
                         </button>
                         <button
                           type="button"
-                          className={`${segClass} flex-1 ${
-                            prefs.display.density === "comfortable"
-                              ? segOn
-                              : segOff
-                          }`}
+                          className={
+                            isLightTheme
+                              ? prefs.display.density === "comfortable"
+                                ? OPENMAIL_LIGHT_SEGMENT.flexActive
+                                : OPENMAIL_LIGHT_SEGMENT.flexInactive
+                              : `${segClass} flex-1 ${
+                                  prefs.display.density === "comfortable"
+                                    ? segOn
+                                    : segOff
+                                }`
+                          }
                           onClick={() =>
                             prefs.updateDisplay({ density: "comfortable" })
                           }
@@ -1393,9 +1409,15 @@ export function OpenmailSettingsPanel({
                         <button
                           key={tone}
                           type="button"
-                          className={`${segClass} ${
-                            prefs.ai.defaultTone === tone ? segOn : segOff
-                          }`}
+                          className={
+                            isLightTheme
+                              ? prefs.ai.defaultTone === tone
+                                ? OPENMAIL_LIGHT_SEGMENT.wrapActive
+                                : OPENMAIL_LIGHT_SEGMENT.wrapInactive
+                              : `${segClass} ${
+                                  prefs.ai.defaultTone === tone ? segOn : segOff
+                                }`
+                          }
                           onClick={() => prefs.updateAi({ defaultTone: tone })}
                         >
                           {tone}
