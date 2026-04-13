@@ -1,5 +1,7 @@
 "use client";
 
+import { useOpenmailTheme } from "../OpenmailThemeProvider";
+
 type MailListSkeletonProps = {
   rows?: number;
   density: "compact" | "comfortable";
@@ -86,6 +88,8 @@ export function MailListInboxOnboarding({
   onManualSetup: () => void;
   onRetryCheck?: () => void | Promise<void>;
 }) {
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
   return (
     <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 px-3 py-10 text-center">
       <div
@@ -124,7 +128,11 @@ export function MailListInboxOnboarding({
         </button>
         <button
           type="button"
-          className="w-full rounded-[10px] border border-white/[0.1] bg-[#141414] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 sm:flex-1"
+          className={
+            isLight
+              ? "w-full rounded-[10px] border border-black/[0.12] bg-transparent px-4 py-2.5 text-xs font-semibold text-[#1a1a1a] shadow-none transition-[background-color,border-color,box-shadow] hover:border-black/[0.18] hover:bg-black/[0.03] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)] sm:flex-1"
+              : "w-full rounded-[10px] border border-white/[0.1] bg-[#141414] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 sm:flex-1"
+          }
           onClick={() => void onManualSetup()}
         >
           Manual setup
@@ -136,7 +144,9 @@ export function MailListInboxOnboarding({
       {onRetryCheck ? (
         <button
           type="button"
-          className="text-[10px] font-medium text-[color:var(--text-soft)] underline decoration-white/15 underline-offset-2 transition-colors hover:text-[var(--text-main)]"
+          className={`text-[10px] font-medium text-[color:var(--text-soft)] underline underline-offset-2 transition-colors hover:text-[var(--text-main)] ${
+            isLight ? "decoration-black/18" : "decoration-white/15"
+          }`}
           onClick={() => void onRetryCheck()}
         >
           I&apos;ve connected — refresh inbox

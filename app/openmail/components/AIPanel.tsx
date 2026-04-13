@@ -222,6 +222,8 @@ function CoreAiRiskCard({
   /** Hide when the primary action already clears the thread (e.g. ignore). */
   safeShowArchive?: boolean;
 }) {
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
   const band = coreRiskBand(mail);
   const skin = CORE_RISK_CARD[band];
   const snapshot = coreRiskSnapshot(mail);
@@ -297,7 +299,11 @@ function CoreAiRiskCard({
           <>
             {intentBarLabel ? (
               <div
-                className="core-ai-risk-intent-bar mb-2 flex min-h-7 max-h-7 items-center gap-2 overflow-hidden rounded-md border border-white/[0.06] bg-black/30 px-2 py-0"
+                className={`core-ai-risk-intent-bar mb-2 flex min-h-7 max-h-7 items-center gap-2 overflow-hidden rounded-md border px-2 py-0 ${
+                  isLight
+                    ? "border-black/[0.08] bg-white/[0.88] shadow-[0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-md"
+                    : "border-white/[0.06] bg-black/30"
+                }`}
                 title={intentBarTitle ?? intentBarLabel}
               >
                 <span className="shrink-0 text-[8px] font-extrabold uppercase tracking-[0.14em] text-[color:var(--text-soft)]">
@@ -474,7 +480,13 @@ function CoreAiRiskCard({
                         </ul>
                       ) : null}
                       {detectionLines.length > 0 ? (
-                        <div className="openmail-ai-signals-box rounded-[8px] border border-white/[0.06] bg-black/25 px-2 py-1.5">
+                        <div
+                          className={`openmail-ai-signals-box rounded-[8px] border px-2 py-1.5 ${
+                            isLight
+                              ? "border-black/[0.08] bg-white/[0.88] shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-md"
+                              : "border-white/[0.06] bg-black/25"
+                          }`}
+                        >
                           <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
                             Signals
                           </div>
@@ -548,6 +560,7 @@ export function AIPanel({
   void onCoreReplyWithSuggestion;
   const { ai: aiPrefs } = useOpenmailPreferences();
   const { theme } = useOpenmailTheme();
+  const isLightTheme = theme === "soft-intelligence-light";
   const [insertAnim, setInsertAnim] = useState(false);
   const [suggestionGlow, setSuggestionGlow] = useState(false);
   const [userTyping, setUserTyping] = useState(false);
@@ -904,8 +917,8 @@ export function AIPanel({
                       <div
                         key={`core-suggestions-${selectedMail.id}`}
                         className={`openmail-ai-reply-zone core-suggestions-enter core-suggestion-chip-list flex max-h-[min(200px,28vh)] flex-col gap-2 overflow-y-auto pr-0.5 transition-opacity duration-200 ease-out ${
-                          userTyping ? "opacity-70" : "opacity-100"
-                        }`}
+                          isLightTheme ? "openmail-ai-suggestions-glass" : ""
+                        } ${userTyping ? "opacity-70" : "opacity-100"}`}
                       >
                         {replyState.suggestions.map((suggestion, index) => {
                           const isBest = index === 0;
@@ -960,7 +973,11 @@ export function AIPanel({
                               }
                               title="Friendly, professional drafts to help you write faster"
                               onClick={() => void onGenerateAiReply()}
-                              className="rounded-[10px] border border-[var(--border)] bg-transparent px-3 py-1.5 text-[11px] font-semibold text-[color:var(--text-soft)] transition-colors hover:border-[var(--accent)]/30 hover:bg-white/[0.04] hover:text-[color:var(--text-main)] disabled:cursor-not-allowed disabled:opacity-45"
+                              className={
+                                isLightTheme
+                                  ? "rounded-[10px] border border-emerald-600/22 bg-gradient-to-b from-[#4ade80] to-[#22c55e] px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_1px_3px_rgba(22,163,74,0.22)] transition-[filter,box-shadow] hover:brightness-[1.03] hover:shadow-[0_2px_8px_rgba(22,163,74,0.2)] disabled:cursor-not-allowed disabled:opacity-45"
+                                  : "rounded-[10px] border border-[var(--border)] bg-transparent px-3 py-1.5 text-[11px] font-semibold text-[color:var(--text-soft)] transition-colors hover:border-[var(--accent)]/30 hover:bg-white/[0.04] hover:text-[color:var(--text-main)] disabled:cursor-not-allowed disabled:opacity-45"
+                              }
                             >
                               {aiReplyLoading ? "Writing…" : "Generate AI reply"}
                             </button>
@@ -982,7 +999,11 @@ export function AIPanel({
                                   : "Defensive wording: verify identity, refuse risky asks — does not send"
                               }
                               onClick={() => void onGuardianAssistDraft()}
-                              className="rounded-[10px] border border-[var(--border)] bg-transparent px-3 py-1.5 text-[11px] font-semibold text-[color:var(--text-soft)] transition-colors hover:border-[var(--accent)]/30 hover:bg-white/[0.04] hover:text-[color:var(--text-main)] disabled:cursor-not-allowed disabled:opacity-45"
+                              className={
+                                isLightTheme
+                                  ? "rounded-[10px] border border-black/[0.1] bg-[#f3f4f6] px-3 py-1.5 text-[11px] font-semibold text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-[background-color,border-color,box-shadow] hover:border-black/[0.14] hover:bg-[#e5e7eb] hover:shadow-[0_2px_6px_rgba(0,0,0,0.06)] disabled:cursor-not-allowed disabled:opacity-45"
+                                  : "rounded-[10px] border border-[var(--border)] bg-transparent px-3 py-1.5 text-[11px] font-semibold text-[color:var(--text-soft)] transition-colors hover:border-[var(--accent)]/30 hover:bg-white/[0.04] hover:text-[color:var(--text-main)] disabled:cursor-not-allowed disabled:opacity-45"
+                              }
                             >
                               {guardianDraftLoading
                                 ? "Securing draft…"
