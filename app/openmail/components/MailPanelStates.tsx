@@ -130,7 +130,7 @@ export function MailListInboxOnboarding({
           type="button"
           className={
             isLight
-              ? "w-full rounded-[10px] border border-black/[0.12] bg-transparent px-4 py-2.5 text-xs font-semibold text-[#1a1a1a] shadow-none transition-[background-color,border-color,box-shadow] hover:border-black/[0.18] hover:bg-black/[0.03] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)] sm:flex-1"
+              ? "w-full rounded-[10px] border border-[rgba(0,0,0,0.15)] bg-transparent px-4 py-2.5 text-xs font-semibold text-[rgba(0,0,0,0.75)] shadow-none transition-[background-color,border-color] hover:border-[rgba(0,0,0,0.25)] hover:bg-[rgba(0,0,0,0.04)] sm:flex-1"
               : "w-full rounded-[10px] border border-white/[0.1] bg-[#141414] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 sm:flex-1"
           }
           onClick={() => void onManualSetup()}
