@@ -571,15 +571,38 @@ html[data-openmail-theme="soft-dark"] .openmail-inbox-onboarding-retry {
   text-decoration-color: rgba(255, 255, 255, 0.15);
 }
 
-/** AI suggestion chip list — light glass, no dark panel */
+/** AI suggestion chip list — light glass, integrated (no dark overlay) */
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-suggestions-glass {
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   padding: 10px 10px 10px 8px;
+  color: #1f2937;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-suggestions-glass
+  .core-suggestion-chip {
+  color: #1f2937 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-suggestions-glass
+  .core-suggestion-chip--best-pick {
+  animation: none !important;
+}
+
+html[data-openmail-theme="soft-dark"] .openmail-ai-suggestions-glass {
+  background: rgba(22, 22, 24, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 10px 10px 8px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-stack {
@@ -605,43 +628,114 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--i
   background: rgba(0, 0, 0, 0.03) !important;
 }
 
-html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--idle {
-  background: rgba(255, 255, 255, 0.92) !important;
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-suggestions-glass
+  .core-suggestion-chip--idle {
+  background: rgba(0, 0, 0, 0.05) !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  color: #1a1a1a !important;
+  color: #1f2937 !important;
   border-radius: 8px !important;
   padding: 10px 14px !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: none;
   transition: var(--openmail-transition);
 }
 
-html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--idle:hover {
-  border-color: var(--border) !important;
-  background: rgba(0, 0, 0, 0.02) !important;
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-suggestions-glass
+  .core-suggestion-chip--idle:hover {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  background: rgba(0, 0, 0, 0.07) !important;
 }
 
-html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--selected {
-  background: rgba(255, 255, 255, 0.95) !important;
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-suggestions-glass
+  .core-suggestion-chip--selected {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #1f2937 !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  box-shadow: none;
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-suggestions-glass
+  .core-suggestion-chip--best-pick {
+  background: linear-gradient(to bottom, rgba(74, 222, 128, 0.22), rgba(34, 197, 94, 0.18)) !important;
+  border: 1px solid rgba(34, 197, 94, 0.45) !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  color: #1f2937 !important;
+  box-shadow: 0 1px 3px rgba(34, 197, 94, 0.15);
+  transition: var(--openmail-transition);
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-suggestions-glass
+  .core-suggestion-chip--best-pick:hover {
+  background: linear-gradient(to bottom, rgba(74, 222, 128, 0.28), rgba(34, 197, 94, 0.24)) !important;
+  border-color: rgba(34, 197, 94, 0.55) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-suggestions-glass
+  .core-suggestion-chip--best-pick
+  .rounded-full {
+  border-color: rgba(34, 197, 94, 0.4) !important;
+  background: rgba(34, 197, 94, 0.12) !important;
+  color: #15803d !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-guardian-status[data-guardian-mode="block"] {
+  background: rgba(254, 226, 226, 0.55) !important;
+  border-color: rgba(239, 68, 68, 0.22) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-guardian-status[data-guardian-mode="require_validation"] {
+  background: rgba(254, 243, 199, 0.55) !important;
+  border-color: rgba(251, 191, 36, 0.32) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-guardian-status[data-guardian-mode="auto_send"] {
+  background: rgba(220, 252, 231, 0.7) !important;
+  border-color: rgba(34, 197, 94, 0.28) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-guardian-approved-badge {
+  border-color: rgba(22, 163, 74, 0.4) !important;
+  background: rgba(34, 197, 94, 0.14) !important;
+  color: #14532d !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-guardian-hint {
+  color: #166534 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-generate-reply-btn {
+  background: linear-gradient(to bottom, #4ade80, #22c55e) !important;
+  color: #ffffff !important;
+  border-color: rgba(34, 197, 94, 0.38) !important;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.12);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-generate-reply-btn:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(34, 197, 94, 0.16);
+  filter: brightness(1.02);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-guardian-draft-btn {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #1f2937 !important;
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  color: #1a1a1a !important;
-  border-radius: 8px !important;
-  padding: 10px 14px !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: var(--openmail-transition);
+  box-shadow: none !important;
 }
 
-html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--best-pick {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid rgba(34, 197, 94, 0.28) !important;
-  border-radius: 8px !important;
-  padding: 10px 14px !important;
-  color: #1a1a1a !important;
-  box-shadow: 0 1px 4px rgba(22, 163, 74, 0.12);
-  transition: var(--openmail-transition);
-}
-
-html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--best-pick:hover {
-  background: rgba(0, 0, 0, 0.02) !important;
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-guardian-draft-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+  box-shadow: none !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-de-secondary-btn {

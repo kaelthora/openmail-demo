@@ -878,7 +878,8 @@ export function AIPanel({
                         ))}
                       </div>
                       <div
-                        className={`rounded-[12px] border ${
+                        data-guardian-mode={guardianAutoResponseMode}
+                        className={`openmail-ai-guardian-status rounded-[12px] border ${
                           guardianAutoResponseMode === "block"
                             ? "border-red-500/35 bg-red-950/20 px-3.5 py-3"
                             : guardianAutoResponseMode === "require_validation"
@@ -888,7 +889,7 @@ export function AIPanel({
                       >
                         <div className="flex flex-wrap items-center gap-2">
                           {guardianAutoResponseMode === "auto_send" ? (
-                            <span className="rounded-md border border-emerald-400/45 bg-emerald-600/25 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-100">
+                            <span className="openmail-ai-guardian-approved-badge rounded-md border border-emerald-400/45 bg-emerald-600/25 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-100">
                               Guardian Approved
                             </span>
                           ) : null}
@@ -903,7 +904,7 @@ export function AIPanel({
                           </span>
                         </div>
                         {guardianAutoResponseMode === "auto_send" && guardianAutoResponseEnabled ? (
-                          <p className="mt-1.5 text-[10px] leading-snug text-emerald-200/90">
+                          <p className="openmail-ai-guardian-hint mt-1.5 text-[10px] leading-snug text-emerald-200/90">
                             When enabled, Guardian sends the top draft without tapping Send—only on threads it has approved.
                           </p>
                         ) : guardianAutoResponseMode === "auto_send" && !guardianAutoResponseEnabled ? (
@@ -916,9 +917,9 @@ export function AIPanel({
                     {aiPrefs.autoSuggestions && replyState.suggestions.length > 0 ? (
                       <div
                         key={`core-suggestions-${selectedMail.id}`}
-                        className={`openmail-ai-reply-zone core-suggestions-enter core-suggestion-chip-list flex max-h-[min(200px,28vh)] flex-col gap-2 overflow-y-auto pr-0.5 transition-opacity duration-200 ease-out ${
-                          isLightTheme ? "openmail-ai-suggestions-glass" : ""
-                        } ${userTyping ? "opacity-70" : "opacity-100"}`}
+                        className={`openmail-ai-reply-zone openmail-ai-suggestions-glass core-suggestions-enter core-suggestion-chip-list flex max-h-[min(200px,28vh)] flex-col gap-2 overflow-y-auto pr-0.5 transition-opacity duration-200 ease-out ${
+                          userTyping ? "opacity-70" : "opacity-100"
+                        }`}
                       >
                         {replyState.suggestions.map((suggestion, index) => {
                           const isBest = index === 0;
@@ -975,7 +976,7 @@ export function AIPanel({
                               onClick={() => void onGenerateAiReply()}
                               className={
                                 isLightTheme
-                                  ? "rounded-[10px] border border-emerald-600/22 bg-gradient-to-b from-[#4ade80] to-[#22c55e] px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_1px_3px_rgba(22,163,74,0.22)] transition-[filter,box-shadow] hover:brightness-[1.03] hover:shadow-[0_2px_8px_rgba(22,163,74,0.2)] disabled:cursor-not-allowed disabled:opacity-45"
+                                  ? "openmail-ai-generate-reply-btn rounded-[10px] border border-emerald-600/22 bg-gradient-to-b from-[#4ade80] to-[#22c55e] px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_1px_3px_rgba(22,163,74,0.22)] transition-[filter,box-shadow] hover:brightness-[1.03] hover:shadow-[0_2px_8px_rgba(22,163,74,0.2)] disabled:cursor-not-allowed disabled:opacity-45"
                                   : "rounded-[10px] border border-[var(--border)] bg-transparent px-3 py-1.5 text-[11px] font-semibold text-[color:var(--text-soft)] transition-colors hover:border-[var(--accent)]/30 hover:bg-white/[0.04] hover:text-[color:var(--text-main)] disabled:cursor-not-allowed disabled:opacity-45"
                               }
                             >
@@ -1001,7 +1002,7 @@ export function AIPanel({
                               onClick={() => void onGuardianAssistDraft()}
                               className={
                                 isLightTheme
-                                  ? "rounded-[10px] border border-black/[0.1] bg-[#f3f4f6] px-3 py-1.5 text-[11px] font-semibold text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-[background-color,border-color,box-shadow] hover:border-black/[0.14] hover:bg-[#e5e7eb] hover:shadow-[0_2px_6px_rgba(0,0,0,0.06)] disabled:cursor-not-allowed disabled:opacity-45"
+                                  ? "openmail-ai-guardian-draft-btn rounded-[10px] border border-black/[0.1] bg-[#f3f4f6] px-3 py-1.5 text-[11px] font-semibold text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-[background-color,border-color,box-shadow] hover:border-black/[0.14] hover:bg-[#e5e7eb] hover:shadow-[0_2px_6px_rgba(0,0,0,0.06)] disabled:cursor-not-allowed disabled:opacity-45"
                                   : "rounded-[10px] border border-[var(--border)] bg-transparent px-3 py-1.5 text-[11px] font-semibold text-[color:var(--text-soft)] transition-colors hover:border-[var(--accent)]/30 hover:bg-white/[0.04] hover:text-[color:var(--text-main)] disabled:cursor-not-allowed disabled:opacity-45"
                               }
                             >
