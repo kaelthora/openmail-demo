@@ -51,13 +51,6 @@ const navBtnIdle =
 const navBtnActive =
   "bg-[var(--accent-soft)] text-[var(--text-main)] shadow-[0_0_12px_var(--accent-soft)]";
 
-const segClass =
-  "rounded-lg border border-white/[0.08] bg-[#0c0c0c]/90 px-3 py-2 text-[11px] font-medium transition-colors duration-200";
-const segOn =
-  "border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)]";
-const segOff =
-  "text-[color:var(--text-soft)] hover:border-white/[0.12] hover:text-[var(--text-main)]";
-
 const themeChoiceBase =
   "openmail-theme-choice flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200";
 
@@ -371,7 +364,7 @@ function SettingsAccountsServer({
   onAccountsInitialAddModeConsumed?: () => void;
 }) {
   const docTheme = useOpenmailDocumentTheme();
-  const isLight = docTheme === "soft-intelligence-light";
+  const isLightDoc = docTheme === "soft-intelligence-light";
   const toast = useOpenmailToast();
   const {
     serverMailAccounts,
@@ -399,54 +392,59 @@ function SettingsAccountsServer({
   const [syncBusy, setSyncBusy] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const lbl = isLight
+  const lbl = isLightDoc
     ? "mb-1 block text-[10px] font-medium text-[#555]"
     : "mb-1 block text-[10px] text-[color:var(--text-soft)]";
-  const lblSection = isLight
+  const lblSection = isLightDoc
     ? "mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#555]"
     : "mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-soft)]";
-  const accountsInput = isLight
+  const accountsInput = isLightDoc
     ? "w-full rounded-lg border border-[rgba(0,0,0,0.08)] bg-white px-3 py-2 text-[13px] text-[#1a1a1a] shadow-none outline-none transition-[border-color,box-shadow] placeholder:text-neutral-400 focus:border-[rgba(0,0,0,0.16)] focus:shadow-[0_0_0_3px_rgba(100,116,139,0.08)] focus:outline-none"
     : fieldInputClass;
-  const warnLegacy = isLight
+  const warnLegacy = isLightDoc
     ? "rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-950"
     : "rounded-lg border border-amber-500/25 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-100/90";
-  const emptyBox = isLight
+  const emptyBox = isLightDoc
     ? "rounded-xl border border-dashed border-black/15 bg-white px-3.5 py-6 text-center text-[12px] text-[#555]"
     : "rounded-xl border border-dashed border-white/[0.1] bg-[#0a0a0a] px-3.5 py-6 text-center text-[12px] text-[color:var(--text-soft)]";
-  const accountCard = isLight
+  const accountCard = isLightDoc
     ? "rounded-xl border border-black/[0.08] bg-white px-4 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
     : "rounded-xl border border-white/[0.08] bg-[#0c0c0c] px-4 py-4";
-  const accountMetaLbl = isLight
+  const accountMetaLbl = isLightDoc
     ? "text-[10px] font-semibold uppercase tracking-[0.12em] text-[#555]"
     : "text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-soft)]";
-  const accountDivider = isLight ? "border-black/[0.08]" : "border-white/[0.06]";
-  const btnSecondary = isLight
+  const accountDivider = isLightDoc ? "border-black/[0.08]" : "border-white/[0.06]";
+  const btnSecondary = isLightDoc
     ? "rounded-lg border border-black/10 bg-white px-2.5 py-1.5 text-[11px] font-medium text-[#1a1a1a] transition-colors hover:border-black/18 hover:bg-[#f6f7f9] disabled:cursor-not-allowed disabled:opacity-50"
     : "rounded-lg border border-white/[0.1] bg-[#141414] px-2.5 py-1.5 text-[11px] font-medium text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 disabled:cursor-not-allowed disabled:opacity-40";
-  const btnDanger = isLight
+  const btnDanger = isLightDoc
     ? "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-[11px] font-medium text-red-800 transition-colors hover:border-red-300 hover:bg-red-100 disabled:opacity-45"
     : "rounded-lg border border-red-500/25 bg-red-500/5 px-2.5 py-1.5 text-[11px] font-medium text-red-200/90 transition-colors hover:border-red-500/40 disabled:opacity-45";
-  const formCard = isLight
+  const formCard = isLightDoc
     ? "rounded-xl border border-black/[0.08] bg-[#f3f4f6] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
     : "rounded-xl border border-white/[0.08] bg-[#0a0a0a] p-4";
-  const segBtn = "flex-1 rounded-lg border px-3 py-2 text-[11px] font-medium transition-colors duration-200";
-  const lightSegTr =
-    "transition-[background-color,border-color,color,box-shadow] duration-200";
-  const segActive = isLight
-    ? `om-light-seg-active flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-semibold ${lightSegTr}`
-    : `${segBtn} border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)]`;
-  const segIdle = isLight
-    ? `om-light-seg-idle flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-medium ${lightSegTr}`
-    : `${segBtn} border-white/[0.08] bg-[#0c0c0c] text-[color:var(--text-soft)] hover:border-white/[0.12] hover:text-[var(--text-main)]`;
-  const formErrBox = isLight
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
+
+  function getButtonClass(active: boolean) {
+    if (isLight) {
+      return active
+        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
+        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
+    }
+
+    return active
+      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
+      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
+  }
+  const formErrBox = isLightDoc
     ? "mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-900"
     : "mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-200/95";
-  const connectPrimary = isLight
+  const connectPrimary = isLightDoc
     ? "w-full rounded-lg border border-[var(--accent)]/50 bg-gradient-to-b from-[var(--accent-soft)] to-slate-200/40 py-2.5 text-[13px] font-semibold text-[#161616] shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-[filter,opacity] hover:brightness-[1.03] disabled:cursor-not-allowed disabled:opacity-50"
     : "w-full rounded-lg border border-[var(--accent)]/45 bg-[var(--accent-soft)] py-2.5 text-[13px] font-semibold text-[var(--text-main)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40";
-  const manualSep = isLight ? "border-t border-black/[0.08]" : "border-t border-white/[0.06]";
-  const hintQuick = isLight
+  const manualSep = isLightDoc ? "border-t border-black/[0.08]" : "border-t border-white/[0.06]";
+  const hintQuick = isLightDoc
     ? "mb-3 text-[11px] leading-relaxed text-[#555]"
     : "mb-3 text-[11px] leading-relaxed text-[color:var(--text-soft)]";
 
@@ -693,7 +691,7 @@ function SettingsAccountsServer({
                   {a.provider ? (
                     <p
                       className={
-                        isLight ? "text-[12px] text-[#555]" : "text-[12px] text-[color:var(--text-soft)]"
+                        isLightDoc ? "text-[12px] text-[#555]" : "text-[12px] text-[color:var(--text-soft)]"
                       }
                     >
                       Provider: {a.provider}
@@ -705,7 +703,7 @@ function SettingsAccountsServer({
                     </div>
                     <div
                       className={
-                        isLight
+                        isLightDoc
                           ? "mt-2 space-y-1 font-mono text-[11px] leading-relaxed text-[#555]"
                           : "mt-2 space-y-1 font-mono text-[11px] leading-relaxed text-[color:var(--text-soft)]"
                       }
@@ -718,7 +716,7 @@ function SettingsAccountsServer({
                 {active ? (
                   <span
                     className={
-                      isLight
+                      isLightDoc
                         ? "shrink-0 rounded-md border border-[var(--accent)]/40 bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#1a1a1a]"
                         : "shrink-0 rounded-md border border-[var(--accent)]/40 bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-main)]"
                     }
@@ -762,14 +760,14 @@ function SettingsAccountsServer({
         <div className="mb-3 flex gap-2">
           <button
             type="button"
-            className={addMode === "quick" ? segActive : segIdle}
+            className={getButtonClass(addMode === "quick")}
             onClick={() => setAddMode("quick")}
           >
             Quick connect
           </button>
           <button
             type="button"
-            className={addMode === "manual" ? segActive : segIdle}
+            className={getButtonClass(addMode === "manual")}
             onClick={() => setAddMode("manual")}
           >
             Manual
@@ -953,6 +951,19 @@ export function OpenmailSettingsPanel({
   const { theme, setTheme } = useOpenmailTheme();
   const docTheme = useOpenmailDocumentTheme();
   const isLightTheme = docTheme === "soft-intelligence-light";
+  const isLight = theme === "soft-intelligence-light";
+
+  function getButtonClass(active: boolean) {
+    if (isLight) {
+      return active
+        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
+        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
+    }
+
+    return active
+      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
+      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
+  }
   const navBtnIdleResolved = isLightTheme
     ? "text-[#555] hover:bg-black/[0.04] hover:text-[#111827]"
     : navBtnIdle;
@@ -1347,17 +1358,9 @@ export function OpenmailSettingsPanel({
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          className={
-                            isLightTheme
-                              ? prefs.display.density === "compact"
-                                ? "om-light-seg-active flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
-                                : "om-light-seg-idle flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
-                              : `${segClass} flex-1 ${
-                                  prefs.display.density === "compact"
-                                    ? segOn
-                                    : segOff
-                                }`
-                          }
+                          className={getButtonClass(
+                            prefs.display.density === "compact"
+                          )}
                           onClick={() =>
                             prefs.updateDisplay({ density: "compact" })
                           }
@@ -1366,17 +1369,9 @@ export function OpenmailSettingsPanel({
                         </button>
                         <button
                           type="button"
-                          className={
-                            isLightTheme
-                              ? prefs.display.density === "comfortable"
-                                ? "om-light-seg-active flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
-                                : "om-light-seg-idle flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
-                              : `${segClass} flex-1 ${
-                                  prefs.display.density === "comfortable"
-                                    ? segOn
-                                    : segOff
-                                }`
-                          }
+                          className={getButtonClass(
+                            prefs.display.density === "comfortable"
+                          )}
                           onClick={() =>
                             prefs.updateDisplay({ density: "comfortable" })
                           }
@@ -1515,15 +1510,9 @@ export function OpenmailSettingsPanel({
                         <button
                           key={tone}
                           type="button"
-                          className={
-                            isLightTheme
-                              ? prefs.ai.defaultTone === tone
-                                ? "om-light-seg-active rounded-lg px-3 py-2 text-left text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
-                                : "om-light-seg-idle rounded-lg px-3 py-2 text-left text-[11px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
-                              : `${segClass} ${
-                                  prefs.ai.defaultTone === tone ? segOn : segOff
-                                }`
-                          }
+                          className={getButtonClass(
+                            prefs.ai.defaultTone === tone
+                          )}
                           onClick={() => prefs.updateAi({ defaultTone: tone })}
                         >
                           {tone}

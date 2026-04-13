@@ -16,7 +16,10 @@ import { MailAttachments } from "@/components/MailAttachments";
 import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import type { SecurityRiskLevel } from "@/app/openmail/components/security/types";
 import { RiskBadge } from "@/app/openmail/components/security/RiskBadge";
-import { useOpenmailDocumentTheme } from "@/app/openmail/OpenmailThemeProvider";
+import {
+  useOpenmailDocumentTheme,
+  useOpenmailTheme,
+} from "@/app/openmail/OpenmailThemeProvider";
 import type { MailSecurityInput } from "@/lib/mailSecuritySignals";
 import type { MailAttachmentItem } from "@/lib/mailAttachmentItem";
 import {
@@ -670,6 +673,20 @@ export function MailPanel({
 }: MailPanelProps) {
   const docTheme = useOpenmailDocumentTheme();
   const isLightTheme = docTheme === "soft-intelligence-light";
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
+
+  function getButtonClass(active: boolean) {
+    if (isLight) {
+      return active
+        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
+        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
+    }
+
+    return active
+      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
+      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
+  }
   const { mailsFetchError: storeMailsFetchError } = useMailStore();
   const listErrorCombined = (listFetchError ?? storeMailsFetchError ?? "").trim();
   const inboxOnboardingUiActive =
@@ -959,34 +976,14 @@ export function MailPanel({
             <div className="flex rounded-[8px] border border-[var(--border)] p-0.5">
               <button
                 type="button"
-                className={
-                  isLightTheme
-                    ? density === "compact"
-                      ? "om-light-seg-active rounded-[6px] px-2 py-1 text-left text-[10px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
-                      : "om-light-seg-idle rounded-[6px] px-2 py-1 text-left text-[10px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
-                    : `rounded-[6px] px-2 py-1 text-[10px] font-medium ${
-                        density === "compact"
-                          ? "bg-[var(--accent-soft)] text-[var(--text-main)]"
-                          : "text-[color:var(--text-soft)]"
-                      }`
-                }
+                className={getButtonClass(density === "compact")}
                 onClick={() => setDensity("compact")}
               >
                 Compact
               </button>
               <button
                 type="button"
-                className={
-                  isLightTheme
-                    ? density === "comfortable"
-                      ? "om-light-seg-active rounded-[6px] px-2 py-1 text-left text-[10px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
-                      : "om-light-seg-idle rounded-[6px] px-2 py-1 text-left text-[10px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
-                    : `rounded-[6px] px-2 py-1 text-[10px] font-medium ${
-                        density === "comfortable"
-                          ? "bg-[var(--accent-soft)] text-[var(--text-main)]"
-                          : "text-[color:var(--text-soft)]"
-                      }`
-                }
+                className={getButtonClass(density === "comfortable")}
                 onClick={() => setDensity("comfortable")}
               >
                 Comfortable

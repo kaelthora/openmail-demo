@@ -9,7 +9,10 @@ import {
   type GuardianAutoResponseMode,
 } from "@/lib/guardianAutoResponse";
 import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
-import { useOpenmailDocumentTheme } from "../OpenmailThemeProvider";
+import {
+  useOpenmailDocumentTheme,
+  useOpenmailTheme,
+} from "../OpenmailThemeProvider";
 import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
 
 type AIPanelProps = {
@@ -614,6 +617,20 @@ export function AIPanel({
   const { ai: aiPrefs } = useOpenmailPreferences();
   const docTheme = useOpenmailDocumentTheme();
   const isLightTheme = docTheme === "soft-intelligence-light";
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
+
+  function getButtonClass(active: boolean) {
+    if (isLight) {
+      return active
+        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
+        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
+    }
+
+    return active
+      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
+      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
+  }
   const [insertAnim, setInsertAnim] = useState(false);
   const [suggestionGlow, setSuggestionGlow] = useState(false);
   const [userTyping, setUserTyping] = useState(false);
@@ -927,17 +944,7 @@ export function AIPanel({
                           <button
                             key={tone}
                             type="button"
-                            className={
-                              isLightTheme
-                                ? replyTone === tone
-                                  ? "om-light-seg-active rounded-full px-3 py-1 text-center text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-200"
-                                  : "om-light-seg-idle rounded-full px-3 py-1 text-center text-[11px] font-medium transition-[background-color,border-color,color,box-shadow] duration-200"
-                                : `openmail-reply-tone-chip rounded-full border px-3 py-1 text-[11px] font-medium transition-[background-color,border-color,box-shadow,color] duration-150 ease-out ${
-                                    replyTone === tone
-                                      ? "openmail-reply-tone-chip--selected border-[var(--accent)]/50 bg-[var(--accent-soft)]/35 text-[color:var(--text-main)]"
-                                      : "openmail-reply-tone-chip--idle border-[var(--border)] bg-transparent text-[color:var(--text-soft)] hover:border-[var(--accent)]/35 hover:bg-white/[0.04]"
-                                  }`
-                            }
+                            className={getButtonClass(replyTone === tone)}
                             onClick={() => onToneChange(tone)}
                           >
                             {tone}

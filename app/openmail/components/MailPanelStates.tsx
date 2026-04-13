@@ -1,6 +1,6 @@
 "use client";
 
-import { useOpenmailDocumentTheme } from "../OpenmailThemeProvider";
+import { useOpenmailTheme } from "../OpenmailThemeProvider";
 
 type MailListSkeletonProps = {
   rows?: number;
@@ -88,8 +88,20 @@ export function MailListInboxOnboarding({
   onManualSetup: () => void;
   onRetryCheck?: () => void | Promise<void>;
 }) {
-  const docTheme = useOpenmailDocumentTheme();
-  const isLight = docTheme === "soft-intelligence-light";
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
+
+  function getButtonClass(active: boolean) {
+    if (isLight) {
+      return active
+        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
+        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
+    }
+
+    return active
+      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
+      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
+  }
   return (
     <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 px-3 py-10 text-center">
       <div
@@ -121,22 +133,14 @@ export function MailListInboxOnboarding({
       <div className="flex w-full max-w-[280px] flex-col gap-2 sm:flex-row sm:justify-center">
         <button
           type="button"
-          className={
-            isLight
-              ? "openmail-inbox-connect-gmail-btn om-light-seg-active w-full rounded-[10px] px-4 py-2.5 text-xs font-semibold sm:flex-1"
-              : "w-full rounded-[10px] border border-[var(--accent)]/45 bg-[var(--accent-soft)] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-[filter,opacity] hover:brightness-[1.03] sm:flex-1"
-          }
+          className={getButtonClass(true)}
           onClick={() => void onConnectGmail()}
         >
           Connect Gmail
         </button>
         <button
           type="button"
-          className={
-            isLight
-              ? "openmail-inbox-manual-setup-btn om-light-seg-idle w-full rounded-[10px] px-4 py-2.5 text-xs font-semibold sm:flex-1"
-              : "w-full rounded-[10px] border border-white/[0.1] bg-[#141414] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 sm:flex-1"
-          }
+          className={getButtonClass(false)}
           onClick={() => void onManualSetup()}
         >
           Manual setup
