@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useOpenmailTheme } from "@/app/openmail/OpenmailThemeProvider";
+import { useOpenmailDocumentTheme } from "@/app/openmail/OpenmailThemeProvider";
 import type { HighRiskUiReasons } from "@/lib/mailSecuritySignals";
 import type { SecurityRiskLevel } from "./types";
 
@@ -109,8 +109,8 @@ function MailRiskGateModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  const { theme } = useOpenmailTheme();
-  const isLightTheme = theme === "soft-intelligence-light";
+  const docTheme = useOpenmailDocumentTheme();
+  const isLightTheme = docTheme === "soft-intelligence-light";
   const primaryRef = useRef<HTMLButtonElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const isHigh = tier === "high";

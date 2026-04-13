@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { OPENMAIL_THEME_DEFAULT } from "@/lib/openmailTheme";
 
 export const metadata: Metadata = {
   title: "OpenMail",
@@ -12,7 +13,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-openmail-theme={OPENMAIL_THEME_DEFAULT}
+    >
       <body className="relative">
         <div
           className="fixed inset-0 z-0 pointer-events-none opacity-20"

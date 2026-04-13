@@ -16,10 +16,7 @@ import { MailAttachments } from "@/components/MailAttachments";
 import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import type { SecurityRiskLevel } from "@/app/openmail/components/security/types";
 import { RiskBadge } from "@/app/openmail/components/security/RiskBadge";
-import {
-  useOpenmailDocumentTheme,
-  useOpenmailTheme,
-} from "@/app/openmail/OpenmailThemeProvider";
+import { useOpenmailDocumentTheme } from "@/app/openmail/OpenmailThemeProvider";
 import type { MailSecurityInput } from "@/lib/mailSecuritySignals";
 import type { MailAttachmentItem } from "@/lib/mailAttachmentItem";
 import {

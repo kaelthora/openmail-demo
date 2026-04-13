@@ -9,7 +9,7 @@ import {
   type GuardianAutoResponseMode,
 } from "@/lib/guardianAutoResponse";
 import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
-import { useOpenmailDocumentTheme, useOpenmailTheme } from "../OpenmailThemeProvider";
+import { useOpenmailDocumentTheme } from "../OpenmailThemeProvider";
 import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
 
 type AIPanelProps = {
@@ -612,7 +612,6 @@ export function AIPanel({
   void onCoreEscalate;
   void onCoreReplyWithSuggestion;
   const { ai: aiPrefs } = useOpenmailPreferences();
-  const { theme } = useOpenmailTheme();
   const docTheme = useOpenmailDocumentTheme();
   const isLightTheme = docTheme === "soft-intelligence-light";
   const [insertAnim, setInsertAnim] = useState(false);
@@ -1162,7 +1161,8 @@ export function AIPanel({
                           : "border-[var(--border)]"
                       } ${suggestionGlow ? "core-reply-textarea--suggestion-glow" : ""} ${
                         replyAssist.suggestImmediateSend
-                          ? theme === "soft-dark" || theme === "soft-intelligence-light"
+                          ? docTheme === "soft-dark" ||
+                            docTheme === "soft-intelligence-light"
                             ? "motion-safe:animate-[core-reply-ready-pulse-soft_2.4s_ease-in-out_infinite]"
                             : "motion-safe:animate-[core-reply-ready-pulse_2.4s_ease-in-out_infinite]"
                           : ""
