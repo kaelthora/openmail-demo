@@ -15,7 +15,7 @@ import { useOpenmailToast } from "../OpenmailToastProvider";
 import { useSmartNotifications } from "../SmartNotificationsProvider";
 import type { OpenmailUiTheme } from "@/lib/openmailTheme";
 import type { SettingsSection } from "@/lib/openmailSettingsPrefs";
-import { OPENMAIL_LIGHT_SEGMENT } from "@/lib/openmailLightSegmentStyle";
+import { OPENMAIL_LIGHT_SEGMENT } from "@/app/openmail/openmailLightSegmentClasses";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
 import { GUARDIAN_ETHICAL_GUARDRAILS } from "@/lib/guardianEngine";
 import {

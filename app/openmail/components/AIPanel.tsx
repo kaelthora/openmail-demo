@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ProcessedMail } from "@/lib/mailTypes";
 import { buildCoreDetectionReasons, coreMailPreviewPlain } from "@/lib/openmailCoreUi";
-import { OPENMAIL_LIGHT_SEGMENT } from "@/lib/openmailLightSegmentStyle";
+import { OPENMAIL_LIGHT_SEGMENT } from "@/app/openmail/openmailLightSegmentClasses";
 import { getReplyAssistUiState } from "@/lib/openmailAutoReplyUi";
 import {
   guardianAutoResponseDescription,

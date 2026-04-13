@@ -26,7 +26,7 @@ import {
   MailListInboxOnboarding,
   MailListSkeleton,
 } from "./MailPanelStates";
-import { OPENMAIL_LIGHT_SEGMENT } from "@/lib/openmailLightSegmentStyle";
+import { OPENMAIL_LIGHT_SEGMENT } from "@/app/openmail/openmailLightSegmentClasses";
 import type { OpenmailAutoResolveKind } from "@/lib/openmailAutoResolve";
 import {
   buildThreadSituations,
