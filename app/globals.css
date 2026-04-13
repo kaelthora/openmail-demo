@@ -772,6 +772,53 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-settings-panel {
   box-shadow: -8px 0 40px rgba(0, 0, 0, 0.06);
 }
 
+/* Light — segmented / toggle buttons (Accounts Quick=grey, Manual=white; beats Tailwind gaps & dark defaults) */
+html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-active {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #111827 !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-idle {
+  background-color: #eceef2 !important;
+  background-image: none !important;
+  color: #475569 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: none !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.om-light-seg-idle:hover:not(:disabled) {
+  background-color: #e2e5ea !important;
+  color: #334155 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.openmail-theme-choice.om-light-seg-active {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.openmail-theme-choice.om-light-seg-idle {
+  background-color: #f1f3f7 !important;
+  color: #64748b !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] button.openmail-theme-choice.om-light-seg-idle:hover:not(:disabled) {
+  background-color: #e6e9ef !important;
+  color: #334155 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .om-light-theme-rail {
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background-color: #e6e9ef !important;
+  background-image: none !important;
+}
+
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-footer {
   background: color-mix(in srgb, var(--openmail-ai-chrome) 92%, transparent) !important;
   border-top-color: rgba(0, 0, 0, 0.06) !important;

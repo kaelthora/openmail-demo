@@ -121,7 +121,11 @@ export function MailListInboxOnboarding({
       <div className="flex w-full max-w-[280px] flex-col gap-2 sm:flex-row sm:justify-center">
         <button
           type="button"
-          className="w-full rounded-[10px] border border-[var(--accent)]/45 bg-[var(--accent-soft)] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-[filter,opacity] hover:brightness-[1.03] sm:flex-1"
+          className={
+            isLight
+              ? "om-light-seg-idle w-full rounded-[10px] px-4 py-2.5 text-xs font-semibold shadow-none transition-[filter,opacity] hover:brightness-[1.02] sm:flex-1"
+              : "w-full rounded-[10px] border border-[var(--accent)]/45 bg-[var(--accent-soft)] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-[filter,opacity] hover:brightness-[1.03] sm:flex-1"
+          }
           onClick={() => void onConnectGmail()}
         >
           Connect Gmail
@@ -130,7 +134,7 @@ export function MailListInboxOnboarding({
           type="button"
           className={
             isLight
-              ? "w-full rounded-[10px] border border-[rgba(0,0,0,0.15)] bg-transparent px-4 py-2.5 text-xs font-semibold text-[rgba(0,0,0,0.75)] shadow-none transition-[background-color,border-color] hover:border-[rgba(0,0,0,0.25)] hover:bg-[rgba(0,0,0,0.04)] sm:flex-1"
+              ? "om-light-seg-active w-full rounded-[10px] px-4 py-2.5 text-xs font-semibold sm:flex-1 transition-[filter,opacity] hover:brightness-[1.01]"
               : "w-full rounded-[10px] border border-white/[0.1] bg-[#141414] px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/40 sm:flex-1"
           }
           onClick={() => void onManualSetup()}

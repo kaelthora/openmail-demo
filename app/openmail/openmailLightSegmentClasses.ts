@@ -1,21 +1,21 @@
 /**
- * Light segmented / toggle buttons — use ONLY when `theme === "soft-intelligence-light"`.
- * Do not merge with `segClass`, `openmail-reply-tone-chip`, or other dark-segment classes.
- * Lives under `app/openmail/` so Tailwind is guaranteed to scan these class strings.
+ * Light segmented controls — pair with `om-light-seg-active` / `om-light-seg-idle`
+ * rules in `globals.css` (html[data-openmail-theme="soft-intelligence-light"]).
+ * Tailwind here only supplies layout; colors come from CSS for reliable overrides.
  */
 const tr =
   "transition-[background-color,border-color,color,box-shadow] duration-200";
 
 export const OPENMAIL_LIGHT_SEGMENT = {
-  flexActive: `flex-1 rounded-lg border border-black/10 !bg-white px-3 py-2 text-left text-[11px] font-semibold !text-[#111827] shadow-sm ${tr}`,
-  flexInactive: `flex-1 rounded-lg border border-black/5 !bg-black/[0.04] px-3 py-2 text-left text-[11px] font-medium !text-black/60 shadow-none hover:!bg-black/[0.08] ${tr}`,
+  flexActive: `om-light-seg-active flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-semibold ${tr}`,
+  flexInactive: `om-light-seg-idle flex-1 rounded-lg px-3 py-2 text-left text-[11px] font-medium ${tr}`,
 
-  wrapActive: `rounded-lg border border-black/10 !bg-white px-3 py-2 text-left text-[11px] font-semibold !text-[#111827] shadow-sm ${tr}`,
-  wrapInactive: `rounded-lg border border-black/5 !bg-black/[0.04] px-3 py-2 text-left text-[11px] font-medium !text-black/60 shadow-none hover:!bg-black/[0.08] ${tr}`,
+  wrapActive: `om-light-seg-active rounded-lg px-3 py-2 text-left text-[11px] font-semibold ${tr}`,
+  wrapInactive: `om-light-seg-idle rounded-lg px-3 py-2 text-left text-[11px] font-medium ${tr}`,
 
-  toolbarActive: `rounded-[6px] border border-black/10 !bg-white px-2 py-1 text-left text-[10px] font-semibold !text-[#111827] shadow-sm ${tr}`,
-  toolbarInactive: `rounded-[6px] border border-black/5 !bg-black/[0.04] px-2 py-1 text-left text-[10px] font-medium !text-black/60 shadow-none hover:!bg-black/[0.08] ${tr}`,
+  toolbarActive: `om-light-seg-active rounded-[6px] px-2 py-1 text-left text-[10px] font-semibold ${tr}`,
+  toolbarInactive: `om-light-seg-idle rounded-[6px] px-2 py-1 text-left text-[10px] font-medium ${tr}`,
 
-  toneActive: `rounded-full border border-black/10 !bg-white px-3 py-1 text-center text-[11px] font-semibold !text-[#111827] shadow-sm ${tr}`,
-  toneInactive: `rounded-full border border-black/5 !bg-black/[0.04] px-3 py-1 text-center text-[11px] font-medium !text-black/60 shadow-none hover:!bg-black/[0.08] ${tr}`,
+  toneActive: `om-light-seg-active rounded-full px-3 py-1 text-center text-[11px] font-semibold ${tr}`,
+  toneInactive: `om-light-seg-idle rounded-full px-3 py-1 text-center text-[11px] font-medium ${tr}`,
 } as const;

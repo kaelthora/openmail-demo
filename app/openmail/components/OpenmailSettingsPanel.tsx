@@ -59,6 +59,33 @@ const segOn =
 const segOff =
   "text-[color:var(--text-soft)] hover:border-white/[0.12] hover:text-[var(--text-main)]";
 
+const themeChoiceBase =
+  "openmail-theme-choice flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200";
+
+function classForSunThemeSwitch(theme: OpenmailUiTheme, isLightUi: boolean): string {
+  if (isLightUi) {
+    return `${themeChoiceBase} ${
+      theme === "soft-intelligence-light" ? "om-light-seg-active" : "om-light-seg-idle"
+    }`;
+  }
+  return `${themeChoiceBase} ${
+    theme === "soft-intelligence-light"
+      ? "border border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)] shadow-[0_0_12px_var(--accent-soft)]"
+      : "border border-transparent text-[color:var(--text-soft)] hover:bg-white/[0.06] hover:text-[var(--text-main)]"
+  }`;
+}
+
+function classForMoonThemeSwitch(theme: OpenmailUiTheme, isLightUi: boolean): string {
+  if (isLightUi) {
+    return `${themeChoiceBase} ${theme === "soft-dark" ? "om-light-seg-active" : "om-light-seg-idle"}`;
+  }
+  return `${themeChoiceBase} ${
+    theme === "soft-dark"
+      ? "border border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)] shadow-[0_0_12px_var(--accent-soft)]"
+      : "border border-transparent text-[color:var(--text-soft)] hover:bg-white/[0.06] hover:text-[var(--text-main)]"
+  }`;
+}
+
 function ToggleRow({
   label,
   description,
@@ -1200,7 +1227,11 @@ export function OpenmailSettingsPanel({
                       description="Light or soft dark. Your mail and layout stay the same."
                     >
                       <div
-                        className="inline-flex rounded-xl border border-white/[0.08] bg-[#0c0c0c] p-1"
+                        className={
+                          isLightTheme
+                            ? "om-light-theme-rail inline-flex rounded-xl p-1"
+                            : "inline-flex rounded-xl border border-white/[0.08] bg-[#0c0c0c] p-1"
+                        }
                         role="group"
                         aria-label="Theme"
                       >
@@ -1209,11 +1240,7 @@ export function OpenmailSettingsPanel({
                           data-active={theme === "soft-intelligence-light" ? "true" : "false"}
                           title="Light"
                           aria-label="Light theme"
-                          className={`openmail-theme-choice flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200 ${
-                            theme === "soft-intelligence-light"
-                              ? "border border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)] shadow-[0_0_12px_var(--accent-soft)]"
-                              : "border border-transparent text-[color:var(--text-soft)] hover:bg-white/[0.06] hover:text-[var(--text-main)]"
-                          }`}
+                          className={classForSunThemeSwitch(theme, isLightTheme)}
                           onClick={() => setTheme("soft-intelligence-light")}
                         >
                           <IconSun className="h-[18px] w-[18px]" />
@@ -1223,11 +1250,7 @@ export function OpenmailSettingsPanel({
                           data-active={theme === "soft-dark" ? "true" : "false"}
                           title="Soft dark"
                           aria-label="Soft dark theme"
-                          className={`openmail-theme-choice flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200 ${
-                            theme === "soft-dark"
-                              ? "border border-[var(--accent)]/45 bg-[var(--accent-soft)] text-[var(--text-main)] shadow-[0_0_12px_var(--accent-soft)]"
-                              : "border border-transparent text-[color:var(--text-soft)] hover:bg-white/[0.06] hover:text-[var(--text-main)]"
-                          }`}
+                          className={classForMoonThemeSwitch(theme, isLightTheme)}
                           onClick={() => setTheme("soft-dark")}
                         >
                           <IconMoon className="h-[18px] w-[18px]" />
