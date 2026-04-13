@@ -1,7 +1,8 @@
 /**
  * Light segmented controls — pair with `om-light-seg-active` / `om-light-seg-idle`
- * rules in `globals.css` (html[data-openmail-theme="soft-intelligence-light"]).
- * Tailwind here only supplies layout; colors come from CSS for reliable overrides.
+ * in `globals.css` under `html[data-openmail-theme="soft-intelligence-light"]` (!important).
+ * Tailwind: layout/typography only — do not add bg-*, border-white/*, or dark fills here
+ * (they fight the global segment styles).
  */
 const tr =
   "transition-[background-color,border-color,color,box-shadow] duration-200";
