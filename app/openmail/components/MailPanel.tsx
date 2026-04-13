@@ -38,7 +38,7 @@ import {
 import { useAttentionEngine } from "../AttentionEngineProvider";
 import { useMailStore } from "../MailStoreProvider";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
-import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
+import { isInboxOnboardingFetchMessage } from "@/lib/legacyImapEnvMissing";
 import type { TimeCompressionPanelProps } from "@/lib/openmailTimeCompression";
 import { SmartAutoFileInlineBar } from "./SmartAutoFileInlineBar";
 import { MailListToolbar } from "./MailListToolbar";
@@ -655,7 +655,7 @@ export function MailPanel({
     showInboxOnboarding ||
     (!OPENMAIL_DEMO_MODE &&
       folderLabel === "Inbox" &&
-      isLegacyImapEnvMissingMessage(listErrorCombined));
+      isInboxOnboardingFetchMessage(listErrorCombined));
   const effectiveListFetchError = inboxOnboardingUiActive
     ? null
     : (listFetchError ?? storeMailsFetchError ?? null);

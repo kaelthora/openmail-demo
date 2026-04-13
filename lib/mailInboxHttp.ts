@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import type { EmailListItem } from "@/lib/emailListTypes";
-import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
+import {
+  isAccountNotFoundInboxMessage,
+  isLegacyImapEnvMissingMessage,
+} from "@/lib/legacyImapEnvMissing";
 import { listInboxEmailListItems } from "@/lib/mailInboxFetch";
 
 export type ParsedInboxScope =
@@ -72,6 +75,13 @@ export async function jsonMailInboxListResponse(
     const message = e instanceof Error ? e.message : "Failed to load mail";
     /** Legacy IMAP with no env vars — first-run, not a server outage. */
     if (accountId == null && isLegacyImapEnvMissingMessage(message)) {
+      return NextResponse.json({
+        emails: [] as EmailListItem[],
+        setupRequired: true,
+      });
+    }
+    /** Prisma row gone (e.g. removed account) — prompt to connect, not 404 error UI. */
+    if (accountId != null && isAccountNotFoundInboxMessage(message)) {
       return NextResponse.json({
         emails: [] as EmailListItem[],
         setupRequired: true,

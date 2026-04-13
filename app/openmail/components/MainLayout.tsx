@@ -10,7 +10,7 @@ import type { GuardianAutoResponseMode } from "@/lib/guardianAutoResponse";
 import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
 import { useMailStore } from "../MailStoreProvider";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
-import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
+import { isInboxOnboardingFetchMessage } from "@/lib/legacyImapEnvMissing";
 import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
 import { ComposeEmailModal, type ComposeEmailDraft } from "./ComposeEmailModal";
 import { OpenmailSettingsPanel } from "./OpenmailSettingsPanel";
@@ -212,7 +212,7 @@ export function MainLayout({
     showInboxOnboarding ||
     (!OPENMAIL_DEMO_MODE &&
       !!listErrorCombined &&
-      isLegacyImapEnvMissingMessage(listErrorCombined));
+      isInboxOnboardingFetchMessage(listErrorCombined));
   const effectiveListFetchError = inboxOnboardingUiActive
     ? null
     : (listFetchError ?? null);

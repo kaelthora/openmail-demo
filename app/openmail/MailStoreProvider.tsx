@@ -31,7 +31,10 @@ import type {
   ServerInboxScope,
   ServerMailAccountSummary,
 } from "@/lib/serverInboxTypes";
-import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
+import {
+  isAccountNotFoundInboxMessage,
+  isLegacyImapEnvMissingMessage,
+} from "@/lib/legacyImapEnvMissing";
 
 const INBOX_SCOPE_KEY = "openmail-inbox-scope-v1";
 
@@ -154,10 +157,11 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       };
       if (!res.ok) {
         const msg = data.error || "Could not load messages";
-        /** Legacy inbox without env: older servers returned 503 + EMAIL_* text — treat as setup, not outage. */
-        const legacyEnvMissing =
-          scope === "legacy" && isLegacyImapEnvMissingMessage(msg);
-        if (legacyEnvMissing) {
+        /** Stale/deleted saved account, or legacy env missing — onboarding, not outage. */
+        const onboardingFetch =
+          isAccountNotFoundInboxMessage(msg) ||
+          (scope === "legacy" && isLegacyImapEnvMissingMessage(msg));
+        if (onboardingFetch) {
           setInboxSetupRequired(true);
           setMailsFetchError(null);
           setMails((prev) => prev.filter((m) => m.folder !== "inbox"));

@@ -23,7 +23,7 @@ import { useGuardianTrace } from "./GuardianTraceProvider";
 import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import type { OpenmailSidebarFolderId } from "@/lib/openmailNavFolders";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
-import { isLegacyImapEnvMissingMessage } from "@/lib/legacyImapEnvMissing";
+import { isInboxOnboardingFetchMessage } from "@/lib/legacyImapEnvMissing";
 import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
 import { useUserBehavior } from "./UserBehaviorProvider";
 import { useAttentionEngine } from "./AttentionEngineProvider";
@@ -2003,7 +2003,7 @@ function OpenMailPageContent() {
       activeFolder === "inbox" &&
       (inboxSetupRequired ||
         serverMailAccounts.length === 0 ||
-        isLegacyImapEnvMissingMessage(mailsFetchError ?? "")),
+        isInboxOnboardingFetchMessage(mailsFetchError ?? "")),
     [
       activeFolder,
       inboxSetupRequired,
