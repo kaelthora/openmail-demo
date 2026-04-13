@@ -14,13 +14,17 @@ function segmentButtonDocLightForceStyle(
   return isActive
     ? {
         background: "#ffffff",
+        backgroundColor: "#ffffff",
         color: "#111827",
         border: "1px solid rgba(0,0,0,0.08)",
+        boxShadow: "none",
       }
     : {
         background: "rgba(0,0,0,0.04)",
+        backgroundColor: "rgba(0,0,0,0.04)",
         color: "rgba(0,0,0,0.6)",
         border: "1px solid rgba(0,0,0,0.06)",
+        boxShadow: "none",
       };
 }
 
