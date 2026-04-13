@@ -6,7 +6,6 @@ import {
   useId,
   useRef,
   useState,
-  type CSSProperties,
   type ReactNode,
 } from "react";
 import { useOpenmailDocumentTheme, useOpenmailTheme } from "../OpenmailThemeProvider";
@@ -29,30 +28,6 @@ import {
   type MailTransportSecurity,
   type OpenMailAccountProfile,
 } from "@/lib/mailAccountConfig";
-
-function segmentButtonDocLightForceStyle(
-  isActive: boolean
-): CSSProperties | undefined {
-  const isLight =
-    typeof document !== "undefined" &&
-    document.documentElement.dataset.openmailTheme === "soft-intelligence-light";
-  if (!isLight) return undefined;
-  return isActive
-    ? {
-        background: "#ffffff",
-        backgroundColor: "#ffffff",
-        color: "#111827",
-        border: "1px solid rgba(0,0,0,0.08)",
-        boxShadow: "none",
-      }
-    : {
-        background: "rgba(0,0,0,0.04)",
-        backgroundColor: "rgba(0,0,0,0.04)",
-        color: "rgba(0,0,0,0.6)",
-        border: "1px solid rgba(0,0,0,0.06)",
-        boxShadow: "none",
-      };
-}
 
 type OpenmailSettingsPanelProps = {
   open: boolean;
@@ -82,8 +57,8 @@ const themeChoiceBase =
 function classForSunThemeSwitch(docTheme: OpenmailUiTheme, isLightUi: boolean): string {
   if (isLightUi) {
     return docTheme === "soft-intelligence-light"
-      ? `${themeChoiceBase} om-light-seg-active`
-      : `${themeChoiceBase} om-light-seg-idle`;
+      ? `${themeChoiceBase} bg-white text-gray-900 border border-gray-200`
+      : `${themeChoiceBase} bg-gray-100 text-gray-600 border border-gray-200`;
   }
   return `${themeChoiceBase} ${
     docTheme === "soft-intelligence-light"
@@ -95,8 +70,8 @@ function classForSunThemeSwitch(docTheme: OpenmailUiTheme, isLightUi: boolean): 
 function classForMoonThemeSwitch(docTheme: OpenmailUiTheme, isLightUi: boolean): string {
   if (isLightUi) {
     return docTheme === "soft-dark"
-      ? `${themeChoiceBase} om-light-seg-active`
-      : `${themeChoiceBase} om-light-seg-idle`;
+      ? `${themeChoiceBase} bg-white text-gray-900 border border-gray-200`
+      : `${themeChoiceBase} bg-gray-100 text-gray-600 border border-gray-200`;
   }
   return `${themeChoiceBase} ${
     docTheme === "soft-dark"
@@ -451,17 +426,6 @@ function SettingsAccountsServer({
   const { theme } = useOpenmailTheme();
   const isLight = theme === "soft-intelligence-light";
 
-  function getButtonClass(active: boolean) {
-    if (isLight) {
-      return active
-        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
-        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
-    }
-
-    return active
-      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
-      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
-  }
   const formErrBox = isLightDoc
     ? "mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-900"
     : "mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-200/95";
@@ -472,13 +436,6 @@ function SettingsAccountsServer({
   const hintQuick = isLightDoc
     ? "mb-3 text-[11px] leading-relaxed text-[#555]"
     : "mb-3 text-[11px] leading-relaxed text-[color:var(--text-soft)]";
-
-  useEffect(() => {
-    console.log(
-      "BUTTON SOURCE:",
-      "app/openmail/components/OpenmailSettingsPanel.tsx#SettingsAccountsServer"
-    );
-  }, []);
 
   useEffect(() => {
     if (!settingsOpen || !accountsActive) return;
@@ -792,16 +749,30 @@ function SettingsAccountsServer({
         <div className="mb-3 flex gap-2">
           <button
             type="button"
-            className={getButtonClass(addMode === "quick")}
-            style={segmentButtonDocLightForceStyle(addMode === "quick")}
+            className={`rounded-lg px-3 py-2 text-xs font-medium ${
+              isLight
+                ? addMode === "quick"
+                  ? "bg-white text-gray-900 border border-gray-200"
+                  : "bg-gray-100 text-gray-600 border border-gray-200"
+                : addMode === "quick"
+                  ? "bg-[#0c0c0c] text-white"
+                  : "bg-[#0c0c0c]/60 text-white/60"
+            }`}
             onClick={() => setAddMode("quick")}
           >
             Quick connect
           </button>
           <button
             type="button"
-            className={getButtonClass(addMode === "manual")}
-            style={segmentButtonDocLightForceStyle(addMode === "manual")}
+            className={`rounded-lg px-3 py-2 text-xs font-medium ${
+              isLight
+                ? addMode === "manual"
+                  ? "bg-white text-gray-900 border border-gray-200"
+                  : "bg-gray-100 text-gray-600 border border-gray-200"
+                : addMode === "manual"
+                  ? "bg-[#0c0c0c] text-white"
+                  : "bg-[#0c0c0c]/60 text-white/60"
+            }`}
             onClick={() => setAddMode("manual")}
           >
             Manual
@@ -987,18 +958,6 @@ export function OpenmailSettingsPanel({
   const isLightTheme = docTheme === "soft-intelligence-light";
   const isLight = theme === "soft-intelligence-light";
 
-  function getButtonClass(active: boolean) {
-    if (isLight) {
-      return active
-        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
-        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
-    }
-
-    return active
-      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
-      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
-  }
-
   const navBtnIdleResolved = isLightTheme
     ? "text-[#555] hover:bg-black/[0.04] hover:text-[#111827]"
     : navBtnIdle;
@@ -1007,14 +966,6 @@ export function OpenmailSettingsPanel({
   const toast = useOpenmailToast();
   const { traces: guardianTraces, clear: clearGuardianTrace } =
     useGuardianTrace();
-
-  useEffect(() => {
-    if (!open) return;
-    console.log(
-      "BUTTON SOURCE:",
-      "app/openmail/components/OpenmailSettingsPanel.tsx#OpenmailSettingsPanel"
-    );
-  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -1366,7 +1317,7 @@ export function OpenmailSettingsPanel({
                       <div
                         className={
                           isLightTheme
-                            ? "om-light-theme-rail inline-flex rounded-xl p-1"
+                            ? "inline-flex rounded-xl border border-gray-200 bg-gray-100 p-1"
                             : "inline-flex rounded-xl border border-white/[0.08] bg-[#0c0c0c] p-1"
                         }
                         role="group"
@@ -1401,12 +1352,15 @@ export function OpenmailSettingsPanel({
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          className={getButtonClass(
-                            prefs.display.density === "compact"
-                          )}
-                          style={segmentButtonDocLightForceStyle(
-                            prefs.display.density === "compact"
-                          )}
+                          className={`rounded-lg px-3 py-2 text-xs font-medium ${
+                            isLight
+                              ? prefs.display.density === "compact"
+                                ? "bg-white text-gray-900 border border-gray-200"
+                                : "bg-gray-100 text-gray-600 border border-gray-200"
+                              : prefs.display.density === "compact"
+                                ? "bg-[#0c0c0c] text-white"
+                                : "bg-[#0c0c0c]/60 text-white/60"
+                          }`}
                           onClick={() =>
                             prefs.updateDisplay({ density: "compact" })
                           }
@@ -1415,12 +1369,15 @@ export function OpenmailSettingsPanel({
                         </button>
                         <button
                           type="button"
-                          className={getButtonClass(
-                            prefs.display.density === "comfortable"
-                          )}
-                          style={segmentButtonDocLightForceStyle(
-                            prefs.display.density === "comfortable"
-                          )}
+                          className={`rounded-lg px-3 py-2 text-xs font-medium ${
+                            isLight
+                              ? prefs.display.density === "comfortable"
+                                ? "bg-white text-gray-900 border border-gray-200"
+                                : "bg-gray-100 text-gray-600 border border-gray-200"
+                              : prefs.display.density === "comfortable"
+                                ? "bg-[#0c0c0c] text-white"
+                                : "bg-[#0c0c0c]/60 text-white/60"
+                          }`}
                           onClick={() =>
                             prefs.updateDisplay({ density: "comfortable" })
                           }
@@ -1559,12 +1516,15 @@ export function OpenmailSettingsPanel({
                         <button
                           key={tone}
                           type="button"
-                          className={getButtonClass(
-                            prefs.ai.defaultTone === tone
-                          )}
-                          style={segmentButtonDocLightForceStyle(
-                            prefs.ai.defaultTone === tone
-                          )}
+                          className={`rounded-lg px-3 py-2 text-xs font-medium ${
+                            isLight
+                              ? prefs.ai.defaultTone === tone
+                                ? "bg-white text-gray-900 border border-gray-200"
+                                : "bg-gray-100 text-gray-600 border border-gray-200"
+                              : prefs.ai.defaultTone === tone
+                                ? "bg-[#0c0c0c] text-white"
+                                : "bg-[#0c0c0c]/60 text-white/60"
+                          }`}
                           onClick={() => prefs.updateAi({ defaultTone: tone })}
                         >
                           {tone}

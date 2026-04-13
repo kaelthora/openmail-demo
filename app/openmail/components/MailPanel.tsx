@@ -7,7 +7,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
@@ -52,30 +51,6 @@ import {
   OPENMAIL_SMART_LIST_TABS,
   type OpenmailSmartListTabId,
 } from "@/lib/openmailListSmartTabs";
-
-function segmentButtonDocLightForceStyle(
-  isActive: boolean
-): CSSProperties | undefined {
-  const isLight =
-    typeof document !== "undefined" &&
-    document.documentElement.dataset.openmailTheme === "soft-intelligence-light";
-  if (!isLight) return undefined;
-  return isActive
-    ? {
-        background: "#ffffff",
-        backgroundColor: "#ffffff",
-        color: "#111827",
-        border: "1px solid rgba(0,0,0,0.08)",
-        boxShadow: "none",
-      }
-    : {
-        background: "rgba(0,0,0,0.04)",
-        backgroundColor: "rgba(0,0,0,0.04)",
-        color: "rgba(0,0,0,0.6)",
-        border: "1px solid rgba(0,0,0,0.06)",
-        boxShadow: "none",
-      };
-}
 
 export type AutoResolvedMailboxEntry = {
   id: string;
@@ -701,17 +676,6 @@ export function MailPanel({
   const { theme } = useOpenmailTheme();
   const isLight = theme === "soft-intelligence-light";
 
-  function getButtonClass(active: boolean) {
-    if (isLight) {
-      return active
-        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
-        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
-    }
-
-    return active
-      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
-      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
-  }
   const { mailsFetchError: storeMailsFetchError } = useMailStore();
   const listErrorCombined = (listFetchError ?? storeMailsFetchError ?? "").trim();
   const inboxOnboardingUiActive =
@@ -734,10 +698,6 @@ export function MailPanel({
   useEffect(() => {
     if (folderLabel !== "Inbox") setSmartListTab("inbox");
   }, [folderLabel]);
-
-  useEffect(() => {
-    console.log("BUTTON SOURCE:", "app/openmail/components/MailPanel.tsx");
-  }, []);
 
   const autoHandledMailIds = useMemo(() => {
     const ids = new Set<string>();
@@ -1005,16 +965,30 @@ export function MailPanel({
             <div className="flex rounded-[8px] border border-[var(--border)] p-0.5">
               <button
                 type="button"
-                className={getButtonClass(density === "compact")}
-                style={segmentButtonDocLightForceStyle(density === "compact")}
+                className={`rounded-[6px] px-2 py-1 text-left text-[10px] font-medium ${
+                  isLight
+                    ? density === "compact"
+                      ? "bg-white text-gray-900 border border-gray-200"
+                      : "bg-gray-100 text-gray-600 border border-gray-200"
+                    : density === "compact"
+                      ? "bg-[#0c0c0c] text-white"
+                      : "bg-[#0c0c0c]/60 text-white/60"
+                }`}
                 onClick={() => setDensity("compact")}
               >
                 Compact
               </button>
               <button
                 type="button"
-                className={getButtonClass(density === "comfortable")}
-                style={segmentButtonDocLightForceStyle(density === "comfortable")}
+                className={`rounded-[6px] px-2 py-1 text-left text-[10px] font-medium ${
+                  isLight
+                    ? density === "comfortable"
+                      ? "bg-white text-gray-900 border border-gray-200"
+                      : "bg-gray-100 text-gray-600 border border-gray-200"
+                    : density === "comfortable"
+                      ? "bg-[#0c0c0c] text-white"
+                      : "bg-[#0c0c0c]/60 text-white/60"
+                }`}
                 onClick={() => setDensity("comfortable")}
               >
                 Comfortable

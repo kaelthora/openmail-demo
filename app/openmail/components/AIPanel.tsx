@@ -7,7 +7,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
 } from "react";
 import type { ProcessedMail } from "@/lib/mailTypes";
 import { buildCoreDetectionReasons, coreMailPreviewPlain } from "@/lib/openmailCoreUi";
@@ -128,26 +127,6 @@ function decisionEngineHeadline(band: CoreRiskBand): string {
     return "Review suggestions, edit your draft, then send—nothing leaves until you confirm.";
   }
   return "Select a message to see the best next move.";
-}
-
-function segmentButtonDocLightForceStyle(
-  isActive: boolean
-): CSSProperties | undefined {
-  const isLight =
-    typeof document !== "undefined" &&
-    document.documentElement.dataset.openmailTheme === "soft-intelligence-light";
-  if (!isLight) return undefined;
-  return isActive
-    ? {
-        background: "#ffffff",
-        color: "#111827",
-        border: "1px solid rgba(0,0,0,0.08)",
-      }
-    : {
-        background: "rgba(0,0,0,0.04)",
-        color: "rgba(0,0,0,0.6)",
-        border: "1px solid rgba(0,0,0,0.06)",
-      };
 }
 
 const CORE_RISK_CARD: Record<
@@ -648,17 +627,6 @@ export function AIPanel({
   const { theme } = useOpenmailTheme();
   const isLight = theme === "soft-intelligence-light";
 
-  function getButtonClass(active: boolean) {
-    if (isLight) {
-      return active
-        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
-        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
-    }
-
-    return active
-      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
-      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
-  }
   const [insertAnim, setInsertAnim] = useState(false);
   const [suggestionGlow, setSuggestionGlow] = useState(false);
   const [userTyping, setUserTyping] = useState(false);
@@ -674,10 +642,6 @@ export function AIPanel({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const selectedMailIdRef = useRef<string | null>(null);
   selectedMailIdRef.current = selectedMail?.id ?? null;
-
-  useEffect(() => {
-    console.log("BUTTON SOURCE:", "app/openmail/components/AIPanel.tsx");
-  }, []);
 
   useEffect(() => {
     setUserTyping(false);
@@ -976,10 +940,15 @@ export function AIPanel({
                           <button
                             key={tone}
                             type="button"
-                            className={getButtonClass(replyTone === tone)}
-                            style={segmentButtonDocLightForceStyle(
-                              replyTone === tone
-                            )}
+                            className={`rounded-full px-3 py-1 text-center text-[11px] font-medium ${
+                              isLight
+                                ? replyTone === tone
+                                  ? "bg-white text-gray-900 border border-gray-200"
+                                  : "bg-gray-100 text-gray-600 border border-gray-200"
+                                : replyTone === tone
+                                  ? "bg-[#0c0c0c] text-white"
+                                  : "bg-[#0c0c0c]/60 text-white/60"
+                            }`}
                             onClick={() => onToneChange(tone)}
                           >
                             {tone}

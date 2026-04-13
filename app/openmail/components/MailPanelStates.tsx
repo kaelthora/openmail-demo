@@ -1,32 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import type { CSSProperties } from "react";
 import { useOpenmailTheme } from "../OpenmailThemeProvider";
-
-function segmentButtonDocLightForceStyle(
-  isActive: boolean
-): CSSProperties | undefined {
-  const isLight =
-    typeof document !== "undefined" &&
-    document.documentElement.dataset.openmailTheme === "soft-intelligence-light";
-  if (!isLight) return undefined;
-  return isActive
-    ? {
-        background: "#ffffff",
-        backgroundColor: "#ffffff",
-        color: "#111827",
-        border: "1px solid rgba(0,0,0,0.08)",
-        boxShadow: "none",
-      }
-    : {
-        background: "rgba(0,0,0,0.04)",
-        backgroundColor: "rgba(0,0,0,0.04)",
-        color: "rgba(0,0,0,0.6)",
-        border: "1px solid rgba(0,0,0,0.06)",
-        boxShadow: "none",
-      };
-}
 
 type MailListSkeletonProps = {
   rows?: number;
@@ -117,22 +91,6 @@ export function MailListInboxOnboarding({
   const { theme } = useOpenmailTheme();
   const isLight = theme === "soft-intelligence-light";
 
-  useEffect(() => {
-    console.log("BUTTON SOURCE:", "app/openmail/components/MailPanelStates.tsx");
-  }, []);
-
-  function getButtonClass(active: boolean) {
-    if (isLight) {
-      return active
-        ? "om-light-seg-active px-3 py-2 rounded-lg text-xs font-medium"
-        : "om-light-seg-idle px-3 py-2 rounded-lg text-xs font-medium";
-    }
-
-    return active
-      ? "bg-[#0c0c0c] text-white px-3 py-2 rounded-lg text-xs font-medium"
-      : "bg-[#0c0c0c]/60 text-white/60 px-3 py-2 rounded-lg text-xs font-medium";
-  }
-
   return (
     <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 px-3 py-10 text-center">
       <div
@@ -164,16 +122,22 @@ export function MailListInboxOnboarding({
       <div className="flex w-full max-w-[280px] flex-col gap-2 sm:flex-row sm:justify-center">
         <button
           type="button"
-          className={getButtonClass(true)}
-          style={segmentButtonDocLightForceStyle(true)}
+          className={`w-full rounded-lg px-4 py-2.5 text-xs font-semibold sm:flex-1 ${
+            isLight
+              ? "bg-white text-gray-900 border border-gray-200"
+              : "bg-[#0c0c0c] text-white"
+          }`}
           onClick={() => void onConnectGmail()}
         >
           Connect Gmail
         </button>
         <button
           type="button"
-          className={getButtonClass(false)}
-          style={segmentButtonDocLightForceStyle(false)}
+          className={`w-full rounded-lg px-4 py-2.5 text-xs font-semibold sm:flex-1 ${
+            isLight
+              ? "bg-gray-100 text-gray-600 border border-gray-200"
+              : "bg-[#0c0c0c]/60 text-white/60"
+          }`}
           onClick={() => void onManualSetup()}
         >
           Manual setup
