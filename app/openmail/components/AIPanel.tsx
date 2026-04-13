@@ -174,6 +174,45 @@ const CORE_RISK_CARD: Record<
   },
 };
 
+const CORE_RISK_CARD_LIGHT: typeof CORE_RISK_CARD = {
+  high: {
+    border: "border-[3px] border-red-300 shadow-[0_0_28px_rgba(239,68,68,0.12)]",
+    bar: "bg-red-500 shadow-[0_0_14px_rgba(239,68,68,0.35)]",
+    glow: "bg-gradient-to-br from-red-50 via-white to-neutral-50",
+    badge: "border-red-200 bg-red-100 text-red-900 ring-2 ring-red-200/60",
+    badgeLabel: "HIGH RISK",
+    actionShell: "border-2 border-red-200 bg-red-50/95 ring-2 ring-red-100/80",
+    actionHeading: "text-red-800",
+  },
+  medium: {
+    border: "border-amber-300 shadow-[0_0_22px_rgba(245,158,11,0.12)]",
+    bar: "bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)]",
+    glow: "bg-gradient-to-br from-amber-50 via-white to-neutral-50",
+    badge: "border-amber-200 bg-amber-100 text-amber-950 ring-1 ring-amber-200/50",
+    badgeLabel: "Medium risk",
+    actionShell: "border-amber-300 bg-amber-50/95 ring-1 ring-amber-100/70",
+    actionHeading: "text-amber-900",
+  },
+  safe: {
+    border: "border-emerald-300 shadow-[0_0_20px_rgba(52,211,153,0.1)]",
+    bar: "bg-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.28)]",
+    glow: "bg-gradient-to-br from-emerald-50 via-white to-neutral-50",
+    badge: "border-emerald-200 bg-emerald-100 text-emerald-950 ring-1 ring-emerald-200/50",
+    badgeLabel: "Safe",
+    actionShell: "border-emerald-300 bg-emerald-50/95 ring-1 ring-emerald-100/60",
+    actionHeading: "text-emerald-900",
+  },
+  idle: {
+    border: "border-black/10",
+    bar: "bg-slate-300",
+    glow: "bg-white",
+    badge: "border-slate-200 bg-slate-100 text-slate-600",
+    badgeLabel: "Idle",
+    actionShell: "border-black/10 bg-white shadow-sm",
+    actionHeading: "text-slate-500",
+  },
+};
+
 const DE_PRIMARY_BASE =
   "openmail-de-primary-action w-full rounded-xl px-4 py-3.5 text-center text-[15px] font-bold leading-tight tracking-wide shadow-[0_8px_28px_rgba(0,0,0,0.35)] transition-[transform,filter,box-shadow] duration-150 ease-out hover:brightness-110 active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-45";
 
@@ -186,8 +225,14 @@ const DE_PRIMARY_SAFE = `${DE_PRIMARY_BASE} border border-emerald-400/55 bg-grad
 const DE_SECONDARY =
   "openmail-de-secondary-btn w-full rounded-lg border border-white/[0.14] bg-white/[0.05] px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-main)]/88 transition-colors hover:border-white/[0.22] hover:bg-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/25 disabled:pointer-events-none disabled:opacity-40";
 
+const DE_SECONDARY_LIGHT =
+  "openmail-de-secondary-btn w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1f2937] transition-colors hover:border-black/15 hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]/35 disabled:pointer-events-none disabled:opacity-40";
+
 const DE_TERTIARY =
   "openmail-de-tertiary-link mt-2 w-full text-center text-[10px] font-medium text-[color:var(--text-soft)] underline decoration-white/20 underline-offset-2 transition-colors hover:text-[var(--text-main)] hover:decoration-white/35 disabled:opacity-40";
+
+const DE_TERTIARY_LIGHT =
+  "openmail-de-tertiary-link mt-2 w-full text-center text-[10px] font-medium text-[#64748b] underline decoration-slate-300 underline-offset-2 transition-colors hover:text-[#111827] hover:decoration-slate-400 disabled:opacity-40";
 
 function CoreAiRiskCard({
   mail,
@@ -226,7 +271,9 @@ function CoreAiRiskCard({
   const { theme } = useOpenmailTheme();
   const isLight = theme === "soft-intelligence-light";
   const band = coreRiskBand(mail);
-  const skin = CORE_RISK_CARD[band];
+  const skin = isLight ? CORE_RISK_CARD_LIGHT[band] : CORE_RISK_CARD[band];
+  const deSecondaryClass = isLight ? DE_SECONDARY_LIGHT : DE_SECONDARY;
+  const deTertiaryClass = isLight ? DE_TERTIARY_LIGHT : DE_TERTIARY;
   const snapshot = coreRiskSnapshot(mail);
   const whyParagraph = coreWhyMattersParagraph(mail, band);
   const whyBullets = coreWhyMattersBullets(mail, whyParagraph);
@@ -341,7 +388,7 @@ function CoreAiRiskCard({
                   </button>
                   <button
                     type="button"
-                    className={DE_SECONDARY}
+                    className={deSecondaryClass}
                     onClick={() => void onOpenSandbox?.()}
                     disabled={!mail || !onOpenSandbox || actionBusy != null}
                   >
@@ -350,7 +397,7 @@ function CoreAiRiskCard({
                   {onMarkSafe ? (
                     <button
                       type="button"
-                      className={DE_TERTIARY}
+                      className={deTertiaryClass}
                       onClick={() => void onMarkSafe()}
                       disabled={!mail || actionBusy != null}
                     >
@@ -375,7 +422,7 @@ function CoreAiRiskCard({
                   </button>
                   <button
                     type="button"
-                    className={DE_SECONDARY}
+                    className={deSecondaryClass}
                     onClick={() => onArchive?.()}
                     disabled={!mail || !onArchive || actionBusy != null}
                   >
@@ -384,7 +431,7 @@ function CoreAiRiskCard({
                   {onMarkSafe ? (
                     <button
                       type="button"
-                      className={DE_TERTIARY}
+                      className={deTertiaryClass}
                       onClick={() => void onMarkSafe()}
                       disabled={!mail || actionBusy != null}
                     >
@@ -410,7 +457,7 @@ function CoreAiRiskCard({
                   {safeShowArchive ? (
                     <button
                       type="button"
-                      className={DE_SECONDARY}
+                      className={deSecondaryClass}
                       onClick={() => onArchive?.()}
                       disabled={!mail || !onArchive || actionBusy != null || quickReplyBusy}
                     >
@@ -440,14 +487,20 @@ function CoreAiRiskCard({
               const heading = previewPlain.length > 0 ? "Message preview" : "Context";
 
               return (
-                <div className="mt-2 border-t border-white/[0.06] pt-2">
+                <div
+                  className={
+                    isLight ? "mt-2 border-t border-black/10 pt-2" : "mt-2 border-t border-white/[0.06] pt-2"
+                  }
+                >
                   <div className="mb-1 flex items-center justify-between gap-2">
                     <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
                       {heading}
                     </span>
                     <button
                       type="button"
-                      className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--accent)] transition-colors hover:bg-white/[0.06]"
+                      className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--accent)] transition-colors ${
+                        isLight ? "hover:bg-black/[0.04]" : "hover:bg-white/[0.06]"
+                      }`}
                       onClick={() => setPreviewExpanded((v) => !v)}
                       aria-expanded={previewExpanded}
                     >
@@ -803,7 +856,13 @@ export function AIPanel({
   }, [selectedMail, actionLabel]);
 
   return (
-    <aside className="openmail-ai-panel card flex min-h-0 min-w-0 flex-[0.65] flex-col overflow-hidden border border-white/[0.07] bg-[color:var(--openmail-ai-chrome)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_36px_var(--openmail-shadow-accent-xs)] sm:p-6 sm:pt-7">
+    <aside
+      className={
+        isLightTheme
+          ? "openmail-ai-panel card flex min-h-0 min-w-0 flex-[0.65] flex-col overflow-hidden border border-black/10 bg-white p-5 shadow-sm sm:p-6 sm:pt-7"
+          : "openmail-ai-panel card flex min-h-0 min-w-0 flex-[0.65] flex-col overflow-hidden border border-white/[0.07] bg-[color:var(--openmail-ai-chrome)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_36px_var(--openmail-shadow-accent-xs)] sm:p-6 sm:pt-7"
+      }
+    >
       <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
         <h2 className="mb-4 shrink-0 text-base font-semibold tracking-tight text-[color:var(--text-main)] sm:text-lg">
           Decision engine
@@ -845,7 +904,9 @@ export function AIPanel({
               className={`openmail-ai-reply-pane flex min-h-0 flex-1 flex-col rounded-[12px] border p-4 transition-[box-shadow,background-color,border-color,transform] duration-200 ease-out sm:p-5 ${
                 decisionToReplyCue
                   ? "border-[var(--accent)]/25 bg-[var(--accent-soft)]/12 shadow-[0_0_20px_var(--openmail-shadow-accent-sm)]"
-                  : "border-[var(--border)] bg-[color:var(--openmail-list-inner)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                  : isLightTheme
+                    ? "border-black/10 bg-white shadow-sm"
+                    : "border-[var(--border)] bg-[color:var(--openmail-list-inner)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
               }`}
             >
               {!selectedMail ? (

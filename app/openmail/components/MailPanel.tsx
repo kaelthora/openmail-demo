@@ -166,20 +166,22 @@ type InboxIntentTag = {
   toneClass: string;
 };
 
-function inboxIntentTag(mail: ProcessedMail): InboxIntentTag | null {
+function inboxIntentTag(mail: ProcessedMail, isLight: boolean): InboxIntentTag | null {
   const risk = getMailAiRiskBand(mail);
   if (risk === "high") {
     return {
       label: "Risk",
-      toneClass:
-        "openmail-status-badge openmail-status-badge--blocked border-red-500/35 bg-red-500/12 text-red-100/90",
+      toneClass: isLight
+        ? "openmail-status-badge openmail-status-badge--blocked border-red-200 bg-red-50 text-red-900"
+        : "openmail-status-badge openmail-status-badge--blocked border-red-500/35 bg-red-500/12 text-red-100/90",
     };
   }
   if (risk === "medium" && listRowRiskBadgeLevel(mail) !== "trusted_flagged") {
     return {
       label: "Risk",
-      toneClass:
-        "openmail-status-badge openmail-status-badge--blocked border-red-500/35 bg-red-500/12 text-red-100/90",
+      toneClass: isLight
+        ? "openmail-status-badge openmail-status-badge--blocked border-red-200 bg-red-50 text-red-900"
+        : "openmail-status-badge openmail-status-badge--blocked border-red-500/35 bg-red-500/12 text-red-100/90",
     };
   }
 
@@ -188,8 +190,9 @@ function inboxIntentTag(mail: ProcessedMail): InboxIntentTag | null {
   if (aiIntent === "ignore" || aiAction === "ignore") {
     return {
       label: "Archive",
-      toneClass:
-        "openmail-status-badge openmail-status-badge--meta border-white/[0.14] bg-white/[0.05] text-[color:var(--text-soft)]",
+      toneClass: isLight
+        ? "openmail-status-badge openmail-status-badge--meta border-black/10 bg-neutral-100 text-[#555]"
+        : "openmail-status-badge openmail-status-badge--meta border-white/[0.14] bg-white/[0.05] text-[color:var(--text-soft)]",
     };
   }
 
@@ -200,16 +203,18 @@ function inboxIntentTag(mail: ProcessedMail): InboxIntentTag | null {
   ) {
     return {
       label: "Follow-up",
-      toneClass:
-        "openmail-status-badge openmail-status-badge--waiting border-sky-500/35 bg-sky-500/12 text-sky-100/90",
+      toneClass: isLight
+        ? "openmail-status-badge openmail-status-badge--waiting border-sky-200 bg-sky-50 text-sky-900"
+        : "openmail-status-badge openmail-status-badge--waiting border-sky-500/35 bg-sky-500/12 text-sky-100/90",
     };
   }
 
   if (aiIntent === "reply" || mail.needsReply) {
     return {
       label: "Needs reply",
-      toneClass:
-        "openmail-status-badge openmail-status-badge--safe border-emerald-500/35 bg-emerald-500/12 text-emerald-100/90",
+      toneClass: isLight
+        ? "openmail-status-badge openmail-status-badge--safe border-emerald-200 bg-emerald-50 text-emerald-900"
+        : "openmail-status-badge openmail-status-badge--safe border-emerald-500/35 bg-emerald-500/12 text-emerald-100/90",
     };
   }
 
@@ -415,8 +420,11 @@ function IconTrash({ className }: { className?: string }) {
   );
 }
 
-const readingQuickBtn =
+const readingQuickBtnDark =
   "inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-semibold text-[var(--text-main)] transition-colors hover:border-white/[0.14] hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/25";
+
+const readingQuickBtnLight =
+  "inline-flex items-center justify-center gap-1.5 rounded-lg border border-black/10 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#111827] shadow-sm transition-colors hover:border-black/15 hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]/30";
 
 function MailReadingView({
   mail,
@@ -445,6 +453,7 @@ function MailReadingView({
 }) {
   const { theme } = useOpenmailTheme();
   const isLightTheme = theme === "soft-intelligence-light";
+  const readingQuickBtn = isLightTheme ? readingQuickBtnLight : readingQuickBtnDark;
   const securityInput = useMemo(() => toSecurityInput(mail), [mail]);
   const attachmentItems = useMemo(() => toAttachmentItems(mail), [mail]);
   const mailRisk = useMemo(() => getMailAiRiskBand(mail), [mail]);
@@ -454,12 +463,18 @@ function MailReadingView({
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      <header className="openmail-reading-header shrink-0 border-b border-white/[0.08] px-6 pb-5 pt-5 sm:px-8 sm:pb-6 sm:pt-6">
+      <header
+        className={`openmail-reading-header shrink-0 px-6 pb-5 pt-5 sm:px-8 sm:pb-6 sm:pt-6 ${
+          isLightTheme ? "border-b border-black/10" : "border-b border-white/[0.08]"
+        }`}
+      >
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <button
             type="button"
             autoFocus
-            className="group flex w-fit min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-soft)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text-main)]"
+            className={`group flex w-fit min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-soft)] transition-colors hover:text-[var(--text-main)] ${
+              isLightTheme ? "hover:bg-black/[0.04]" : "hover:bg-white/[0.05]"
+            }`}
             onClick={onClose}
           >
             <span className="text-[var(--text-main)] transition-transform group-hover:-translate-x-0.5" aria-hidden>
@@ -487,7 +502,11 @@ function MailReadingView({
             {onDelete ? (
               <button
                 type="button"
-                className={`${readingQuickBtn} border-red-500/25 text-red-200/95 hover:border-red-400/40 hover:bg-red-500/10`}
+                className={
+                  isLightTheme
+                    ? `${readingQuickBtn} border-red-200 bg-red-50 text-red-800 hover:border-red-300 hover:bg-red-100`
+                    : `${readingQuickBtnDark} border-red-500/25 text-red-200/95 hover:border-red-400/40 hover:bg-red-500/10`
+                }
                 onClick={() => onDelete(mail.id)}
               >
                 <IconTrash className="h-3.5 w-3.5 opacity-90" />
@@ -1030,18 +1049,40 @@ export function MailPanel({
         ) : null}
 
         {autoResolvedEntries && autoResolvedEntries.length > 0 ? (
-          <div className="mb-3 shrink-0 rounded-[10px] border border-emerald-500/25 bg-emerald-950/20 px-2.5 py-2">
-            <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-emerald-200/90">
+          <div
+            className={
+              isLightTheme
+                ? "mb-3 shrink-0 rounded-[10px] border border-emerald-200 bg-emerald-50/90 px-2.5 py-2 shadow-sm"
+                : "mb-3 shrink-0 rounded-[10px] border border-emerald-500/25 bg-emerald-950/20 px-2.5 py-2"
+            }
+          >
+            <div
+              className={
+                isLightTheme
+                  ? "text-[10px] font-extrabold uppercase tracking-[0.14em] text-emerald-900"
+                  : "text-[10px] font-extrabold uppercase tracking-[0.14em] text-emerald-200/90"
+              }
+            >
               Auto-resolved emails
             </div>
             <ul className="mt-2 max-h-[9.5rem] space-y-2 overflow-y-auto pr-0.5">
               {autoResolvedEntries.map((row) => (
                 <li
                   key={row.id}
-                  className="flex items-start justify-between gap-2 rounded-md border border-white/[0.06] bg-black/20 px-2 py-1.5"
+                  className={
+                    isLightTheme
+                      ? "flex items-start justify-between gap-2 rounded-md border border-black/10 bg-white px-2 py-1.5 shadow-sm"
+                      : "flex items-start justify-between gap-2 rounded-md border border-white/[0.06] bg-black/20 px-2 py-1.5"
+                  }
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="text-[9px] font-semibold uppercase tracking-wide text-emerald-200/75">
+                    <div
+                      className={
+                        isLightTheme
+                          ? "text-[9px] font-semibold uppercase tracking-wide text-emerald-800"
+                          : "text-[9px] font-semibold uppercase tracking-wide text-emerald-200/75"
+                      }
+                    >
                       {row.kindLabel}
                     </div>
                     <div className="truncate text-[11px] leading-snug text-[var(--text-main)]">
@@ -1051,7 +1092,11 @@ export function MailPanel({
                   {onUndoAutoResolved ? (
                     <button
                       type="button"
-                      className="shrink-0 rounded-md border border-white/[0.12] bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-main)] transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
+                      className={
+                        isLightTheme
+                          ? "shrink-0 rounded-md border border-black/10 bg-white px-2 py-0.5 text-[10px] font-semibold text-[#111827] shadow-sm transition-colors hover:border-emerald-300 hover:bg-emerald-50"
+                          : "shrink-0 rounded-md border border-white/[0.12] bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-main)] transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
+                      }
                       onClick={() => onUndoAutoResolved(row)}
                     >
                       Undo
@@ -1110,7 +1155,11 @@ export function MailPanel({
                   />
                 </div>
               ) : displayedMails.length === 0 ? (
-                <div className="openmail-list-state-card card border-white/[0.06] bg-[var(--openmail-list-inner)] p-2">
+                <div
+                  className={`openmail-list-state-card card bg-[var(--openmail-list-inner)] p-2 ${
+                    isLightTheme ? "border border-black/10 shadow-sm" : "border border-white/[0.06]"
+                  }`}
+                >
                   <MailListEmptyState
                     isFiltered={mails.length > 0 && displayedMails.length === 0}
                     folderLabel={folderLabel}
@@ -1148,34 +1197,52 @@ export function MailPanel({
                     situation.urgency
                   );
                   const state = situation.state;
-                  const stateChip =
-                    state === "waiting"
+                  const stateChip = isLightTheme
+                    ? state === "waiting"
+                      ? "openmail-status-badge openmail-status-badge--waiting border-sky-200 bg-sky-50 text-sky-900"
+                      : state === "auto_handled"
+                        ? "openmail-status-badge openmail-status-badge--safe border-emerald-200 bg-emerald-50 text-emerald-900"
+                        : "openmail-status-badge openmail-status-badge--safe border-emerald-200 bg-emerald-50 text-emerald-900"
+                    : state === "waiting"
                       ? "openmail-status-badge openmail-status-badge--waiting border-sky-500/30 bg-sky-950/35 text-sky-100/90"
                       : state === "auto_handled"
                         ? "openmail-status-badge openmail-status-badge--safe border-emerald-500/30 bg-emerald-950/30 text-emerald-100/90"
                         : "openmail-status-badge openmail-status-badge--safe border-emerald-500/30 bg-emerald-950/30 text-emerald-100/90";
-                  const flowChip =
-                    situation.flowKind === "waiting_reply"
+                  const flowChip = isLightTheme
+                    ? situation.flowKind === "waiting_reply"
+                      ? "openmail-status-badge openmail-status-badge--waiting-reply border-violet-200 bg-violet-50 text-violet-900"
+                      : situation.flowKind === "completed"
+                        ? "openmail-status-badge openmail-status-badge--meta border-black/10 bg-neutral-100 text-[#555]"
+                        : "openmail-status-badge openmail-status-badge--meta border-transparent bg-transparent text-[#64748b]"
+                    : situation.flowKind === "waiting_reply"
                       ? "openmail-status-badge openmail-status-badge--waiting-reply border-violet-500/25 bg-violet-950/25 text-violet-100/85"
                       : situation.flowKind === "completed"
                         ? "openmail-status-badge openmail-status-badge--meta border-white/[0.1] bg-white/[0.05] text-[color:var(--text-soft)]"
                         : "openmail-status-badge openmail-status-badge--meta border-white/[0.08] bg-transparent text-[#7a7a7a]";
-                  const urgChip =
-                    situation.urgency === "high"
+                  const urgChip = isLightTheme
+                    ? situation.urgency === "high"
+                      ? "openmail-status-badge openmail-status-badge--high-urgency border-amber-200 bg-amber-50 text-amber-950"
+                      : situation.urgency === "medium"
+                        ? "openmail-status-badge openmail-status-badge--meta border-black/10 bg-neutral-100 text-[#555]"
+                        : "openmail-status-badge openmail-status-badge--meta border-transparent bg-transparent text-[#64748b]"
+                    : situation.urgency === "high"
                       ? "openmail-status-badge openmail-status-badge--high-urgency border-amber-500/35 bg-amber-950/30 text-amber-100/90"
                       : situation.urgency === "medium"
                         ? "openmail-status-badge openmail-status-badge--meta border-white/[0.12] bg-white/[0.06] text-[color:var(--text-soft)]"
                         : "openmail-status-badge openmail-status-badge--meta border-white/[0.08] bg-transparent text-[#6d6d6d]";
+                  const situationRowShell = isLightTheme
+                    ? situationSelected
+                      ? "openmail-situation-row--selected scale-[1.01] border-[var(--accent)] bg-emerald-50/70 shadow-sm"
+                      : "border-[var(--border)] bg-white shadow-sm hover:border-[var(--accent)] hover:bg-neutral-50 hover:shadow-md"
+                    : situationSelected
+                      ? "openmail-situation-row--selected scale-[1.01] border-[var(--accent)] bg-[#161616] shadow-[inset_0_0_0_1px_var(--openmail-shadow-accent-ring),0_0_12px_var(--openmail-shadow-accent-md)]"
+                      : "border-[var(--border)] bg-[#121212] hover:border-[var(--accent)] hover:bg-[#171717] hover:shadow-[0_0_12px_var(--openmail-shadow-accent-md)]";
                   return (
                     <button
                       key={situation.id}
                       type="button"
                       data-situation-selected={situationSelected ? "true" : "false"}
-                      className={`openmail-situation-row group card select-none ${padClass} text-left transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transition-none ${cardAccent} ${
-                        situationSelected
-                          ? "openmail-situation-row--selected scale-[1.01] border-[var(--accent)] bg-[#161616] shadow-[inset_0_0_0_1px_var(--openmail-shadow-accent-ring),0_0_12px_var(--openmail-shadow-accent-md)]"
-                          : "border-[var(--border)] bg-[#121212] hover:border-[var(--accent)] hover:bg-[#171717] hover:shadow-[0_0_12px_var(--openmail-shadow-accent-md)]"
-                      }`}
+                      className={`openmail-situation-row group card select-none ${padClass} text-left transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transition-none ${cardAccent} ${situationRowShell}`}
                       onClick={() => onSelectMail(anchor)}
                       onDoubleClick={(e) => {
                         e.preventDefault();
@@ -1205,7 +1272,13 @@ export function MailPanel({
                             {situationUrgencyLabel(situation.urgency)} urgency
                           </span>
                           {situation.messageCount > 1 ? (
-                            <span className="openmail-status-badge openmail-status-badge--meta rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-[color:var(--text-soft)]">
+                            <span
+                              className={
+                                isLightTheme
+                                  ? "openmail-status-badge openmail-status-badge--meta rounded-md border border-black/10 bg-neutral-100 px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-[#555]"
+                                  : "openmail-status-badge openmail-status-badge--meta rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-[color:var(--text-soft)]"
+                              }
+                            >
                               {situation.messageCount} msgs
                             </span>
                           ) : null}
@@ -1245,7 +1318,8 @@ export function MailPanel({
                 displayedMails.map((mail) => {
                   const riskLevel = listRowRiskBadgeLevel(mail);
                   const cardAccent = cardAccentClassForMail(mail);
-                  const intentTag = folderLabel === "Inbox" ? inboxIntentTag(mail) : null;
+                  const intentTag =
+                    folderLabel === "Inbox" ? inboxIntentTag(mail, isLightTheme) : null;
                   const smartFolderEnabled =
                     folderLabel === "Inbox" && mail.folder === "inbox" && !mail.archived;
                   const senderLine = (mail.sender || mail.title || "—").trim();
@@ -1255,12 +1329,18 @@ export function MailPanel({
                   <div
                     key={mail.id}
                     className={`openmail-thread-row group card flex select-none flex-col gap-0 ${padClass} transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transition-none ${cardAccent} ${
-                      selectedMail?.id === mail.id
-                        ? "openmail-thread-row--selected scale-[1.01] border-[var(--accent)] bg-[#161616] shadow-[inset_0_0_0_1px_var(--openmail-shadow-accent-ring),0_0_12px_var(--openmail-shadow-accent-md)]"
-                        : "border-[var(--border)] bg-[#121212] hover:border-[var(--accent)] hover:bg-[#171717] hover:shadow-[0_0_12px_var(--openmail-shadow-accent-md)]"
+                      isLightTheme
+                        ? selectedMail?.id === mail.id
+                          ? "openmail-thread-row--selected scale-[1.01] border-[var(--accent)] bg-emerald-50/70 shadow-sm"
+                          : "border-[var(--border)] bg-white shadow-sm hover:border-[var(--accent)] hover:bg-neutral-50 hover:shadow-md"
+                        : selectedMail?.id === mail.id
+                          ? "openmail-thread-row--selected scale-[1.01] border-[var(--accent)] bg-[#161616] shadow-[inset_0_0_0_1px_var(--openmail-shadow-accent-ring),0_0_12px_var(--openmail-shadow-accent-md)]"
+                          : "border-[var(--border)] bg-[#121212] hover:border-[var(--accent)] hover:bg-[#171717] hover:shadow-[0_0_12px_var(--openmail-shadow-accent-md)]"
                     }${
                       mail.resolved
-                        ? " openmail-thread-row--resolved border-emerald-500/20 bg-[#101814]/90 opacity-95"
+                        ? isLightTheme
+                          ? " openmail-thread-row--resolved border-emerald-200 bg-emerald-50/50 opacity-100"
+                          : " openmail-thread-row--resolved border-emerald-500/20 bg-[#101814]/90 opacity-95"
                         : ""
                     }`}
                   >
@@ -1317,7 +1397,11 @@ export function MailPanel({
                         ) : null}
                         {folderLabel === "Sent" && mail.openmailAutoSentByAi ? (
                           <span
-                            className="openmail-status-badge openmail-status-badge--waiting-reply inline-flex max-w-[9rem] truncate rounded-md border border-violet-400/35 bg-violet-950/40 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-violet-100/95"
+                            className={
+                              isLightTheme
+                                ? "openmail-status-badge openmail-status-badge--waiting-reply inline-flex max-w-[9rem] truncate rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-violet-900"
+                                : "openmail-status-badge openmail-status-badge--waiting-reply inline-flex max-w-[9rem] truncate rounded-md border border-violet-400/35 bg-violet-950/40 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-violet-100/95"
+                            }
                             title="This reply was sent automatically by Guardian"
                           >
                             Auto-sent by AI
@@ -1340,7 +1424,9 @@ export function MailPanel({
               <button
                 type="button"
                 aria-label="Close message"
-                className={`absolute inset-0 z-[24] rounded-[12px] border-0 bg-black/50 backdrop-blur-md transition-opacity duration-200 ease-out motion-reduce:transition-none ${
+                className={`absolute inset-0 z-[24] rounded-[12px] border-0 backdrop-blur-md transition-opacity duration-200 ease-out motion-reduce:transition-none ${
+                  isLightTheme ? "bg-black/25" : "bg-black/50"
+                } ${
                   overlayAnimOpen
                     ? "opacity-100"
                     : "pointer-events-none opacity-0"
@@ -1352,7 +1438,11 @@ export function MailPanel({
                   role="dialog"
                   aria-modal="true"
                   aria-labelledby="mail-read-title"
-                  className={`openmail-reading-dialog flex min-h-0 w-full max-w-full flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(11,11,13,0.94)] shadow-[0_28px_72px_rgba(0,0,0,0.72),inset_0_1px_0_rgba(255,255,255,0.06)] transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none [-webkit-backdrop-filter:blur(20px)] backdrop-blur-xl ${
+                  className={`openmail-reading-dialog flex min-h-0 w-full max-w-full flex-col overflow-hidden rounded-2xl border transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none [-webkit-backdrop-filter:blur(20px)] backdrop-blur-xl ${
+                    isLightTheme
+                      ? "border-black/10 bg-white shadow-[0_28px_72px_rgba(0,0,0,0.12)]"
+                      : "border-white/[0.1] bg-[rgba(11,11,13,0.94)] shadow-[0_28px_72px_rgba(0,0,0,0.72),inset_0_1px_0_rgba(255,255,255,0.06)]"
+                  } ${
                     overlayAnimOpen
                       ? "pointer-events-auto scale-100 opacity-100"
                       : "pointer-events-none scale-[0.97] opacity-0"

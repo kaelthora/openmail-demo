@@ -97,6 +97,8 @@ function ToggleRow({
   on: boolean;
   onToggle: () => void;
 }) {
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
   return (
     <div className="toggle-row flex items-center justify-between gap-3 py-5">
       <div className="min-w-0 flex-1 pr-1">
@@ -118,7 +120,9 @@ function ToggleRow({
           className={`toggle-track border transition-colors duration-200 ${
             on
               ? "border-[var(--accent)]/50 bg-[var(--accent-soft)]"
-              : "border-white/[0.1] bg-[color:var(--openmail-input-bg)]"
+              : isLight
+                ? "border-black/10 bg-neutral-100"
+                : "border-white/[0.1] bg-[color:var(--openmail-input-bg)]"
           }`}
         >
           <span className="toggle-knob bg-[var(--text-main)] shadow-sm" />
@@ -137,9 +141,18 @@ function SettingSectionCard({
   description?: string;
   children: ReactNode;
 }) {
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
+  const shell = isLight
+    ? "settings-card overflow-hidden rounded-2xl border border-black/10 bg-white p-4 shadow-sm"
+    : "settings-card overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#111111] to-[#0c0c0c] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
+  const headerRule = isLight
+    ? "border-b border-black/10 pb-3"
+    : "border-b border-white/[0.07] pb-3";
+  const divideRule = isLight ? "divide-y divide-black/[0.06]" : "divide-y divide-white/[0.06]";
   return (
-    <section className="settings-card overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#111111] to-[#0c0c0c] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-      <header className="border-b border-white/[0.07] pb-3">
+    <section className={shell}>
+      <header className={headerRule}>
         <h3 className="text-[14px] font-semibold tracking-tight text-[var(--text-main)]">
           {title}
         </h3>
@@ -149,7 +162,7 @@ function SettingSectionCard({
           </p>
         ) : null}
       </header>
-      <div className="divide-y divide-white/[0.06]">{children}</div>
+      <div className={divideRule}>{children}</div>
     </section>
   );
 }
@@ -209,6 +222,20 @@ const fieldInputClass =
 
 function SettingsAccountsDemo() {
   const prefs = useOpenmailPreferences();
+  const { theme } = useOpenmailTheme();
+  const isLight = theme === "soft-intelligence-light";
+  const demoEmpty = isLight
+    ? "rounded-xl border border-dashed border-black/15 bg-white px-3.5 py-6 text-center text-[12px] text-[#555]"
+    : "rounded-xl border border-dashed border-white/[0.1] bg-[#0a0a0a]/60 px-3.5 py-6 text-center text-[12px] text-[color:var(--text-soft)]";
+  const demoAccountRow = isLight
+    ? "rounded-xl border border-black/10 bg-white px-3.5 py-3 shadow-sm"
+    : "rounded-xl border border-white/[0.08] bg-[#0c0c0c]/90 px-3.5 py-3";
+  const demoFormCard = isLight
+    ? "rounded-xl border border-black/10 bg-[#f3f4f6] p-4 shadow-sm"
+    : "rounded-xl border border-white/[0.08] bg-[#0a0a0a]/80 p-4";
+  const demoInput = isLight
+    ? "w-full rounded-lg border border-[rgba(0,0,0,0.08)] bg-white px-3 py-2 text-[13px] text-[#1a1a1a] shadow-none outline-none transition-[border-color,box-shadow] placeholder:text-neutral-400 focus:border-[rgba(0,0,0,0.16)] focus:shadow-[0_0_0_3px_rgba(100,116,139,0.08)] focus:outline-none"
+    : fieldInputClass;
   const [addEmail, setAddEmail] = useState("");
   const [addImap, setAddImap] = useState("");
   const [addSmtp, setAddSmtp] = useState("");
@@ -243,14 +270,14 @@ function SettingsAccountsDemo() {
     <div className="space-y-5">
       <div className="space-y-2">
         {prefs.accounts.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-white/[0.1] bg-[#0a0a0a]/60 px-3.5 py-6 text-center text-[12px] text-[color:var(--text-soft)]">
+          <p className={demoEmpty}>
             No demo accounts yet. Add one with the form below.
           </p>
         ) : null}
         {prefs.accounts.map((a) => (
           <div
             key={a.id}
-            className="rounded-xl border border-white/[0.08] bg-[#0c0c0c]/90 px-3.5 py-3"
+            className={demoAccountRow}
           >
             <div className="text-[13px] font-medium text-[var(--text-main)]">
               {a.email}
@@ -273,7 +300,7 @@ function SettingsAccountsDemo() {
         ))}
       </div>
 
-      <div className="rounded-xl border border-white/[0.08] bg-[#0a0a0a]/80 p-4">
+      <div className={demoFormCard}>
         <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
           Add demo account
         </div>
@@ -282,7 +309,7 @@ function SettingsAccountsDemo() {
             Email
           </span>
           <input
-            className={fieldInputClass}
+            className={demoInput}
             value={addEmail}
             onChange={(e) => setAddEmail(e.target.value)}
             placeholder="name@domain.com"
@@ -294,7 +321,7 @@ function SettingsAccountsDemo() {
             IMAP host
           </span>
           <input
-            className={fieldInputClass}
+            className={demoInput}
             value={addImap}
             onChange={(e) => setAddImap(e.target.value)}
             placeholder="imap.domain.com"
@@ -305,7 +332,7 @@ function SettingsAccountsDemo() {
             SMTP host
           </span>
           <input
-            className={fieldInputClass}
+            className={demoInput}
             value={addSmtp}
             onChange={(e) => setAddSmtp(e.target.value)}
             placeholder="smtp.domain.com"
@@ -922,6 +949,9 @@ export function OpenmailSettingsPanel({
 
   const { theme, setTheme } = useOpenmailTheme();
   const isLightTheme = theme === "soft-intelligence-light";
+  const navBtnIdleResolved = isLightTheme
+    ? "text-[#555] hover:bg-black/[0.04] hover:text-[#111827]"
+    : navBtnIdle;
   const prefs = useOpenmailPreferences();
   const { enableSmartNotifications } = useSmartNotifications();
   const toast = useOpenmailToast();
@@ -988,7 +1018,11 @@ export function OpenmailSettingsPanel({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`openmail-settings-panel relative z-[121] flex h-full w-[90vw] max-w-[720px] flex-col border-l border-white/[0.08] bg-[color:var(--openmail-settings-panel-bg)] shadow-[-12px_0_48px_rgba(0,0,0,0.55)] backdrop-blur-xl [-webkit-backdrop-filter:blur(20px)] transition-transform duration-300 ease-out ${
+        className={`openmail-settings-panel relative z-[121] flex h-full w-[90vw] max-w-[720px] flex-col border-l bg-[color:var(--openmail-settings-panel-bg)] backdrop-blur-xl [-webkit-backdrop-filter:blur(20px)] transition-transform duration-300 ease-out ${
+          isLightTheme
+            ? "border-black/10 shadow-[-12px_0_48px_rgba(0,0,0,0.08)]"
+            : "border-white/[0.08] shadow-[-12px_0_48px_rgba(0,0,0,0.55)]"
+        } ${
           entered
             ? "pointer-events-auto translate-x-0"
             : "pointer-events-none translate-x-full"
@@ -996,7 +1030,11 @@ export function OpenmailSettingsPanel({
         onTransitionEnd={onPanelTransitionEnd}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex shrink-0 items-center justify-between border-b border-white/[0.06] px-5 py-3.5">
+        <header
+          className={`flex shrink-0 items-center justify-between px-5 py-3.5 ${
+            isLightTheme ? "border-b border-black/10" : "border-b border-white/[0.06]"
+          }`}
+        >
           <h2
             id={titleId}
             className="text-[15px] font-semibold tracking-tight text-[var(--text-main)]"
@@ -1005,7 +1043,9 @@ export function OpenmailSettingsPanel({
           </h2>
           <button
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--text-soft)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text-main)]"
+            className={`flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--text-soft)] transition-colors hover:text-[var(--text-main)] ${
+              isLightTheme ? "hover:bg-black/[0.04]" : "hover:bg-white/[0.06]"
+            }`}
             aria-label="Close"
             onClick={onClose}
           >
@@ -1015,7 +1055,9 @@ export function OpenmailSettingsPanel({
 
         <div className="flex min-h-0 flex-1">
           <nav
-            className="flex w-[132px] shrink-0 flex-col gap-0.5 border-r border-white/[0.06] p-3"
+            className={`flex w-[132px] shrink-0 flex-col gap-0.5 p-3 ${
+              isLightTheme ? "border-r border-black/10" : "border-r border-white/[0.06]"
+            }`}
             aria-label="Settings sections"
           >
             {NAV.map((item) => (
@@ -1023,7 +1065,7 @@ export function OpenmailSettingsPanel({
                 key={item.id}
                 type="button"
                 className={`${navBtnBase} ${
-                  prefs.activeSection === item.id ? navBtnActive : navBtnIdle
+                  prefs.activeSection === item.id ? navBtnActive : navBtnIdleResolved
                 }`}
                 onClick={() => prefs.setActiveSection(item.id)}
               >
@@ -1119,7 +1161,13 @@ export function OpenmailSettingsPanel({
                       </ul>
                       <p className="mt-3 text-[10px] leading-relaxed text-[color:var(--text-soft)]">
                         Warning-level sends need your confirmation in the app, then{" "}
-                        <code className="rounded bg-white/[0.06] px-1 py-0.5 text-[9px] text-[var(--text-main)]">
+                        <code
+                          className={
+                            isLightTheme
+                              ? "rounded bg-black/[0.06] px-1 py-0.5 text-[9px] text-[#111827]"
+                              : "rounded bg-white/[0.06] px-1 py-0.5 text-[9px] text-[var(--text-main)]"
+                          }
+                        >
                           guardianWarnAcknowledged
                         </code>{" "}
                         on the server. Notification quick-send cannot bypass a
@@ -1136,7 +1184,11 @@ export function OpenmailSettingsPanel({
                         {guardianTraces.length > 0 ? (
                           <button
                             type="button"
-                            className="rounded-lg border border-white/[0.12] px-3 py-1.5 text-[11px] font-medium text-[color:var(--text-soft)] transition-colors hover:border-white/[0.18] hover:text-[var(--text-main)]"
+                            className={
+                              isLightTheme
+                                ? "rounded-lg border border-black/10 bg-white px-3 py-1.5 text-[11px] font-medium text-[#555] shadow-sm transition-colors hover:border-black/15 hover:bg-neutral-50 hover:text-[#111827]"
+                                : "rounded-lg border border-white/[0.12] px-3 py-1.5 text-[11px] font-medium text-[color:var(--text-soft)] transition-colors hover:border-white/[0.18] hover:text-[var(--text-main)]"
+                            }
                             onClick={clearGuardianTrace}
                           >
                             Clear log
@@ -1155,8 +1207,13 @@ export function OpenmailSettingsPanel({
                           aria-label="Guardian decisions, newest first"
                         >
                           {guardianTraces.map((entry) => {
-                            const riskPill =
-                              entry.riskLevel === "high"
+                            const riskPill = isLightTheme
+                              ? entry.riskLevel === "high"
+                                ? "border-red-200 bg-red-50 text-red-900"
+                                : entry.riskLevel === "medium"
+                                  ? "border-amber-200 bg-amber-50 text-amber-950"
+                                  : "border-emerald-200 bg-emerald-50 text-emerald-900"
+                              : entry.riskLevel === "high"
                                 ? "border-red-500/35 bg-red-500/10 text-red-200/90"
                                 : entry.riskLevel === "medium"
                                   ? "border-amber-500/35 bg-amber-500/10 text-amber-100/90"
@@ -1171,7 +1228,11 @@ export function OpenmailSettingsPanel({
                             return (
                               <li
                                 key={entry.id}
-                                className="rounded-xl border border-white/[0.08] bg-[#0a0a0a]/75 px-3 py-2.5"
+                                className={
+                                  isLightTheme
+                                    ? "rounded-xl border border-black/10 bg-white px-3 py-2.5 shadow-sm"
+                                    : "rounded-xl border border-white/[0.08] bg-[#0a0a0a]/75 px-3 py-2.5"
+                                }
                               >
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span
@@ -1179,16 +1240,34 @@ export function OpenmailSettingsPanel({
                                   >
                                     {guardianRiskLabel(entry.riskLevel)}
                                   </span>
-                                  <span className="inline-flex rounded-md border border-white/[0.1] bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-main)]">
+                                  <span
+                                    className={
+                                      isLightTheme
+                                        ? "inline-flex rounded-md border border-black/10 bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold text-[#111827]"
+                                        : "inline-flex rounded-md border border-white/[0.1] bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-main)]"
+                                    }
+                                  >
                                     {guardianDecisionLabel(entry.decision)}
                                   </span>
                                   {entry.requiresExplicitUserConsent ? (
-                                    <span className="inline-flex rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-100/90">
+                                    <span
+                                      className={
+                                        isLightTheme
+                                          ? "inline-flex rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-900"
+                                          : "inline-flex rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-100/90"
+                                      }
+                                    >
                                       Consent required
                                     </span>
                                   ) : null}
                                   {entry.criticalBlock ? (
-                                    <span className="inline-flex rounded-md border border-red-500/40 bg-red-950/40 px-2 py-0.5 text-[10px] font-semibold text-red-100/85">
+                                    <span
+                                      className={
+                                        isLightTheme
+                                          ? "inline-flex rounded-md border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-900"
+                                          : "inline-flex rounded-md border border-red-500/40 bg-red-950/40 px-2 py-0.5 text-[10px] font-semibold text-red-100/85"
+                                      }
+                                    >
                                       No bypass
                                     </span>
                                   ) : null}
