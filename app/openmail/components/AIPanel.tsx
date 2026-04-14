@@ -223,6 +223,7 @@ function CoreAiRiskCard({
 }) {
   const { theme } = useOpenmailTheme();
   const isLight = theme === "soft-intelligence-light";
+  const { ai: aiPrefEngine, updateAi: updateAiPref } = useOpenmailPreferences();
   const band = coreRiskBand(mail);
   const skin = CORE_RISK_CARD[band];
   const snapshot = coreRiskSnapshot(mail);
@@ -230,7 +231,7 @@ function CoreAiRiskCard({
   const whyBullets = coreWhyMattersBullets(mail, whyParagraph);
   const decisionLine = decisionEngineHeadline(band);
   const detectionLines = useMemo(
-    () => buildCoreDetectionReasons(mail).slice(0, 2),
+    () => buildCoreDetectionReasons(mail).slice(0, 4),
     [mail]
   );
   const previewPlain = useMemo(() => coreMailPreviewPlain(mail), [mail]);
@@ -251,38 +252,6 @@ function CoreAiRiskCard({
     const intent = intentBarLabel?.trim() ?? "";
     return Boolean(intent) && Boolean(s) && intent !== s;
   }, [snapshot, intentBarLabel]);
-
-  const hasExpandableDetails = useMemo(() => {
-    const s = snapshot?.trim() ?? "";
-    const extraSnapshot =
-      s.length > 110 || (Boolean(s) && showIntentInDetails);
-    return (
-      previewPlain.length > 0 ||
-      Boolean(whyParagraph?.trim()) ||
-      whyBullets.length > 0 ||
-      detectionLines.length > 0 ||
-      extraSnapshot
-    );
-  }, [
-    previewPlain.length,
-    snapshot,
-    whyParagraph,
-    whyBullets.length,
-    detectionLines.length,
-    showIntentInDetails,
-  ]);
-
-  const snapshotFullInDetails = useMemo(() => {
-    const t = snapshot?.trim() ?? "";
-    if (!t) return false;
-    if (t !== topSummary.trim()) return true;
-    return t.length > 110;
-  }, [snapshot, topSummary]);
-
-  const [previewExpanded, setPreviewExpanded] = useState(false);
-  useEffect(() => {
-    setPreviewExpanded(false);
-  }, [mail?.id]);
 
   const prevBandRef = useRef<CoreRiskBand | null>(null);
   const prevMailIdForPulseRef = useRef<string | null>(null);
@@ -419,119 +388,132 @@ function CoreAiRiskCard({
         ) : (
           <>
             <div className="flex min-w-0 flex-row items-start gap-3">
-              <div className="core-ai-risk-guidance min-w-0 flex-1">
-                <span
-                  className={`core-ai-risk-guidance-label text-[9px] font-semibold uppercase tracking-[0.12em] ${skin.guidanceMuted}`}
-                >
-                  What to do
-                </span>
-                <p className="mt-1 line-clamp-3 text-[12px] font-medium leading-snug text-[var(--text-main)]/90">
-                  {decisionLine}
-                </p>
+              <div className="core-ai-risk-guidance min-w-0 flex-1 space-y-4">
+                <section className="space-y-1">
+                  <h4 className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                    Message preview
+                  </h4>
+                  <p className="line-clamp-3 whitespace-pre-wrap break-words text-[11px] leading-snug text-[var(--text-main)]/88">
+                    {previewPlain.trim()
+                      ? previewPlain
+                      : "No preview available yet."}
+                  </p>
+                </section>
+
+                <section className="space-y-1.5">
+                  <h4 className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                    Why this matters
+                  </h4>
+                  {showIntentInDetails && intentBarLabel ? (
+                    <p className="text-[10px] leading-snug text-[var(--text-main)]/85">
+                      <span className="text-[color:var(--text-soft)]">Intent · </span>
+                      {intentBarLabel}
+                    </p>
+                  ) : null}
+                  {topSummary ? (
+                    <p
+                      className="line-clamp-2 text-[11px] leading-snug text-[var(--text-main)]/82"
+                      title={intentBarTitle ?? topSummary}
+                    >
+                      {topSummary}
+                    </p>
+                  ) : null}
+                  {whyParagraph ? (
+                    <p className="line-clamp-4 text-[11px] leading-snug text-[var(--text-main)]/85">
+                      {whyParagraph}
+                    </p>
+                  ) : null}
+                  {whyBullets.length > 0 ? (
+                    <ul className="list-disc space-y-0.5 pl-3.5 text-[10px] leading-snug text-[color:var(--text-soft)]">
+                      {whyBullets.slice(0, 4).map((b, i) => (
+                        <li key={`${i}-${b.slice(0, 36)}`}>{b}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </section>
+
+                <section className="space-y-1.5">
+                  <h4 className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                    Signals
+                  </h4>
+                  {detectionLines.length > 0 ? (
+                    <div
+                      className={`openmail-ai-signals-box rounded-[8px] border px-2 py-1.5 ${
+                        isLight
+                          ? "border-black/[0.08] bg-white/[0.88] shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-md"
+                          : "border-white/[0.06] bg-black/25"
+                      }`}
+                    >
+                      <ul className="list-disc space-y-0.5 pl-3 text-[10px] text-[var(--text-main)]/85 marker:text-[color:var(--text-soft)]">
+                        {detectionLines.map((line, i) => (
+                          <li key={i}>{line}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] leading-snug text-[color:var(--text-soft)]">
+                      No additional signals highlighted.
+                    </p>
+                  )}
+                </section>
+
+                <div className="border-t border-[var(--border)] pt-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[11px] font-medium text-[var(--text-main)]">
+                        Quick suggestions{" "}
+                        <span className="text-[color:var(--text-soft)]">
+                          [{aiPrefEngine.autoSuggestions ? "ON" : "OFF"}]
+                        </span>
+                      </span>
+                      <p className="mt-0.5 text-[10px] leading-snug text-[color:var(--text-soft)]">
+                        Get instant replies generated by AI based on context.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={aiPrefEngine.autoSuggestions}
+                      className="toggle mt-0.5 shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]/35"
+                      onClick={() =>
+                        updateAiPref({
+                          autoSuggestions: !aiPrefEngine.autoSuggestions,
+                        })
+                      }
+                    >
+                      <span
+                        className={`toggle-track border transition-colors duration-200 ${
+                          aiPrefEngine.autoSuggestions
+                            ? "border-[var(--accent)]/50 bg-[var(--accent-soft)]"
+                            : "border-white/[0.1] bg-[color:var(--openmail-input-bg)]"
+                        }`}
+                      >
+                        <span className="toggle-knob bg-[var(--text-main)] shadow-sm" />
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
+
               <div className="openmail-de-rail flex max-w-[12rem] min-w-[7.5rem] shrink-0 flex-col items-end gap-2 border-l border-[var(--border)] pl-3">
                 <span
                   className={`shrink-0 rounded-md px-2 py-0.5 text-center text-[9px] font-bold uppercase tracking-[0.05em] ${skin.badge}`}
                 >
                   {skin.badgeLabel}
                 </span>
-                {topSummary ? (
-                  <p
-                    className="w-full text-right text-[11px] leading-snug text-[var(--text-main)]/78 line-clamp-3"
-                    title={intentBarTitle ?? topSummary}
-                  >
-                    {topSummary}
-                  </p>
-                ) : null}
+                <span
+                  className={`core-ai-risk-guidance-label text-[9px] font-semibold uppercase tracking-[0.12em] ${skin.guidanceMuted}`}
+                >
+                  AI decision
+                </span>
+                <p className="w-full text-right text-[12px] font-medium leading-snug text-[var(--text-main)]/90 line-clamp-3">
+                  {decisionLine}
+                </p>
                 {band === "high" ? highActions : null}
                 {band === "medium" ? mediumActions : null}
                 {band === "safe" ? safeActions : null}
               </div>
             </div>
-
-            {hasExpandableDetails ? (
-              <div className="mt-3 border-t border-[var(--border)] pt-2">
-                <div className="flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    className="shrink-0 rounded-md px-2 py-1 text-[10px] font-medium tracking-wide text-[color:var(--text-soft)] transition-colors hover:bg-white/[0.04] hover:text-[var(--text-main)]"
-                    onClick={() => setPreviewExpanded((v) => !v)}
-                    aria-expanded={previewExpanded}
-                  >
-                    {previewExpanded ? "Hide details" : "AI details"}
-                  </button>
-                </div>
-                {previewExpanded ? (
-                  <div className="mt-2 space-y-2">
-                    {showIntentInDetails && intentBarLabel ? (
-                      <div>
-                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
-                          Intent
-                        </div>
-                        <p className="mt-0.5 text-[11px] font-semibold leading-snug text-[var(--text-main)]">
-                          {intentBarLabel}
-                        </p>
-                      </div>
-                    ) : null}
-                    {previewPlain ? (
-                      <div>
-                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
-                          Message preview
-                        </div>
-                        <p className="mt-0.5 whitespace-pre-wrap break-words text-[11px] leading-snug text-[var(--text-main)]/88">
-                          {previewPlain}
-                        </p>
-                      </div>
-                    ) : null}
-                    {snapshot?.trim() &&
-                    snapshotFullInDetails &&
-                    (!previewPlain || !previewPlain.includes(snapshot.slice(0, 12))) ? (
-                      <div>
-                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
-                          Summary
-                        </div>
-                        <p className="mt-0.5 text-[11px] font-semibold leading-snug text-[var(--text-main)]/92">
-                          {snapshot}
-                        </p>
-                      </div>
-                    ) : null}
-                    {whyParagraph ? (
-                      <div>
-                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
-                          Context
-                        </div>
-                        <p className="mt-0.5 text-[10px] leading-snug text-[var(--text-main)]/85">{whyParagraph}</p>
-                      </div>
-                    ) : null}
-                    {whyBullets.length > 0 ? (
-                      <ul className="list-disc space-y-0.5 pl-3.5 text-[10px] leading-snug text-[color:var(--text-soft)]">
-                        {whyBullets.slice(0, 4).map((b, i) => (
-                          <li key={`${i}-${b.slice(0, 36)}`}>{b}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    {detectionLines.length > 0 ? (
-                      <div
-                        className={`openmail-ai-signals-box rounded-[8px] border px-2 py-1.5 ${
-                          isLight
-                            ? "border-black/[0.08] bg-white/[0.88] shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-md"
-                            : "border-white/[0.06] bg-black/25"
-                        }`}
-                      >
-                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
-                          Signals
-                        </div>
-                        <ul className="mt-1 list-disc space-y-0.5 pl-3 text-[10px] text-[var(--text-main)]/85 marker:text-[color:var(--text-soft)]">
-                          {detectionLines.map((line, i) => (
-                            <li key={i}>{line}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
           </>
         )}
       </div>
