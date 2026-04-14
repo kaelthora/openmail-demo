@@ -844,7 +844,7 @@ export function AIPanel({
             />
           ) : null}
 
-          <div className="openmail-ai-reply-stack mt-6 flex min-h-0 min-w-0 flex-1 flex-col border-t border-[var(--border)] pt-7">
+          <div className="openmail-ai-reply-stack mt-6 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-t border-[var(--border)] pt-7">
             {selectedMail && highRiskUiLock ? (
               <div
                 className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2.5 text-[12px] font-semibold leading-snug text-red-100 shadow-[0_0_20px_rgba(220,38,38,0.12)]"
@@ -854,7 +854,7 @@ export function AIPanel({
               </div>
             ) : null}
             <div
-              className={`openmail-ai-reply-pane flex min-h-0 flex-1 flex-col rounded-[12px] border p-4 transition-[box-shadow,background-color,border-color,transform] duration-200 ease-out sm:p-5 ${
+              className={`openmail-ai-reply-pane flex min-h-0 flex-1 flex-col overflow-hidden rounded-[12px] border p-4 transition-[box-shadow,background-color,border-color,transform] duration-200 ease-out sm:p-5 ${
                 decisionToReplyCue
                   ? "border-[var(--accent)]/25 bg-[var(--accent-soft)]/12 shadow-[0_0_20px_var(--openmail-shadow-accent-sm)]"
                   : "border-[var(--border)] bg-[color:var(--openmail-list-inner)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
@@ -864,7 +864,7 @@ export function AIPanel({
                 <p className="text-[13px] leading-snug text-[color:var(--text-soft)]">Select a message.</p>
               ) : (
                 <>
-                  <div className="flex min-h-0 flex-1 flex-col gap-7">
+                  <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-7 overflow-y-auto overflow-x-hidden overscroll-contain pr-0.5 [scrollbar-gutter:stable]">
                     <div className="openmail-ai-reply-zone flex min-h-0 shrink-0 flex-col gap-3">
                       <div>
                         <h3 className="text-[15px] font-semibold leading-tight tracking-tight text-[color:var(--text-main)]">
@@ -1070,13 +1070,13 @@ export function AIPanel({
                       </button>
                     ) : null}
                     <div
-                      className={`openmail-ai-reply-zone min-h-0 flex-1 rounded-[12px] ${userTyping ? "ring-1 ring-[var(--openmail-focus-ring)]/40" : ""} ${insertAnim || prefillSurfaceAnim ? "core-reply-insert-anim" : ""}`}
+                      className={`openmail-ai-reply-zone min-h-0 shrink-0 rounded-[12px] ${userTyping ? "ring-1 ring-[var(--openmail-focus-ring)]/40" : ""} ${insertAnim || prefillSurfaceAnim ? "core-reply-insert-anim" : ""}`}
                     >
                     <textarea
                       ref={textareaRef}
                       id="core-reply-textarea"
                       aria-label="Reply draft"
-                      className={`core-reply-decision-surface !bg-[color:var(--openmail-input-bg)] h-full min-h-[min(148px,26vh)] w-full resize-none rounded-[12px] border px-6 py-6 text-[15px] leading-[1.56] text-[color:var(--text-main)]/90 outline-none transition-[border-color,box-shadow,background] duration-200 ease-out placeholder:text-[color:var(--text-soft)] placeholder:opacity-75 focus:border-[color:var(--openmail-focus-border)] focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_var(--openmail-focus-ring),0_0_20px_var(--openmail-focus-glow)] ${
+                      className={`core-reply-decision-surface !bg-[color:var(--openmail-input-bg)] min-h-[min(148px,26vh)] max-h-[min(45vh,28rem)] w-full resize-none overflow-y-auto rounded-[12px] border px-6 py-6 text-[15px] leading-[1.56] text-[color:var(--text-main)]/90 outline-none transition-[border-color,box-shadow,background] duration-200 ease-out placeholder:text-[color:var(--text-soft)] placeholder:opacity-75 focus:border-[color:var(--openmail-focus-border)] focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_var(--openmail-focus-ring),0_0_20px_var(--openmail-focus-glow)] ${
                         replyAssist.readyToSend
                           ? "border-emerald-500/35 !bg-[#141a16]/95 shadow-[inset_0_0_24px_rgba(16,185,129,0.08)]"
                           : "border-[var(--border)]"
