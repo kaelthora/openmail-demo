@@ -71,6 +71,10 @@ export function SmartNotificationsProvider({ children }: { children: ReactNode }
   const queueRef = useRef(new Set<string>());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const regRef = useRef<ServiceWorkerRegistration | null>(null);
+  /** Latest pref — async flush must not show after user disables notifications. */
+  const smartNotificationsEnabledRef = useRef(false);
+  smartNotificationsEnabledRef.current =
+    hydrated && display.smartNotifications && !OPENMAIL_DEMO_MODE;
 
   const enableSmartNotifications = useCallback(async () => {
     if (!canUseNotifications()) return "unsupported";
@@ -99,18 +103,33 @@ export function SmartNotificationsProvider({ children }: { children: ReactNode }
   }, [hydrated, display.smartNotifications]);
 
   useEffect(() => {
+    if (!display.smartNotifications || OPENMAIL_DEMO_MODE) {
+      queueRef.current.clear();
+      if (debounceRef.current != null) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+    }
+  }, [display.smartNotifications]);
+
+  useEffect(() => {
     if (!hydrated || !display.smartNotifications || OPENMAIL_DEMO_MODE) return;
     if (!canUseNotifications()) return;
 
     const flush = async () => {
       try {
       debounceRef.current = null;
+      if (!smartNotificationsEnabledRef.current) {
+        queueRef.current.clear();
+        return;
+      }
       const raw = [...queueRef.current];
       queueRef.current.clear();
       if (raw.length === 0) return;
       if (!("Notification" in window) || Notification.permission !== "granted") return;
 
       const dismissed = await readDismissedNotifyIds();
+      if (!smartNotificationsEnabledRef.current) return;
       const ids = raw.filter((id) => id && !dismissed.has(id)).slice(0, NOTIFY_MAX);
       if (ids.length === 0) return;
 
@@ -126,13 +145,18 @@ export function SmartNotificationsProvider({ children }: { children: ReactNode }
         return;
       }
 
+      if (!smartNotificationsEnabledRef.current) return;
+
       const origin =
         typeof window !== "undefined" ? window.location.origin : "";
 
       const reg = regRef.current ?? (await ensureServiceWorker());
       regRef.current = reg;
 
+      if (!smartNotificationsEnabledRef.current) return;
+
       for (const item of items) {
+        if (!smartNotificationsEnabledRef.current) break;
         const summary = formatNotificationSummaryLines(item.summary);
         const actionLine = formatSuggestedActionLine({
           intent: item.intent,
@@ -185,6 +209,7 @@ export function SmartNotificationsProvider({ children }: { children: ReactNode }
     };
 
     const onNewMail = (ev: Event) => {
+      if (!smartNotificationsEnabledRef.current) return;
       const detail = (ev as CustomEvent<{ ids?: string[] }>).detail;
       const ids = Array.isArray(detail?.ids) ? detail.ids : [];
       for (const id of ids) {

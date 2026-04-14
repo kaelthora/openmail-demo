@@ -35,6 +35,7 @@ import {
   isAccountNotFoundInboxMessage,
   isLegacyImapEnvMissingMessage,
 } from "@/lib/legacyImapEnvMissing";
+import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
 
 const INBOX_SCOPE_KEY = "openmail-inbox-scope-v1";
 
@@ -102,6 +103,9 @@ const MailStoreContext = createContext<MailStoreValue | null>(null);
 export default function MailStoreProvider({ children }: { children: ReactNode }) {
   const { record: recordGuardianTrace } = useGuardianTrace();
   const { present: presentGuardianIntercept } = useGuardianIntercept();
+  const { display } = useOpenmailPreferences();
+  const smartNotificationsEnabledRef = useRef(display.smartNotifications);
+  smartNotificationsEnabledRef.current = display.smartNotifications;
   const [mails, setMails] = useState<MailItem[]>([]);
   const [selectedMailId, setSelectedMailId] = useState("");
   const [mailsHydrated] = useState(true);
@@ -351,7 +355,11 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
           const ids = Array.isArray(data.ids)
             ? data.ids.filter((x): x is string => typeof x === "string" && x.trim().length > 0)
             : [];
-          if (typeof window !== "undefined" && ids.length > 0) {
+          if (
+            typeof window !== "undefined" &&
+            ids.length > 0 &&
+            smartNotificationsEnabledRef.current
+          ) {
             window.dispatchEvent(new CustomEvent("openmail-new-mail", { detail: { ids } }));
           }
           if (sseInboxRefreshRafRef.current != null) {
