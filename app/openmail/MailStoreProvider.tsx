@@ -39,6 +39,17 @@ import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
 
 const INBOX_SCOPE_KEY = "openmail-inbox-scope-v1";
 
+/** After loading `/api/accounts`, keep scope valid so mail fetch never uses a removed id. */
+function reconcileInboxScopeAfterAccountListLoad(
+  prev: ServerInboxScope,
+  list: ServerMailAccountSummary[]
+): ServerInboxScope {
+  if (list.length === 0) return "legacy";
+  if (prev === "legacy") return "legacy";
+  if (list.some((a) => a.id === prev)) return prev;
+  return list[0]!.id;
+}
+
 export type { ServerInboxScope, ServerMailAccountSummary };
 
 export type MailStoreValue = {
@@ -254,7 +265,18 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         const msg = j.error || "Could not load accounts";
         return { ok: false, error: msg };
       }
-      setServerMailAccounts(j.accounts ?? []);
+      const list = j.accounts ?? [];
+      setServerMailAccounts(list);
+      setInboxScope((prev) => {
+        const next = reconcileInboxScopeAfterAccountListLoad(prev, list);
+        if (next === prev) return prev;
+        try {
+          sessionStorage.setItem(INBOX_SCOPE_KEY, next);
+        } catch {
+          /* private mode */
+        }
+        return next;
+      });
       return { ok: true };
     } catch {
       return { ok: false, error: "Could not load accounts" };
@@ -296,8 +318,6 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
 
   /** Clean boot: demo seeds static inbox; otherwise resolve inbox scope then list loads via effect. */
   useEffect(() => {
-    clearStoredAccount();
-    setAccount(null);
     setSyncError(null);
     setMailsFetchError(null);
     setInboxSetupRequired(false);
@@ -323,10 +343,14 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         } catch {
           saved = null;
         }
-        let next: ServerInboxScope = "legacy";
-        if (saved === "legacy") next = "legacy";
-        else if (saved && list.some((x) => x.id === saved)) next = saved;
-        else if (list.length > 0) next = list[0].id;
+        const prevScope: ServerInboxScope =
+          !saved || saved === "legacy" ? "legacy" : saved;
+        const next = reconcileInboxScopeAfterAccountListLoad(prevScope, list);
+        try {
+          sessionStorage.setItem(INBOX_SCOPE_KEY, next);
+        } catch {
+          /* private mode */
+        }
         setInboxScope(next);
       } catch {
         setServerMailAccounts([]);
