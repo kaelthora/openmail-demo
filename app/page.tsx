@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Page() {
   return (
     <div className="h-screen w-full overflow-hidden bg-gradient-to-br from-[#020617] via-[#020617] to-[#030b1a] text-white">
@@ -9,9 +11,13 @@ export default function Page() {
           An inbox that thinks before you act.
           </p>
 
-          <button className="mt-4 rounded-lg bg-white px-5 py-2 text-sm font-medium text-black transition hover:scale-105">
+          <Link
+            href="/openmail"
+            prefetch={false}
+            className="mt-4 inline-block rounded-lg bg-white px-5 py-2 text-sm font-medium text-black no-underline transition hover:scale-105"
+          >
             Secure my inbox
-          </button>
+          </Link>
 
           <p className="mt-2 text-xs text-gray-500">No tracking. No data. Ever.</p>
         </section>
