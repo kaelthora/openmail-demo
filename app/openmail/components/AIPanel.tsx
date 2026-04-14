@@ -129,60 +129,54 @@ const CORE_RISK_CARD: Record<
     glow: string;
     badge: string;
     badgeLabel: string;
-    actionShell: string;
-    actionHeading: string;
+    guidanceMuted: string;
   }
 > = {
   high: {
-    border: "border-2 border-rose-800/30 shadow-[0_0_18px_rgba(150,75,80,0.1)]",
-    bar: "bg-rose-800/90 shadow-[0_0_8px_rgba(140,72,78,0.2)]",
-    glow: "bg-gradient-to-br from-rose-950/40 via-[#110d0d] to-[#0c0c0c]",
+    border: "border border-rose-900/20 shadow-[0_1px_12px_rgba(0,0,0,0.12)]",
+    bar: "bg-rose-800/55",
+    glow: "bg-gradient-to-br from-rose-950/20 via-[#0c0c0c] to-[#0c0c0c]",
     badge:
-      "border-rose-700/28 bg-rose-950/32 text-rose-100/95 ring-1 ring-rose-800/18",
+      "border border-rose-800/25 bg-rose-950/25 text-rose-100/90",
     badgeLabel: "HIGH RISK",
-    actionShell:
-      "border border-rose-800/28 bg-[#151010] ring-1 ring-rose-900/18",
-    actionHeading: "text-rose-200/88",
+    guidanceMuted: "text-rose-200/55",
   },
   medium: {
-    border: "border-amber-900/28 shadow-[0_0_14px_rgba(160,110,40,0.07)]",
-    bar: "bg-amber-800/85 shadow-[0_0_6px_rgba(150,100,35,0.18)]",
-    glow: "bg-gradient-to-br from-amber-950/32 via-[#100f0a] to-[#0c0c0c]",
+    border: "border border-amber-900/18 shadow-[0_1px_12px_rgba(0,0,0,0.1)]",
+    bar: "bg-amber-800/50",
+    glow: "bg-gradient-to-br from-amber-950/14 via-[#0c0c0c] to-[#0c0c0c]",
     badge:
-      "border-amber-700/35 bg-amber-950/25 text-amber-100/90 ring-1 ring-amber-800/14",
+      "border border-amber-800/22 bg-amber-950/18 text-amber-100/88",
     badgeLabel: "Medium risk",
-    actionShell: "border-amber-800/30 bg-amber-950/22 ring-1 ring-amber-900/12",
-    actionHeading: "text-amber-100/88",
+    guidanceMuted: "text-amber-200/50",
   },
   safe: {
-    border: "border-teal-900/22 shadow-[0_0_12px_rgba(35,95,85,0.06)]",
-    bar: "bg-teal-700/80 shadow-[0_0_6px_rgba(32,105,95,0.16)]",
-    glow: "bg-gradient-to-br from-emerald-950/22 via-[#0a0f0d] to-[#0c0c0c]",
+    border: "border border-teal-900/16 shadow-[0_1px_12px_rgba(0,0,0,0.08)]",
+    bar: "bg-teal-800/45",
+    glow: "bg-gradient-to-br from-emerald-950/12 via-[#0c0c0c] to-[#0c0c0c]",
     badge:
-      "border-teal-700/28 bg-emerald-950/22 text-teal-100/90 ring-1 ring-teal-800/12",
+      "border border-teal-800/20 bg-emerald-950/14 text-teal-100/88",
     badgeLabel: "Safe",
-    actionShell: "border-teal-800/22 bg-emerald-950/16 ring-1 ring-teal-900/10",
-    actionHeading: "text-teal-100/88",
+    guidanceMuted: "text-teal-200/50",
   },
   idle: {
-    border: "border-white/[0.1]",
-    bar: "bg-white/20",
+    border: "border border-white/[0.08]",
+    bar: "bg-white/15",
     glow: "bg-[#0c0c0c]",
-    badge: "border-white/[0.12] bg-white/[0.06] text-[color:var(--text-soft)]",
+    badge: "border border-white/[0.1] bg-white/[0.04] text-[color:var(--text-soft)]",
     badgeLabel: "Idle",
-    actionShell: "border-white/[0.1] bg-[#101010]",
-    actionHeading: "text-[color:var(--text-soft)]",
+    guidanceMuted: "text-[color:var(--text-soft)]",
   },
 };
 
 const DE_PRIMARY_BASE =
   "openmail-de-primary-action inline-flex w-auto max-w-fit shrink-0 items-center justify-center rounded-lg px-3 py-2 text-center text-[13px] font-semibold leading-tight tracking-tight shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-[transform,filter,box-shadow] duration-150 ease-out hover:brightness-[1.04] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-45";
 
-const DE_PRIMARY_HIGH = `${DE_PRIMARY_BASE} openmail-de-primary--high border border-rose-800/28 bg-gradient-to-b from-rose-800 to-rose-900 text-rose-50 focus-visible:outline-rose-400/22`;
+const DE_PRIMARY_HIGH = `${DE_PRIMARY_BASE} openmail-de-primary--high border border-rose-800/20 bg-gradient-to-b from-rose-800/95 to-rose-900/98 text-rose-50/95 focus-visible:outline-rose-400/18`;
 
-const DE_PRIMARY_MEDIUM = `${DE_PRIMARY_BASE} openmail-de-primary--medium border border-amber-800/28 bg-gradient-to-b from-amber-800/95 to-amber-950 text-amber-50 focus-visible:outline-amber-400/22`;
+const DE_PRIMARY_MEDIUM = `${DE_PRIMARY_BASE} openmail-de-primary--medium border border-amber-800/20 bg-gradient-to-b from-amber-800/90 to-amber-950 text-amber-50/95 focus-visible:outline-amber-400/18`;
 
-const DE_PRIMARY_SAFE = `${DE_PRIMARY_BASE} openmail-de-primary--safe border border-teal-800/22 bg-gradient-to-b from-teal-700 to-teal-800 text-teal-50 focus-visible:outline-teal-400/22`;
+const DE_PRIMARY_SAFE = `${DE_PRIMARY_BASE} openmail-de-primary--safe border border-teal-800/18 bg-gradient-to-b from-teal-700/92 to-teal-800/95 text-teal-50/95 focus-visible:outline-teal-400/18`;
 
 const DE_SECONDARY =
   "openmail-de-secondary-btn inline-flex w-auto max-w-fit shrink-0 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-main)]/82 transition-colors hover:border-white/[0.18] hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/25 disabled:pointer-events-none disabled:opacity-40";
@@ -317,157 +311,150 @@ function CoreAiRiskCard({
     };
   }, [mail?.id, band, mail]);
 
+  const highActions = (
+    <div className={DE_ACTIONS_COL}>
+      <button
+        type="button"
+        className={DE_PRIMARY_HIGH}
+        onClick={() => {
+          onPrimaryAction?.();
+          void onBlockAndReport?.();
+        }}
+        disabled={!mail || !onBlockAndReport || actionBusy != null}
+      >
+        {actionBusy === "block" ? "Working…" : "Block & report"}
+      </button>
+      <button
+        type="button"
+        className={DE_SECONDARY}
+        onClick={() => void onOpenSandbox?.()}
+        disabled={!mail || !onOpenSandbox || actionBusy != null}
+      >
+        {actionBusy === "sandbox" ? "Opening…" : "Open in sandbox"}
+      </button>
+      {onMarkSafe ? (
+        <button
+          type="button"
+          className={DE_TERTIARY}
+          onClick={() => void onMarkSafe()}
+          disabled={!mail || actionBusy != null}
+        >
+          {actionBusy === "safe" ? "Applying…" : "Mark as safe"}
+        </button>
+      ) : null}
+    </div>
+  );
+
+  const mediumActions = (
+    <div className={DE_ACTIONS_COL}>
+      <button
+        type="button"
+        className={DE_PRIMARY_MEDIUM}
+        onClick={() => {
+          onPrimaryAction?.();
+          void onOpenSandbox?.();
+        }}
+        disabled={!mail || !onOpenSandbox || actionBusy != null}
+      >
+        {actionBusy === "sandbox" ? "Opening…" : "Open safely"}
+      </button>
+      <button
+        type="button"
+        className={DE_SECONDARY}
+        onClick={() => onArchive?.()}
+        disabled={!mail || !onArchive || actionBusy != null}
+      >
+        Ignore
+      </button>
+      {onMarkSafe ? (
+        <button
+          type="button"
+          className={DE_TERTIARY}
+          onClick={() => void onMarkSafe()}
+          disabled={!mail || actionBusy != null}
+        >
+          {actionBusy === "safe" ? "Applying…" : "Mark as safe"}
+        </button>
+      ) : null}
+    </div>
+  );
+
+  const safeActions = (
+    <div className={DE_ACTIONS_COL}>
+      <button
+        type="button"
+        className={DE_PRIMARY_SAFE}
+        onClick={() => {
+          onPrimaryAction?.();
+          void onQuickReply?.();
+        }}
+        disabled={!mail || !onQuickReply || actionBusy != null || quickReplyBusy}
+      >
+        {quickReplyBusy ? "Working…" : safePrimaryLabel}
+      </button>
+      {safeShowArchive ? (
+        <button
+          type="button"
+          className={DE_SECONDARY}
+          onClick={() => onArchive?.()}
+          disabled={!mail || !onArchive || actionBusy != null || quickReplyBusy}
+        >
+          Archive
+        </button>
+      ) : null}
+    </div>
+  );
+
   return (
     <div
-      className={`core-ai-risk-shell core-ai-risk-card core-ai-risk-card--${band} relative shrink-0 overflow-hidden rounded-[12px] border transition-[border-color,box-shadow,transform,opacity] duration-300 ${skin.border} ${
+      className={`core-ai-risk-shell core-ai-risk-card core-ai-risk-card--${band} relative shrink-0 overflow-hidden rounded-[10px] transition-[border-color,box-shadow,transform,opacity] duration-300 ${skin.border} ${
         riskPulse ? "core-ai-risk-card--pulse" : ""
       } ${transitionActive ? "scale-[0.985] -translate-y-0.5 opacity-90" : "scale-100 opacity-100"}`}
     >
       <div className={`pointer-events-none absolute inset-0 ${skin.glow}`} aria-hidden />
-      <div
-        className={`absolute left-0 top-0 z-[1] h-full w-1 rounded-l-[11px] ${skin.bar}`}
-        aria-hidden
-      />
-      <div className="relative z-[2] p-2.5 pl-3.5">
-        <div className="mb-1.5 flex flex-wrap items-center gap-2">
-          <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[color:var(--text-soft)]">
-            Decision engine
-          </span>
-          <span
-            className={`shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.06em] ${skin.badge}`}
-          >
-            {skin.badgeLabel}
-          </span>
-        </div>
-
+      <div className={`absolute left-0 top-0 z-[1] h-full w-px rounded-l-[9px] ${skin.bar}`} aria-hidden />
+      <div className="relative z-[2] p-3 pl-3.5 sm:p-3.5">
         {band === "idle" ? (
           <p className="text-[11px] leading-snug text-[color:var(--text-soft)]">{idleCopy}</p>
         ) : (
           <>
-            {topSummary ? (
-              <p
-                className="mb-2 line-clamp-2 text-[11px] leading-snug text-[var(--text-main)]/88"
-                title={intentBarTitle ?? topSummary}
-              >
-                {topSummary}
-              </p>
-            ) : null}
-
-            <div
-              className={`core-ai-risk-action-card flex min-w-0 flex-row items-start gap-3 rounded-[10px] border p-2.5 ${skin.actionShell}`}
-            >
-              <div className="min-w-0 flex-1 pr-0.5">
-                <h3
-                  className={`text-[9px] font-extrabold uppercase tracking-[0.16em] ${skin.actionHeading}`}
+            <div className="flex min-w-0 flex-row items-start gap-3">
+              <div className="core-ai-risk-guidance min-w-0 flex-1">
+                <span
+                  className={`core-ai-risk-guidance-label text-[9px] font-semibold uppercase tracking-[0.12em] ${skin.guidanceMuted}`}
                 >
                   What to do
-                </h3>
-                <p className="mt-1.5 line-clamp-2 text-[12px] font-semibold leading-snug text-[var(--text-main)]">
+                </span>
+                <p className="mt-1 line-clamp-3 text-[12px] font-medium leading-snug text-[var(--text-main)]/90">
                   {decisionLine}
                 </p>
               </div>
-
-              {band === "high" ? (
-                <div className={DE_ACTIONS_COL}>
-                  <button
-                    type="button"
-                    className={DE_PRIMARY_HIGH}
-                    onClick={() => {
-                      onPrimaryAction?.();
-                      void onBlockAndReport?.();
-                    }}
-                    disabled={!mail || !onBlockAndReport || actionBusy != null}
+              <div className="openmail-de-rail flex max-w-[12rem] min-w-[7.5rem] shrink-0 flex-col items-end gap-2 border-l border-[var(--border)] pl-3">
+                <span
+                  className={`shrink-0 rounded-md px-2 py-0.5 text-center text-[9px] font-bold uppercase tracking-[0.05em] ${skin.badge}`}
+                >
+                  {skin.badgeLabel}
+                </span>
+                {topSummary ? (
+                  <p
+                    className="w-full text-right text-[11px] leading-snug text-[var(--text-main)]/78 line-clamp-3"
+                    title={intentBarTitle ?? topSummary}
                   >
-                    {actionBusy === "block" ? "Working…" : "Block & report"}
-                  </button>
-                  <button
-                    type="button"
-                    className={DE_SECONDARY}
-                    onClick={() => void onOpenSandbox?.()}
-                    disabled={!mail || !onOpenSandbox || actionBusy != null}
-                  >
-                    {actionBusy === "sandbox" ? "Opening…" : "Open in sandbox"}
-                  </button>
-                  {onMarkSafe ? (
-                    <button
-                      type="button"
-                      className={DE_TERTIARY}
-                      onClick={() => void onMarkSafe()}
-                      disabled={!mail || actionBusy != null}
-                    >
-                      {actionBusy === "safe" ? "Applying…" : "Mark as safe"}
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {band === "medium" ? (
-                <div className={DE_ACTIONS_COL}>
-                  <button
-                    type="button"
-                    className={DE_PRIMARY_MEDIUM}
-                    onClick={() => {
-                      onPrimaryAction?.();
-                      void onOpenSandbox?.();
-                    }}
-                    disabled={!mail || !onOpenSandbox || actionBusy != null}
-                  >
-                    {actionBusy === "sandbox" ? "Opening…" : "Open safely"}
-                  </button>
-                  <button
-                    type="button"
-                    className={DE_SECONDARY}
-                    onClick={() => onArchive?.()}
-                    disabled={!mail || !onArchive || actionBusy != null}
-                  >
-                    Ignore
-                  </button>
-                  {onMarkSafe ? (
-                    <button
-                      type="button"
-                      className={DE_TERTIARY}
-                      onClick={() => void onMarkSafe()}
-                      disabled={!mail || actionBusy != null}
-                    >
-                      {actionBusy === "safe" ? "Applying…" : "Mark as safe"}
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {band === "safe" ? (
-                <div className={DE_ACTIONS_COL}>
-                  <button
-                    type="button"
-                    className={DE_PRIMARY_SAFE}
-                    onClick={() => {
-                      onPrimaryAction?.();
-                      void onQuickReply?.();
-                    }}
-                    disabled={!mail || !onQuickReply || actionBusy != null || quickReplyBusy}
-                  >
-                    {quickReplyBusy ? "Working…" : safePrimaryLabel}
-                  </button>
-                  {safeShowArchive ? (
-                    <button
-                      type="button"
-                      className={DE_SECONDARY}
-                      onClick={() => onArchive?.()}
-                      disabled={!mail || !onArchive || actionBusy != null || quickReplyBusy}
-                    >
-                      Archive
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
+                    {topSummary}
+                  </p>
+                ) : null}
+                {band === "high" ? highActions : null}
+                {band === "medium" ? mediumActions : null}
+                {band === "safe" ? safeActions : null}
+              </div>
             </div>
 
             {hasExpandableDetails ? (
-              <div className="mt-2 border-t border-white/[0.06] pt-2">
+              <div className="mt-3 border-t border-[var(--border)] pt-2">
                 <div className="flex items-center justify-end gap-2">
                   <button
                     type="button"
-                    className="shrink-0 rounded-md px-2 py-1 text-[10px] font-semibold tracking-wide text-[var(--accent)] transition-colors hover:bg-white/[0.06]"
+                    className="shrink-0 rounded-md px-2 py-1 text-[10px] font-medium tracking-wide text-[color:var(--text-soft)] transition-colors hover:bg-white/[0.04] hover:text-[var(--text-main)]"
                     onClick={() => setPreviewExpanded((v) => !v)}
                     aria-expanded={previewExpanded}
                   >

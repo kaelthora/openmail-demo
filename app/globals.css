@@ -1043,28 +1043,25 @@ html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle > d
   opacity: 0.06 !important;
 }
 
-html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-action-card {
-  background: rgba(255, 255, 255, 0.88) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --tw-ring-shadow: 0 0 #0000;
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-guidance {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high .core-ai-risk-action-card h3 {
-  color: #8b4a4a !important;
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high .core-ai-risk-guidance-label {
+  color: rgba(120, 60, 62, 0.75) !important;
 }
 
-html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium .core-ai-risk-action-card h3 {
-  color: #8a6220 !important;
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium .core-ai-risk-guidance-label {
+  color: rgba(120, 85, 28, 0.72) !important;
 }
 
-html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe .core-ai-risk-action-card h3 {
-  color: #3a6b5c !important;
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe .core-ai-risk-guidance-label {
+  color: rgba(45, 95, 82, 0.72) !important;
 }
 
-html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle .core-ai-risk-action-card h3 {
+html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle .core-ai-risk-guidance-label {
   color: var(--text-soft) !important;
 }
 
