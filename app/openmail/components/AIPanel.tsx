@@ -188,7 +188,10 @@ const DE_SECONDARY =
   "openmail-de-secondary-btn inline-flex w-auto max-w-fit shrink-0 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-main)]/82 transition-colors hover:border-white/[0.18] hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/25 disabled:pointer-events-none disabled:opacity-40";
 
 const DE_TERTIARY =
-  "openmail-de-tertiary-link inline-flex w-auto max-w-fit self-start text-left text-[10px] font-medium text-[color:var(--text-soft)] underline decoration-white/20 underline-offset-2 transition-colors hover:text-[var(--text-main)] hover:decoration-white/35 disabled:opacity-40";
+  "openmail-de-tertiary-link inline-flex w-auto max-w-fit text-left text-[10px] font-medium text-[color:var(--text-soft)] underline decoration-white/20 underline-offset-2 transition-colors hover:text-[var(--text-main)] hover:decoration-white/35 disabled:opacity-40";
+
+/** Right-side vertical action column (paired with copy on the left). */
+const DE_ACTIONS_COL = "openmail-de-actions-col flex shrink-0 flex-col items-end justify-start gap-1.5";
 
 function CoreAiRiskCard({
   mail,
@@ -317,39 +320,41 @@ function CoreAiRiskCard({
               </div>
             ) : null}
 
-            <div className={`core-ai-risk-action-card rounded-[10px] border p-2.5 ${skin.actionShell}`}>
-              <h3
-                className={`text-[9px] font-extrabold uppercase tracking-[0.16em] ${skin.actionHeading}`}
-              >
-                What to do
-              </h3>
-              <p className="mt-1.5 line-clamp-2 text-[12px] font-semibold leading-snug text-[var(--text-main)]">
-                {decisionLine}
-              </p>
+            <div
+              className={`core-ai-risk-action-card flex min-w-0 flex-row items-start gap-3 rounded-[10px] border p-2.5 ${skin.actionShell}`}
+            >
+              <div className="min-w-0 flex-1 pr-0.5">
+                <h3
+                  className={`text-[9px] font-extrabold uppercase tracking-[0.16em] ${skin.actionHeading}`}
+                >
+                  What to do
+                </h3>
+                <p className="mt-1.5 line-clamp-2 text-[12px] font-semibold leading-snug text-[var(--text-main)]">
+                  {decisionLine}
+                </p>
+              </div>
 
               {band === "high" ? (
-                <div className="mt-2 flex max-w-fit flex-col items-start gap-1.5">
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      className={DE_PRIMARY_HIGH}
-                      onClick={() => {
-                        onPrimaryAction?.();
-                        void onBlockAndReport?.();
-                      }}
-                      disabled={!mail || !onBlockAndReport || actionBusy != null}
-                    >
-                      {actionBusy === "block" ? "Working…" : "Block & report"}
-                    </button>
-                    <button
-                      type="button"
-                      className={DE_SECONDARY}
-                      onClick={() => void onOpenSandbox?.()}
-                      disabled={!mail || !onOpenSandbox || actionBusy != null}
-                    >
-                      {actionBusy === "sandbox" ? "Opening…" : "Open in sandbox"}
-                    </button>
-                  </div>
+                <div className={DE_ACTIONS_COL}>
+                  <button
+                    type="button"
+                    className={DE_PRIMARY_HIGH}
+                    onClick={() => {
+                      onPrimaryAction?.();
+                      void onBlockAndReport?.();
+                    }}
+                    disabled={!mail || !onBlockAndReport || actionBusy != null}
+                  >
+                    {actionBusy === "block" ? "Working…" : "Block & report"}
+                  </button>
+                  <button
+                    type="button"
+                    className={DE_SECONDARY}
+                    onClick={() => void onOpenSandbox?.()}
+                    disabled={!mail || !onOpenSandbox || actionBusy != null}
+                  >
+                    {actionBusy === "sandbox" ? "Opening…" : "Open in sandbox"}
+                  </button>
                   {onMarkSafe ? (
                     <button
                       type="button"
@@ -364,28 +369,26 @@ function CoreAiRiskCard({
               ) : null}
 
               {band === "medium" ? (
-                <div className="mt-2 flex max-w-fit flex-col items-start gap-1.5">
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      className={DE_PRIMARY_MEDIUM}
-                      onClick={() => {
-                        onPrimaryAction?.();
-                        void onOpenSandbox?.();
-                      }}
-                      disabled={!mail || !onOpenSandbox || actionBusy != null}
-                    >
-                      {actionBusy === "sandbox" ? "Opening…" : "Open safely"}
-                    </button>
-                    <button
-                      type="button"
-                      className={DE_SECONDARY}
-                      onClick={() => onArchive?.()}
-                      disabled={!mail || !onArchive || actionBusy != null}
-                    >
-                      Ignore
-                    </button>
-                  </div>
+                <div className={DE_ACTIONS_COL}>
+                  <button
+                    type="button"
+                    className={DE_PRIMARY_MEDIUM}
+                    onClick={() => {
+                      onPrimaryAction?.();
+                      void onOpenSandbox?.();
+                    }}
+                    disabled={!mail || !onOpenSandbox || actionBusy != null}
+                  >
+                    {actionBusy === "sandbox" ? "Opening…" : "Open safely"}
+                  </button>
+                  <button
+                    type="button"
+                    className={DE_SECONDARY}
+                    onClick={() => onArchive?.()}
+                    disabled={!mail || !onArchive || actionBusy != null}
+                  >
+                    Ignore
+                  </button>
                   {onMarkSafe ? (
                     <button
                       type="button"
@@ -400,7 +403,7 @@ function CoreAiRiskCard({
               ) : null}
 
               {band === "safe" ? (
-                <div className="mt-2 flex max-w-fit flex-wrap items-center gap-1.5">
+                <div className={DE_ACTIONS_COL}>
                   <button
                     type="button"
                     className={DE_PRIMARY_SAFE}
