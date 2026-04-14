@@ -176,19 +176,19 @@ const CORE_RISK_CARD: Record<
 };
 
 const DE_PRIMARY_BASE =
-  "openmail-de-primary-action w-full rounded-xl px-4 py-3.5 text-center text-[15px] font-bold leading-tight tracking-wide shadow-[0_8px_28px_rgba(0,0,0,0.35)] transition-[transform,filter,box-shadow] duration-150 ease-out hover:brightness-110 active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-45";
+  "openmail-de-primary-action inline-flex w-auto max-w-fit shrink-0 items-center justify-center rounded-lg px-3 py-2 text-center text-[13px] font-semibold leading-tight tracking-tight shadow-[0_1px_4px_rgba(0,0,0,0.22)] transition-[transform,filter,box-shadow] duration-150 ease-out hover:brightness-[1.05] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-45";
 
-const DE_PRIMARY_HIGH = `${DE_PRIMARY_BASE} border border-red-400/55 bg-gradient-to-b from-red-500 to-red-700 text-white focus-visible:outline-red-400/50`;
+const DE_PRIMARY_HIGH = `${DE_PRIMARY_BASE} border border-red-500/40 bg-gradient-to-b from-red-600/95 to-red-700 text-white focus-visible:outline-red-400/40`;
 
-const DE_PRIMARY_MEDIUM = `${DE_PRIMARY_BASE} border border-amber-400/55 bg-gradient-to-b from-amber-500 to-amber-700 text-amber-950 focus-visible:outline-amber-400/50`;
+const DE_PRIMARY_MEDIUM = `${DE_PRIMARY_BASE} border border-amber-500/40 bg-gradient-to-b from-amber-500/95 to-amber-700 text-amber-950 focus-visible:outline-amber-400/40`;
 
-const DE_PRIMARY_SAFE = `${DE_PRIMARY_BASE} border border-emerald-400/55 bg-gradient-to-b from-emerald-500 to-emerald-700 text-emerald-950 focus-visible:outline-emerald-400/50`;
+const DE_PRIMARY_SAFE = `${DE_PRIMARY_BASE} border border-emerald-500/40 bg-gradient-to-b from-emerald-500/95 to-emerald-700 text-emerald-950 focus-visible:outline-emerald-400/40`;
 
 const DE_SECONDARY =
-  "openmail-de-secondary-btn w-full rounded-lg border border-white/[0.14] bg-white/[0.05] px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-main)]/88 transition-colors hover:border-white/[0.22] hover:bg-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/25 disabled:pointer-events-none disabled:opacity-40";
+  "openmail-de-secondary-btn inline-flex w-auto max-w-fit shrink-0 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-main)]/82 transition-colors hover:border-white/[0.18] hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/25 disabled:pointer-events-none disabled:opacity-40";
 
 const DE_TERTIARY =
-  "openmail-de-tertiary-link mt-2 w-full text-center text-[10px] font-medium text-[color:var(--text-soft)] underline decoration-white/20 underline-offset-2 transition-colors hover:text-[var(--text-main)] hover:decoration-white/35 disabled:opacity-40";
+  "openmail-de-tertiary-link inline-flex w-auto max-w-fit self-start text-left text-[10px] font-medium text-[color:var(--text-soft)] underline decoration-white/20 underline-offset-2 transition-colors hover:text-[var(--text-main)] hover:decoration-white/35 disabled:opacity-40";
 
 function CoreAiRiskCard({
   mail,
@@ -328,26 +328,28 @@ function CoreAiRiskCard({
               </p>
 
               {band === "high" ? (
-                <div className="mt-2 space-y-2">
-                  <button
-                    type="button"
-                    className={DE_PRIMARY_HIGH}
-                    onClick={() => {
-                      onPrimaryAction?.();
-                      void onBlockAndReport?.();
-                    }}
-                    disabled={!mail || !onBlockAndReport || actionBusy != null}
-                  >
-                    {actionBusy === "block" ? "Working…" : "Block & report"}
-                  </button>
-                  <button
-                    type="button"
-                    className={DE_SECONDARY}
-                    onClick={() => void onOpenSandbox?.()}
-                    disabled={!mail || !onOpenSandbox || actionBusy != null}
-                  >
-                    {actionBusy === "sandbox" ? "Opening…" : "Open in sandbox"}
-                  </button>
+                <div className="mt-2 flex max-w-fit flex-col items-start gap-1.5">
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      className={DE_PRIMARY_HIGH}
+                      onClick={() => {
+                        onPrimaryAction?.();
+                        void onBlockAndReport?.();
+                      }}
+                      disabled={!mail || !onBlockAndReport || actionBusy != null}
+                    >
+                      {actionBusy === "block" ? "Working…" : "Block & report"}
+                    </button>
+                    <button
+                      type="button"
+                      className={DE_SECONDARY}
+                      onClick={() => void onOpenSandbox?.()}
+                      disabled={!mail || !onOpenSandbox || actionBusy != null}
+                    >
+                      {actionBusy === "sandbox" ? "Opening…" : "Open in sandbox"}
+                    </button>
+                  </div>
                   {onMarkSafe ? (
                     <button
                       type="button"
@@ -362,26 +364,28 @@ function CoreAiRiskCard({
               ) : null}
 
               {band === "medium" ? (
-                <div className="mt-2 space-y-2">
-                  <button
-                    type="button"
-                    className={DE_PRIMARY_MEDIUM}
-                    onClick={() => {
-                      onPrimaryAction?.();
-                      void onOpenSandbox?.();
-                    }}
-                    disabled={!mail || !onOpenSandbox || actionBusy != null}
-                  >
-                    {actionBusy === "sandbox" ? "Opening…" : "Open safely"}
-                  </button>
-                  <button
-                    type="button"
-                    className={DE_SECONDARY}
-                    onClick={() => onArchive?.()}
-                    disabled={!mail || !onArchive || actionBusy != null}
-                  >
-                    Ignore
-                  </button>
+                <div className="mt-2 flex max-w-fit flex-col items-start gap-1.5">
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      className={DE_PRIMARY_MEDIUM}
+                      onClick={() => {
+                        onPrimaryAction?.();
+                        void onOpenSandbox?.();
+                      }}
+                      disabled={!mail || !onOpenSandbox || actionBusy != null}
+                    >
+                      {actionBusy === "sandbox" ? "Opening…" : "Open safely"}
+                    </button>
+                    <button
+                      type="button"
+                      className={DE_SECONDARY}
+                      onClick={() => onArchive?.()}
+                      disabled={!mail || !onArchive || actionBusy != null}
+                    >
+                      Ignore
+                    </button>
+                  </div>
                   {onMarkSafe ? (
                     <button
                       type="button"
@@ -396,7 +400,7 @@ function CoreAiRiskCard({
               ) : null}
 
               {band === "safe" ? (
-                <div className="mt-2 space-y-2">
+                <div className="mt-2 flex max-w-fit flex-wrap items-center gap-1.5">
                   <button
                     type="button"
                     className={DE_PRIMARY_SAFE}
