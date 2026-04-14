@@ -1,72 +1,64 @@
 export default function Page() {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-[#020617] via-[#020617] to-[#030b1a] text-white">
+    <div className="h-screen w-full overflow-hidden bg-gradient-to-br from-[#020617] via-[#020617] to-[#030b1a] text-white">
       {/* HERO */}
-      <section className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6">
-        <h1 className="text-6xl md:text-7xl font-semibold">OpenMail</h1>
-        <p className="mt-6 text-xl text-gray-300">
+      <main className="mx-auto flex h-full w-full max-w-5xl flex-col justify-center px-6 py-4">
+        <section className="text-center">
+          <h1 className="text-4xl font-semibold md:text-6xl">OpenMail</h1>
+          <p className="mt-2 text-base text-gray-300 md:text-lg">
           An inbox that thinks before you act.
-        </p>
+          </p>
 
-        <button className="mt-10 px-6 py-3 rounded-lg bg-white text-black font-medium hover:scale-105 transition">
-          Secure my inbox
-        </button>
+          <button className="mt-4 rounded-lg bg-white px-5 py-2 text-sm font-medium text-black transition hover:scale-105">
+            Secure my inbox
+          </button>
 
-        <p className="mt-4 text-sm text-gray-500">
-          No tracking. No data. Ever.
-        </p>
-      </section>
+          <p className="mt-2 text-xs text-gray-500">No tracking. No data. Ever.</p>
+        </section>
 
-      {/* THREAT */}
-      <section className="py-20 md:py-24 px-6 max-w-4xl mx-auto text-left border-t border-white/5">
-        <p className="text-4xl font-medium">
-          You don&apos;t read emails wrong.
-        </p>
-        <p className="text-4xl text-gray-400 mt-2">
-          You get manipulated.
-        </p>
+        {/* THREAT */}
+        <section className="mt-5 border-t border-white/5 pt-4 text-left">
+          <p className="text-xl font-medium md:text-2xl">You don&apos;t read emails wrong.</p>
+          <p className="mt-1 text-xl text-gray-400 md:text-2xl">You get manipulated.</p>
 
-        <div className="mt-10 space-y-2 text-xl text-gray-400">
-          <p>Urgency.</p>
-          <p>Pressure.</p>
-          <p>Authority.</p>
-        </div>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-sm text-gray-400 md:text-base">
+            <p>Urgency.</p>
+            <p>Pressure.</p>
+            <p>Authority.</p>
+          </div>
 
-        <p className="mt-6 text-xl">
-          That&apos;s how scams work.
-        </p>
-      </section>
+          <p className="mt-2 text-sm md:text-base">That&apos;s how scams work.</p>
+        </section>
 
-      {/* IMPACT */}
-      <section className="py-20 md:py-24 text-center border-t border-white/5">
-        <p className="text-5xl font-semibold">
-          OpenMail sees it first.
-        </p>
-      </section>
+        {/* IMPACT */}
+        <section className="mt-4 border-t border-white/5 pt-4 text-center">
+          <p className="text-2xl font-semibold md:text-3xl">OpenMail sees it first.</p>
+        </section>
 
-      {/* AI + HUMAN */}
-      <section className="py-20 md:py-24 text-center space-y-4 border-t border-white/5">
-        <p className="text-2xl">Human instinct.</p>
-        <p className="text-2xl text-gray-400">AI precision.</p>
-        <p className="text-2xl">Working together.</p>
-      </section>
+        {/* AI + HUMAN */}
+        <section className="mt-4 border-t border-white/5 pt-4 text-center">
+          <div className="grid grid-cols-3 gap-2 text-sm md:text-base">
+            <p>Human instinct.</p>
+            <p className="text-gray-400">AI precision.</p>
+            <p>Working together.</p>
+          </div>
+        </section>
 
-      {/* FUNCTION */}
-      <section className="py-20 md:py-24 text-center space-y-2 text-gray-400 border-t border-white/5">
-        <p>Detects scams.</p>
-        <p>Flags manipulation.</p>
-        <p>Stops bad decisions.</p>
-      </section>
+        {/* FUNCTION */}
+        <section className="mt-4 border-t border-white/5 pt-4 text-center text-sm text-gray-400 md:text-base">
+          <div className="grid grid-cols-3 gap-2">
+            <p>Detects scams.</p>
+            <p>Flags manipulation.</p>
+            <p>Stops bad decisions.</p>
+          </div>
+        </section>
 
-      {/* FINAL */}
-      <section className="py-20 md:py-24 text-center border-t border-white/5">
-        <p className="text-3xl">
-          You don&apos;t need a better inbox.
-        </p>
-        <p className="text-5xl font-semibold mt-4">
-          You need protection.
-        </p>
-      </section>
+        {/* FINAL */}
+        <section className="mt-4 border-t border-white/5 pt-4 text-center">
+          <p className="text-xl md:text-2xl">You don&apos;t need a better inbox.</p>
+          <p className="mt-1 text-2xl font-semibold md:text-3xl">You need protection.</p>
+        </section>
+      </main>
     </div>
   );
 }
