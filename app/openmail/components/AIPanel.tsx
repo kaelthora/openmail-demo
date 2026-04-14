@@ -134,35 +134,35 @@ const CORE_RISK_CARD: Record<
   }
 > = {
   high: {
-    border: "border-[3px] border-red-600 shadow-[0_0_40px_rgba(220,38,38,0.35)]",
-    bar: "bg-red-600 shadow-[0_0_16px_rgba(220,38,38,0.65)]",
-    glow: "bg-gradient-to-br from-red-950/80 via-[#1a0505] to-[#0a0505]",
+    border: "border-2 border-rose-800/30 shadow-[0_0_18px_rgba(150,75,80,0.1)]",
+    bar: "bg-rose-800/90 shadow-[0_0_8px_rgba(140,72,78,0.2)]",
+    glow: "bg-gradient-to-br from-rose-950/40 via-[#110d0d] to-[#0c0c0c]",
     badge:
-      "border-red-500 bg-[#450a0a] text-red-50 ring-2 ring-red-500/50",
+      "border-rose-700/28 bg-rose-950/32 text-rose-100/95 ring-1 ring-rose-800/18",
     badgeLabel: "HIGH RISK",
     actionShell:
-      "border-2 border-red-700/90 bg-[#1c0a0a] ring-2 ring-red-900/40",
-    actionHeading: "text-red-100",
+      "border border-rose-800/28 bg-[#151010] ring-1 ring-rose-900/18",
+    actionHeading: "text-rose-200/88",
   },
   medium: {
-    border: "border-amber-500/45 shadow-[0_0_28px_rgba(245,158,11,0.1)]",
-    bar: "bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.35)]",
-    glow: "bg-gradient-to-br from-amber-950/40 via-[#12100a] to-[#0c0c0c]",
+    border: "border-amber-900/28 shadow-[0_0_14px_rgba(160,110,40,0.07)]",
+    bar: "bg-amber-800/85 shadow-[0_0_6px_rgba(150,100,35,0.18)]",
+    glow: "bg-gradient-to-br from-amber-950/32 via-[#100f0a] to-[#0c0c0c]",
     badge:
-      "border-amber-400/50 bg-amber-600/22 text-amber-50 ring-1 ring-amber-400/20",
+      "border-amber-700/35 bg-amber-950/25 text-amber-100/90 ring-1 ring-amber-800/14",
     badgeLabel: "Medium risk",
-    actionShell: "border-amber-500/45 bg-amber-950/28 ring-1 ring-amber-500/15",
-    actionHeading: "text-amber-100/95",
+    actionShell: "border-amber-800/30 bg-amber-950/22 ring-1 ring-amber-900/12",
+    actionHeading: "text-amber-100/88",
   },
   safe: {
-    border: "border-emerald-500/40 shadow-[0_0_24px_rgba(52,211,153,0.08)]",
-    bar: "bg-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.3)]",
-    glow: "bg-gradient-to-br from-emerald-950/35 via-[#0a120e] to-[#0c0c0c]",
+    border: "border-teal-900/22 shadow-[0_0_12px_rgba(35,95,85,0.06)]",
+    bar: "bg-teal-700/80 shadow-[0_0_6px_rgba(32,105,95,0.16)]",
+    glow: "bg-gradient-to-br from-emerald-950/22 via-[#0a0f0d] to-[#0c0c0c]",
     badge:
-      "border-emerald-400/45 bg-emerald-600/20 text-emerald-50 ring-1 ring-emerald-400/18",
+      "border-teal-700/28 bg-emerald-950/22 text-teal-100/90 ring-1 ring-teal-800/12",
     badgeLabel: "Safe",
-    actionShell: "border-emerald-500/40 bg-emerald-950/22 ring-1 ring-emerald-500/12",
-    actionHeading: "text-emerald-100/95",
+    actionShell: "border-teal-800/22 bg-emerald-950/16 ring-1 ring-teal-900/10",
+    actionHeading: "text-teal-100/88",
   },
   idle: {
     border: "border-white/[0.1]",
@@ -176,13 +176,13 @@ const CORE_RISK_CARD: Record<
 };
 
 const DE_PRIMARY_BASE =
-  "openmail-de-primary-action inline-flex w-auto max-w-fit shrink-0 items-center justify-center rounded-lg px-3 py-2 text-center text-[13px] font-semibold leading-tight tracking-tight shadow-[0_1px_4px_rgba(0,0,0,0.22)] transition-[transform,filter,box-shadow] duration-150 ease-out hover:brightness-[1.05] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-45";
+  "openmail-de-primary-action inline-flex w-auto max-w-fit shrink-0 items-center justify-center rounded-lg px-3 py-2 text-center text-[13px] font-semibold leading-tight tracking-tight shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-[transform,filter,box-shadow] duration-150 ease-out hover:brightness-[1.04] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-45";
 
-const DE_PRIMARY_HIGH = `${DE_PRIMARY_BASE} border border-red-500/40 bg-gradient-to-b from-red-600/95 to-red-700 text-white focus-visible:outline-red-400/40`;
+const DE_PRIMARY_HIGH = `${DE_PRIMARY_BASE} openmail-de-primary--high border border-rose-800/28 bg-gradient-to-b from-rose-800 to-rose-900 text-rose-50 focus-visible:outline-rose-400/22`;
 
-const DE_PRIMARY_MEDIUM = `${DE_PRIMARY_BASE} border border-amber-500/40 bg-gradient-to-b from-amber-500/95 to-amber-700 text-amber-950 focus-visible:outline-amber-400/40`;
+const DE_PRIMARY_MEDIUM = `${DE_PRIMARY_BASE} openmail-de-primary--medium border border-amber-800/28 bg-gradient-to-b from-amber-800/95 to-amber-950 text-amber-50 focus-visible:outline-amber-400/22`;
 
-const DE_PRIMARY_SAFE = `${DE_PRIMARY_BASE} border border-emerald-500/40 bg-gradient-to-b from-emerald-500/95 to-emerald-700 text-emerald-950 focus-visible:outline-emerald-400/40`;
+const DE_PRIMARY_SAFE = `${DE_PRIMARY_BASE} openmail-de-primary--safe border border-teal-800/22 bg-gradient-to-b from-teal-700 to-teal-800 text-teal-50 focus-visible:outline-teal-400/22`;
 
 const DE_SECONDARY =
   "openmail-de-secondary-btn inline-flex w-auto max-w-fit shrink-0 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-main)]/82 transition-colors hover:border-white/[0.18] hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/25 disabled:pointer-events-none disabled:opacity-40";
