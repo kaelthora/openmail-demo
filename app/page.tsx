@@ -1,6 +1,6 @@
 export default function Page() {
   return (
-    <div className="min-h-screen max-w-6xl mx-auto bg-gradient-to-br from-[#020617] via-[#020617] to-[#030b1a] text-white">
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#020617] via-[#020617] to-[#030b1a] text-white">
       {/* HERO */}
       <section className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6">
         <h1 className="text-6xl md:text-7xl font-semibold">OpenMail</h1>

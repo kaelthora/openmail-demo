@@ -13,14 +13,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="relative">
-        <div
-          className="fixed inset-0 z-0 pointer-events-none opacity-20"
-          style={{ backgroundImage: "url('/openmail-bg.png')", backgroundSize: "cover", backgroundPosition: "center" }}
-        ></div>
-        <div className="fixed inset-0 z-0 bg-black/40 pointer-events-none"></div>
-
-        <div className="relative z-10">{children}</div>
+      <body className="relative bg-gradient-to-br from-[#020617] via-[#020617] to-[#030b1a] text-white">
+        {children}
       </body>
     </html>
   );
