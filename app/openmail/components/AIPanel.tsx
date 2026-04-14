@@ -243,6 +243,48 @@ function CoreAiRiskCard({
   const idleCopy =
     "Select a message — the Decision engine will flag risk and show one clear action.";
 
+  /** Single-line priority: synced/security summary, else intent (intent bar removed from chrome). */
+  const topSummary = useMemo(() => {
+    const s = snapshot?.trim() ?? "";
+    const intent = intentBarLabel?.trim() ?? "";
+    if (s) return s;
+    if (intent) return intent;
+    return "";
+  }, [snapshot, intentBarLabel]);
+
+  const showIntentInDetails = useMemo(() => {
+    const s = snapshot?.trim() ?? "";
+    const intent = intentBarLabel?.trim() ?? "";
+    return Boolean(intent) && Boolean(s) && intent !== s;
+  }, [snapshot, intentBarLabel]);
+
+  const hasExpandableDetails = useMemo(() => {
+    const s = snapshot?.trim() ?? "";
+    const extraSnapshot =
+      s.length > 110 || (Boolean(s) && showIntentInDetails);
+    return (
+      previewPlain.length > 0 ||
+      Boolean(whyParagraph?.trim()) ||
+      whyBullets.length > 0 ||
+      detectionLines.length > 0 ||
+      extraSnapshot
+    );
+  }, [
+    previewPlain.length,
+    snapshot,
+    whyParagraph,
+    whyBullets.length,
+    detectionLines.length,
+    showIntentInDetails,
+  ]);
+
+  const snapshotFullInDetails = useMemo(() => {
+    const t = snapshot?.trim() ?? "";
+    if (!t) return false;
+    if (t !== topSummary.trim()) return true;
+    return t.length > 110;
+  }, [snapshot, topSummary]);
+
   const [previewExpanded, setPreviewExpanded] = useState(false);
   useEffect(() => {
     setPreviewExpanded(false);
@@ -302,22 +344,13 @@ function CoreAiRiskCard({
           <p className="text-[11px] leading-snug text-[color:var(--text-soft)]">{idleCopy}</p>
         ) : (
           <>
-            {intentBarLabel ? (
-              <div
-                className={`core-ai-risk-intent-bar mb-2 flex min-h-7 max-h-7 items-center gap-2 overflow-hidden rounded-md border px-2 py-0 ${
-                  isLight
-                    ? "border-black/[0.08] bg-white/[0.88] shadow-[0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-md"
-                    : "border-white/[0.06] bg-black/30"
-                }`}
-                title={intentBarTitle ?? intentBarLabel}
+            {topSummary ? (
+              <p
+                className="mb-2 line-clamp-2 text-[11px] leading-snug text-[var(--text-main)]/88"
+                title={intentBarTitle ?? topSummary}
               >
-                <span className="shrink-0 text-[8px] font-extrabold uppercase tracking-[0.14em] text-[color:var(--text-soft)]">
-                  Intent
-                </span>
-                <span className="min-w-0 truncate text-[11px] font-semibold leading-tight text-[var(--text-main)]">
-                  {intentBarLabel}
-                </span>
-              </div>
+                {topSummary}
+              </p>
             ) : null}
 
             <div
@@ -429,88 +462,89 @@ function CoreAiRiskCard({
               ) : null}
             </div>
 
-            {(() => {
-              const showPreviewSection =
-                previewPlain.length > 0 ||
-                Boolean(snapshot?.trim()) ||
-                Boolean(whyParagraph?.trim()) ||
-                whyBullets.length > 0 ||
-                detectionLines.length > 0;
-              if (!showPreviewSection) return null;
-
-              const collapsedText =
-                previewPlain ||
-                snapshot ||
-                whyParagraph ||
-                whyBullets[0] ||
-                detectionLines[0] ||
-                "";
-              const heading = previewPlain.length > 0 ? "Message preview" : "Context";
-
-              return (
-                <div className="mt-2 border-t border-white/[0.06] pt-2">
-                  <div className="mb-1 flex items-center justify-between gap-2">
-                    <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
-                      {heading}
-                    </span>
-                    <button
-                      type="button"
-                      className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--accent)] transition-colors hover:bg-white/[0.06]"
-                      onClick={() => setPreviewExpanded((v) => !v)}
-                      aria-expanded={previewExpanded}
-                    >
-                      {previewExpanded ? "Show less" : "Expand"}
-                    </button>
-                  </div>
-                  {!previewExpanded ? (
-                    <p className="line-clamp-2 whitespace-pre-wrap break-words text-[11px] leading-snug text-[var(--text-main)]/88">
-                      {collapsedText}
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {previewPlain ? (
-                        <p className="whitespace-pre-wrap break-words text-[11px] leading-snug text-[var(--text-main)]/88">
+            {hasExpandableDetails ? (
+              <div className="mt-2 border-t border-white/[0.06] pt-2">
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    className="shrink-0 rounded-md px-2 py-1 text-[10px] font-semibold tracking-wide text-[var(--accent)] transition-colors hover:bg-white/[0.06]"
+                    onClick={() => setPreviewExpanded((v) => !v)}
+                    aria-expanded={previewExpanded}
+                  >
+                    {previewExpanded ? "Hide details" : "AI details"}
+                  </button>
+                </div>
+                {previewExpanded ? (
+                  <div className="mt-2 space-y-2">
+                    {showIntentInDetails && intentBarLabel ? (
+                      <div>
+                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                          Intent
+                        </div>
+                        <p className="mt-0.5 text-[11px] font-semibold leading-snug text-[var(--text-main)]">
+                          {intentBarLabel}
+                        </p>
+                      </div>
+                    ) : null}
+                    {previewPlain ? (
+                      <div>
+                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                          Message preview
+                        </div>
+                        <p className="mt-0.5 whitespace-pre-wrap break-words text-[11px] leading-snug text-[var(--text-main)]/88">
                           {previewPlain}
                         </p>
-                      ) : null}
-                      {snapshot && (!previewPlain || !previewPlain.includes(snapshot.slice(0, 12))) ? (
-                        <p className="text-[10px] font-semibold leading-snug text-[var(--text-main)]/92">
+                      </div>
+                    ) : null}
+                    {snapshot?.trim() &&
+                    snapshotFullInDetails &&
+                    (!previewPlain || !previewPlain.includes(snapshot.slice(0, 12))) ? (
+                      <div>
+                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                          Summary
+                        </div>
+                        <p className="mt-0.5 text-[11px] font-semibold leading-snug text-[var(--text-main)]/92">
                           {snapshot}
                         </p>
-                      ) : null}
-                      {whyParagraph ? (
-                        <p className="text-[10px] leading-snug text-[var(--text-main)]/85">{whyParagraph}</p>
-                      ) : null}
-                      {whyBullets.length > 0 ? (
-                        <ul className="list-disc space-y-0.5 pl-3.5 text-[10px] leading-snug text-[color:var(--text-soft)]">
-                          {whyBullets.slice(0, 4).map((b, i) => (
-                            <li key={`${i}-${b.slice(0, 36)}`}>{b}</li>
+                      </div>
+                    ) : null}
+                    {whyParagraph ? (
+                      <div>
+                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                          Context
+                        </div>
+                        <p className="mt-0.5 text-[10px] leading-snug text-[var(--text-main)]/85">{whyParagraph}</p>
+                      </div>
+                    ) : null}
+                    {whyBullets.length > 0 ? (
+                      <ul className="list-disc space-y-0.5 pl-3.5 text-[10px] leading-snug text-[color:var(--text-soft)]">
+                        {whyBullets.slice(0, 4).map((b, i) => (
+                          <li key={`${i}-${b.slice(0, 36)}`}>{b}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {detectionLines.length > 0 ? (
+                      <div
+                        className={`openmail-ai-signals-box rounded-[8px] border px-2 py-1.5 ${
+                          isLight
+                            ? "border-black/[0.08] bg-white/[0.88] shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-md"
+                            : "border-white/[0.06] bg-black/25"
+                        }`}
+                      >
+                        <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                          Signals
+                        </div>
+                        <ul className="mt-1 list-disc space-y-0.5 pl-3 text-[10px] text-[var(--text-main)]/85 marker:text-[color:var(--text-soft)]">
+                          {detectionLines.map((line, i) => (
+                            <li key={i}>{line}</li>
                           ))}
                         </ul>
-                      ) : null}
-                      {detectionLines.length > 0 ? (
-                        <div
-                          className={`openmail-ai-signals-box rounded-[8px] border px-2 py-1.5 ${
-                            isLight
-                              ? "border-black/[0.08] bg-white/[0.88] shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-md"
-                              : "border-white/[0.06] bg-black/25"
-                          }`}
-                        >
-                          <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
-                            Signals
-                          </div>
-                          <ul className="mt-1 list-disc space-y-0.5 pl-3 text-[10px] text-[var(--text-main)]/85 marker:text-[color:var(--text-soft)]">
-                            {detectionLines.map((line, i) => (
-                              <li key={i}>{line}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </>
         )}
       </div>
