@@ -19,6 +19,8 @@ import {
   saveStoredAccount,
   clearStoredAccount,
   loadStoredAccount,
+  loadAccountSession,
+  saveAccountSession,
 } from "@/lib/mailAccountStorage";
 import { extractEmail } from "@/lib/mailAddress";
 import type { EmailListItem } from "@/lib/emailListTypes";
@@ -156,7 +158,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   );
   const [mailsHydrated] = useState(true);
   const [account, setAccount] = useState<OpenMailAccountProfile | null>(() =>
-    OPENMAIL_DEMO_MODE ? null : loadStoredAccount()
+    OPENMAIL_DEMO_MODE ? null : loadStoredAccount() ?? loadAccountSession()
   );
   const [accountHydrated] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -178,12 +180,16 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   const silentInboxFetchRef = useRef<AbortController | null>(null);
   /** Coalesce burst `new_mail` events to one refresh per animation frame (instant vs fixed delay). */
   const sseInboxRefreshRafRef = useRef<number | null>(null);
+  /** Suppress stale `/api/mail/fetch` results (parallel / overlapping requests) from clobbering inbox UI. */
+  const mailListFetchGenRef = useRef(0);
 
   const refreshMailsFromApi = useCallback(async (opts?: {
     silent?: boolean;
     accountId?: ServerInboxScope;
   }) => {
     if (OPENMAIL_DEMO_MODE) return { ok: true };
+    const gen = ++mailListFetchGenRef.current;
+    const stale = () => gen !== mailListFetchGenRef.current;
     const silent = opts?.silent === true;
     if (!silent) {
       setMailsFetchError(null);
@@ -216,23 +222,27 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
           isAccountNotFoundInboxMessage(msg) ||
           (scope === "legacy" && isLegacyImapEnvMissingMessage(msg));
         if (onboardingFetch) {
+          if (stale()) return { ok: true, setupRequired: true };
           setInboxSetupRequired(true);
           setMailsFetchError(null);
           setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
           setSelectedMailId("");
           return { ok: true, setupRequired: true };
         }
+        if (stale()) return { ok: false, error: msg };
         setInboxSetupRequired(false);
         if (!silent) setMailsFetchError(msg);
         return { ok: false, error: msg };
       }
       if (data.setupRequired === true) {
+        if (stale()) return { ok: true, setupRequired: true };
         setInboxSetupRequired(true);
         setMailsFetchError(null);
         setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
         setSelectedMailId("");
         return { ok: true, setupRequired: true };
       }
+      if (stale()) return { ok: true };
       setInboxSetupRequired(false);
       const incoming = (data.emails ?? []).map(emailApiItemToMailItem);
       setMails((prev) => {
@@ -252,12 +262,13 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       if (silent && aborted) {
         return { ok: true };
       }
+      if (stale()) return { ok: false };
       setInboxSetupRequired(false);
       const msg = e instanceof Error ? e.message : "Could not load messages";
       if (!silent) setMailsFetchError(msg);
       return { ok: false, error: msg };
     } finally {
-      if (!silent) setMailsLoading(false);
+      if (!silent && gen === mailListFetchGenRef.current) setMailsLoading(false);
     }
   }, [inboxScope]);
 
@@ -390,8 +401,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         }
         setInboxScope(next);
       } catch {
-        setServerMailAccounts([]);
-        setInboxScope("legacy");
+        /* Transient `/api/accounts` failure: do not force legacy scope — that retriggers mail fetch and can wipe a hydrated inbox. */
       }
     })();
   }, []);
@@ -413,6 +423,12 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       /* private mode */
     }
   }, [mails, selectedMailId, inboxScope]);
+
+  useEffect(() => {
+    if (OPENMAIL_DEMO_MODE) return;
+    if (account) saveAccountSession(account);
+    else saveAccountSession(null);
+  }, [account]);
 
   /** Server push when IMAP watcher ingests new mail (SSE). Ingest already ran analyzeEmail; rAF-coalesced silent fetch runs full client pipeline same frame. */
   useEffect(() => {
@@ -463,11 +479,13 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
 
   const saveAccount = useCallback((profile: OpenMailAccountProfile) => {
     saveStoredAccount(profile);
+    saveAccountSession(profile);
     setAccount(profile);
   }, []);
 
   const disconnectAccount = useCallback(() => {
     clearStoredAccount();
+    saveAccountSession(null);
     setAccount(null);
     setSyncError(null);
     if (OPENMAIL_DEMO_MODE) {

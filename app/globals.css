@@ -517,7 +517,7 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-app .core-reply-de
   line-height: var(--openmail-readable-line-height-tight);
 }
 
-/* Main shell — soft glass (sidebar, inbox column, decision engine only) */
+/* Main shell — soft glass (sidebar, inbox column, AI Decision Core only) */
 html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card {
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -718,11 +718,21 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--i
   background: var(--openmail-chip-idle) !important;
   border: 1px solid var(--border) !important;
   color: var(--text-soft) !important;
+  opacity: 0.8 !important;
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--idle:hover {
   background: rgba(0, 0, 0, 0.03) !important;
+  opacity: 0.92 !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--selected {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  color: #111111 !important;
+  opacity: 1 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--idle {
