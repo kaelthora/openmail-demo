@@ -511,6 +511,16 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-app {
   font-feature-settings: "kern" 1, "liga" 1;
 }
 
+/* Subconscious L→R flow toward AI column: barely-there warmth on the left, cooler on the right */
+html[data-openmail-theme="soft-intelligence-light"] .openmail-app > div:nth-child(2) {
+  background: linear-gradient(
+    90deg,
+    #eceff6 0%,
+    var(--bg-main) 46%,
+    #e4eaf2 100%
+  );
+}
+
 html[data-openmail-theme="soft-intelligence-light"][data-openmail-density="comfortable"] {
   --openmail-layout-gap: 1.3rem;
 }
