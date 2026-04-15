@@ -72,7 +72,7 @@ type MainLayoutProps = {
   onRiskReportPhishing?: () => void | Promise<void>;
   onRiskOpenSandbox?: () => void | Promise<void>;
   onRiskMarkSafe?: () => void | Promise<void>;
-  /** High-risk Decision Engine primary: block sender + report phishing in one step. */
+  /** High-risk AI Decision Core primary: block sender + report phishing in one step. */
   onDecisionBlockAndReport?: () => void | Promise<void>;
   /** Safe / medium secondary: archive message (Ignore or Archive label in UI). */
   onDecisionArchive?: () => void | Promise<void>;

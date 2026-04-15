@@ -9,7 +9,17 @@ import {
   useState,
   type RefObject,
 } from "react";
-import { ChevronDown, ChevronRight, Star } from "lucide-react";
+import {
+  AlertTriangle,
+  Bot,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  Inbox,
+  MinusCircle,
+  Star,
+  type LucideIcon,
+} from "lucide-react";
 import { createPortal } from "react-dom";
 import type { OpenmailSmartFolderId, ProcessedMail } from "@/lib/mailTypes";
 import { EmailBodyWithLinks } from "@/components/EmailBodyWithLinks";
@@ -49,6 +59,14 @@ import {
   OPENMAIL_SMART_LIST_TABS,
   type OpenmailSmartListTabId,
 } from "@/lib/openmailListSmartTabs";
+
+const SMART_INBOX_TAB_ICON: Record<OpenmailSmartListTabId, LucideIcon> = {
+  inbox: Inbox,
+  urgent: AlertTriangle,
+  awaiting: Clock,
+  low_priority: MinusCircle,
+  auto_handled: Bot,
+};
 
 export type AutoResolvedMailboxEntry = {
   id: string;
@@ -1000,6 +1018,7 @@ export function MailPanel({
               >
                 {OPENMAIL_SMART_LIST_TABS.map((tab) => {
                   const active = smartListTab === tab.id;
+                  const TabIcon = SMART_INBOX_TAB_ICON[tab.id];
                   return (
                     <button
                       key={tab.id}
@@ -1007,7 +1026,7 @@ export function MailPanel({
                       role="tab"
                       aria-selected={active}
                       title={tab.description}
-                      className={`relative shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-[color,box-shadow] duration-200 ${
+                      className={`relative inline-flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-[color,box-shadow] duration-200 ${
                         active
                           ? "text-[var(--text-main)] shadow-[0_0_14px_var(--accent-soft),inset_0_-2px_0_0_var(--accent)]"
                           : "text-[color:var(--text-soft)] hover:text-[var(--text-main)]/95"
@@ -1017,6 +1036,11 @@ export function MailPanel({
                         setFavoritesFolderFilter("all");
                       }}
                     >
+                      <TabIcon
+                        className="h-3 w-3 shrink-0 opacity-90"
+                        strokeWidth={2}
+                        aria-hidden
+                      />
                       {tab.label}
                     </button>
                   );
@@ -1026,7 +1050,7 @@ export function MailPanel({
                   role="tab"
                   aria-selected={smartListTab === "favorites"}
                   title="Messages inside your favorite folders."
-                  className={`relative shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-[color,box-shadow] duration-200 ${
+                  className={`relative inline-flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-[color,box-shadow] duration-200 ${
                     smartListTab === "favorites"
                       ? "text-[var(--text-main)] shadow-[0_0_14px_var(--accent-soft),inset_0_-2px_0_0_var(--accent)]"
                       : "text-[color:var(--text-soft)] hover:text-[var(--text-main)]/95"
@@ -1036,6 +1060,11 @@ export function MailPanel({
                     setFavoritesOpen(true);
                   }}
                 >
+                  <Star
+                    className="h-3 w-3 shrink-0 opacity-90"
+                    strokeWidth={2}
+                    aria-hidden
+                  />
                   Favorites
                 </button>
               </div>

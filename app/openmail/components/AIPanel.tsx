@@ -107,7 +107,7 @@ function coreWhyMattersBullets(mail: ProcessedMail | null, paragraph: string): s
 
 const CORE_ONE_TAP_CTA = "Proceed";
 
-/** One scannable line for the Decision Engine action area. */
+/** One scannable line for the AI Decision Core action area. */
 function decisionEngineHeadline(band: CoreRiskBand): string {
   if (band === "high") {
     return "Stop the threat first—use sandbox only if you still need to inspect content.";
@@ -236,7 +236,7 @@ function CoreAiRiskCard({
   );
   const previewPlain = useMemo(() => coreMailPreviewPlain(mail), [mail]);
   const idleCopy =
-    "Select a message — the Decision engine will flag risk and show one clear action.";
+    "Select a message — the AI Decision Core will flag risk and show one clear action.";
 
   /** Single-line priority: synced/security summary, else intent (intent bar removed from chrome). */
   const topSummary = useMemo(() => {
@@ -820,7 +820,7 @@ export function AIPanel({
     <aside className="openmail-ai-panel card flex min-h-0 min-w-0 flex-[0.65] flex-col overflow-hidden border border-white/[0.07] bg-[color:var(--openmail-ai-chrome)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_36px_var(--openmail-shadow-accent-xs)] sm:p-6 sm:pt-7">
       <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
         <h2 className="mb-4 shrink-0 text-base font-semibold tracking-tight text-[color:var(--text-main)] sm:text-lg">
-          Decision engine
+          AI Decision Core
         </h2>
 
         <div
@@ -889,10 +889,10 @@ export function AIPanel({
                           <button
                             key={tone}
                             type="button"
-                            className={`openmail-reply-tone-chip rounded-full border px-3 py-1 text-[11px] font-medium transition-[background-color,border-color,box-shadow,color] duration-150 ease-out ${
+                            className={`openmail-reply-tone-chip rounded-full border px-3 py-1 text-[11px] font-medium transition-[background-color,border-color,box-shadow,color,opacity] duration-150 ease-out ${
                               replyTone === tone
-                                ? "openmail-reply-tone-chip--selected border-[var(--accent)]/50 bg-[var(--accent-soft)]/35 text-[color:var(--text-main)]"
-                                : "openmail-reply-tone-chip--idle border-[var(--border)] bg-transparent text-[color:var(--text-soft)] hover:border-[var(--accent)]/35 hover:bg-white/[0.04]"
+                                ? "openmail-reply-tone-chip--selected border-[var(--accent)]/70 bg-[var(--accent-soft)]/55 text-[color:var(--text-main)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)] opacity-100 brightness-[1.03]"
+                                : "openmail-reply-tone-chip--idle border-[var(--border)] bg-transparent text-[color:var(--text-soft)] opacity-[0.78] hover:border-[var(--accent)]/35 hover:bg-white/[0.04] hover:opacity-95"
                             }`}
                             onClick={() => onToneChange(tone)}
                           >
