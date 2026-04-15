@@ -548,12 +548,12 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card {
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column.card {
   background: var(--openmail-list-outer) !important;
-  border: 1px solid rgba(15, 23, 42, 0.09);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 18px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 0 0 1px rgba(15, 23, 42, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   transition: var(--openmail-transition);
@@ -563,13 +563,13 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column.card {
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card {
   background: var(--openmail-ai-chrome) !important;
-  border: 1px solid rgba(15, 23, 42, 0.2);
+  border: 1px solid rgba(15, 23, 42, 0.24);
   border-radius: 18px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 0 0 1px rgba(15, 23, 42, 0.08),
-    0 2px 8px rgba(15, 23, 42, 0.1),
-    0 0 20px rgba(51, 65, 85, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 0 0 1px rgba(15, 23, 42, 0.1),
+    0 3px 10px rgba(15, 23, 42, 0.12),
+    0 0 26px rgba(30, 41, 59, 0.14);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   padding: 20px 22px !important;
@@ -797,13 +797,23 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-stack {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-pane {
-  border: 1px solid rgba(15, 23, 42, 0.12) !important;
-  background: #f8fafc !important;
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  background: #ffffff !important;
   border-radius: var(--openmail-card-radius);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 1px 3px rgba(15, 23, 42, 0.06),
-    0 0 0 1px rgba(15, 23, 42, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 1px 3px rgba(15, 23, 42, 0.07),
+    0 0 0 1px rgba(15, 23, 42, 0.07);
+}
+
+/* AI Core: message preview body — slightly higher contrast (risk chrome untouched) */
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-ai-panel
+  .core-ai-risk-guidance
+  > section:first-of-type
+  > p {
+  color: #030712 !important;
+  font-weight: 500;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--idle {
@@ -1001,67 +1011,108 @@ html[data-openmail-theme="soft-intelligence-light"]
   border-left: 4px solid #16a34a !important;
 }
 
+/* Inbox: high-risk tint only when selected — non-selected stays neutral + rail */
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row.openmail-card-accent--blocked.group.card:not(.openmail-thread-row--selected),
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row.openmail-card-accent--blocked.card:not(.openmail-situation-row--selected) {
+  background: #ffffff !important;
+}
+
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > div.openmail-thread-row.openmail-card-accent--urgent.group.card:not(.openmail-thread-row--selected),
+html[data-openmail-theme="soft-intelligence-light"]
+  .openmail-thread-list
+  > button.openmail-situation-row.openmail-card-accent--urgent.card:not(.openmail-situation-row--selected) {
+  background: #ffffff !important;
+}
+
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.group.card {
-  background: rgba(22, 163, 74, 0.08) !important;
-  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  background: rgba(22, 163, 74, 0.11) !important;
+  border: 1px solid rgba(22, 101, 52, 0.22) !important;
   border-left: 4px solid #16a34a !important;
-  box-shadow: var(--openmail-inbox-row-shadow-selected) !important;
+  box-shadow:
+    0 0 0 1px rgba(22, 163, 74, 0.12),
+    var(--openmail-inbox-row-shadow-selected) !important;
   transform: translateY(0) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--blocked.group.card {
-  background: rgba(254, 202, 202, 0.85) !important;
+  background: rgba(254, 226, 226, 0.38) !important;
+  border: 1px solid rgba(220, 38, 38, 0.22) !important;
   border-left: 4px solid #dc2626 !important;
+  box-shadow:
+    0 0 0 1px rgba(220, 38, 38, 0.1),
+    var(--openmail-inbox-row-shadow-selected) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--urgent.group.card {
-  background: rgba(254, 215, 170, 0.88) !important;
+  background: rgba(255, 237, 213, 0.45) !important;
+  border: 1px solid rgba(234, 88, 12, 0.22) !important;
   border-left: 4px solid #ea580c !important;
+  box-shadow:
+    0 0 0 1px rgba(234, 88, 12, 0.1),
+    var(--openmail-inbox-row-shadow-selected) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--safe.group.card {
-  background: rgba(187, 247, 208, 0.65) !important;
+  background: rgba(220, 252, 231, 0.48) !important;
+  border: 1px solid rgba(22, 101, 52, 0.18) !important;
   border-left: 4px solid #16a34a !important;
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.12),
+    var(--openmail-inbox-row-shadow-selected) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.group.card:hover {
-  background: rgba(22, 163, 74, 0.1) !important;
+  background: rgba(22, 163, 74, 0.14) !important;
   transform: translateY(-2px) !important;
-  box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
+  box-shadow:
+    0 0 0 1px rgba(22, 163, 74, 0.14),
+    var(--openmail-inbox-row-shadow-hover) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--blocked.group.card:hover {
-  background: rgba(252, 165, 165, 0.75) !important;
+  background: rgba(254, 226, 226, 0.48) !important;
   transform: translateY(-2px) !important;
-  box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
+  box-shadow:
+    0 0 0 1px rgba(220, 38, 38, 0.12),
+    var(--openmail-inbox-row-shadow-hover) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--urgent.group.card:hover {
-  background: rgba(254, 200, 154, 0.78) !important;
+  background: rgba(255, 237, 213, 0.55) !important;
   transform: translateY(-2px) !important;
-  box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
+  box-shadow:
+    0 0 0 1px rgba(234, 88, 12, 0.12),
+    var(--openmail-inbox-row-shadow-hover) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--safe.group.card:hover {
-  background: rgba(167, 243, 208, 0.72) !important;
+  background: rgba(220, 252, 231, 0.58) !important;
   transform: translateY(-2px) !important;
-  box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.14),
+    var(--openmail-inbox-row-shadow-hover) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-sender {
@@ -1120,32 +1171,46 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row--selected.card {
-  background: rgba(22, 163, 74, 0.08) !important;
-  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  background: rgba(22, 163, 74, 0.11) !important;
+  border: 1px solid rgba(22, 101, 52, 0.22) !important;
   border-left: 4px solid #16a34a !important;
-  box-shadow: var(--openmail-inbox-row-shadow-selected) !important;
+  box-shadow:
+    0 0 0 1px rgba(22, 163, 74, 0.12),
+    var(--openmail-inbox-row-shadow-selected) !important;
   transform: translateY(0) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row--selected.openmail-card-accent--blocked.card {
-  background: rgba(254, 202, 202, 0.85) !important;
+  background: rgba(254, 226, 226, 0.38) !important;
+  border: 1px solid rgba(220, 38, 38, 0.22) !important;
   border-left: 4px solid #dc2626 !important;
+  box-shadow:
+    0 0 0 1px rgba(220, 38, 38, 0.1),
+    var(--openmail-inbox-row-shadow-selected) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row--selected.openmail-card-accent--urgent.card {
-  background: rgba(254, 215, 170, 0.88) !important;
+  background: rgba(255, 237, 213, 0.45) !important;
+  border: 1px solid rgba(234, 88, 12, 0.22) !important;
   border-left: 4px solid #ea580c !important;
+  box-shadow:
+    0 0 0 1px rgba(234, 88, 12, 0.1),
+    var(--openmail-inbox-row-shadow-selected) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row--selected.openmail-card-accent--safe.card {
-  background: rgba(187, 247, 208, 0.65) !important;
+  background: rgba(220, 252, 231, 0.48) !important;
+  border: 1px solid rgba(22, 101, 52, 0.18) !important;
   border-left: 4px solid #16a34a !important;
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.12),
+    var(--openmail-inbox-row-shadow-selected) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
@@ -1164,10 +1229,10 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-app .card:hover {
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card:hover {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 0 0 1px rgba(15, 23, 42, 0.1),
-    0 3px 12px rgba(15, 23, 42, 0.12),
-    0 0 28px rgba(30, 41, 59, 0.14);
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 0 0 1px rgba(15, 23, 42, 0.12),
+    0 4px 14px rgba(15, 23, 42, 0.14),
+    0 0 30px rgba(30, 41, 59, 0.16);
   transform: translateY(-1px);
 }
 
