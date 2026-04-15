@@ -393,9 +393,9 @@ html[data-openmail-theme="soft-intelligence-light"] {
 
 html[data-openmail-theme="soft-intelligence-light"] body {
   background:
-    radial-gradient(120% 90% at 10% 0%, rgba(220, 234, 252, 0.5) 0%, transparent 62%),
-    radial-gradient(120% 90% at 88% 8%, rgba(232, 239, 251, 0.52) 0%, transparent 60%),
-    linear-gradient(180deg, #edf2f8 0%, #e8eef5 100%);
+    radial-gradient(circle at 20% 20%, rgba(0, 120, 255, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(255, 0, 100, 0.06), transparent 40%),
+    #f6f8fb;
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -439,43 +439,43 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-app .core-reply-de
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card {
-  background: var(--openmail-sidebar-surface);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--openmail-card-radius);
   box-shadow: var(--openmail-card-shadow);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column.card {
-  background: var(--openmail-list-outer) !important;
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.7) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--openmail-card-radius);
   box-shadow: var(--openmail-card-shadow);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card {
-  background: var(--openmail-ai-chrome) !important;
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.7) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--openmail-card-radius);
   box-shadow: var(--openmail-card-shadow);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 20px 22px !important;
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-surface.card {
-  background: var(--openmail-list-inner);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--openmail-card-radius);
   box-shadow: var(--openmail-card-shadow);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 18px !important;
   transition: var(--openmail-transition);
 }
@@ -541,11 +541,11 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-list-search-input 
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-state-card.card {
-  background: rgba(255, 255, 255, 0.62) !important;
-  border-color: rgba(255, 255, 255, 0.28) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  border-color: rgba(0, 0, 0, 0.05) !important;
   box-shadow: 0 10px 26px rgba(123, 141, 166, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Inbox onboarding — Manual setup: html theme is source of truth (fixes React vs document drift) */
@@ -707,13 +707,13 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list {
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > button.card,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > div.group.card {
-  background: rgba(255, 255, 255, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.26) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
   box-shadow: 0 8px 20px rgba(123, 141, 166, 0.08);
   border-radius: 12px;
   transition: var(--openmail-transition);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > button.card:hover,
