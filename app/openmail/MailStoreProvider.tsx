@@ -19,6 +19,8 @@ import {
   saveStoredAccount,
   clearStoredAccount,
   loadStoredAccount,
+  loadAccountSession,
+  saveAccountSession,
 } from "@/lib/mailAccountStorage";
 import { extractEmail } from "@/lib/mailAddress";
 import type { EmailListItem } from "@/lib/emailListTypes";
@@ -156,7 +158,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   );
   const [mailsHydrated] = useState(true);
   const [account, setAccount] = useState<OpenMailAccountProfile | null>(() =>
-    OPENMAIL_DEMO_MODE ? null : loadStoredAccount()
+    OPENMAIL_DEMO_MODE ? null : loadStoredAccount() ?? loadAccountSession()
   );
   const [accountHydrated] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -463,11 +465,13 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
 
   const saveAccount = useCallback((profile: OpenMailAccountProfile) => {
     saveStoredAccount(profile);
+    saveAccountSession(profile);
     setAccount(profile);
   }, []);
 
   const disconnectAccount = useCallback(() => {
     clearStoredAccount();
+    saveAccountSession(null);
     setAccount(null);
     setSyncError(null);
     if (OPENMAIL_DEMO_MODE) {
@@ -477,6 +481,11 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     }
     void refreshMailsFromApi();
   }, [refreshMailsFromApi]);
+
+  useEffect(() => {
+    if (OPENMAIL_DEMO_MODE) return;
+    saveAccountSession(account);
+  }, [account]);
 
   const markMailRead = useCallback((id: string) => {
     setMails((prev) => {

@@ -2,6 +2,7 @@ import type { OpenMailAccountProfile } from "@/lib/mailAccountConfig";
 
 const STORAGE_KEY = "openmail-account-v1";
 const STORAGE_MULTI_KEY = "openmail-accounts-v1";
+const SESSION_ACCOUNT_KEY = "openmail-account-session-v1";
 
 /** All localStorage keys used for account / IMAP credentials (extend if OAuth is added). */
 const ACCOUNT_AUTH_STORAGE_KEYS = [
@@ -53,5 +54,33 @@ export function clearStoredAccount(): void {
   if (typeof window === "undefined") return;
   for (const key of ACCOUNT_AUTH_STORAGE_KEYS) {
     localStorage.removeItem(key);
+  }
+}
+
+/** Active account profile for the tab session (survives MailStoreProvider remount). */
+export function loadAccountSession(): OpenMailAccountProfile | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(SESSION_ACCOUNT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as OpenMailAccountProfile;
+    if (!parsed || typeof parsed !== "object") return null;
+    if (typeof parsed.id !== "string" || typeof parsed.email !== "string") return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function saveAccountSession(profile: OpenMailAccountProfile | null): void {
+  if (typeof window === "undefined") return;
+  if (!profile) {
+    sessionStorage.removeItem(SESSION_ACCOUNT_KEY);
+    return;
+  }
+  try {
+    sessionStorage.setItem(SESSION_ACCOUNT_KEY, JSON.stringify(profile));
+  } catch {
+    /* quota / private mode */
   }
 }
