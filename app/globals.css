@@ -412,15 +412,15 @@ html[data-openmail-theme="soft-intelligence"] .openmail-app .core-ai-risk-card--
 
 /* ========== OpenMail — Soft Intelligence Light (premium: layered surfaces, calm contrast) ========== */
 html[data-openmail-theme="soft-intelligence-light"] {
-  --bg-main: #f6f8fb;
-  --bg-surface: rgba(250, 252, 255, 0.78);
-  --border: rgba(0, 0, 0, 0.06);
+  --bg-main: #e8edf4;
+  --bg-surface: rgba(252, 253, 255, 0.92);
+  --border: rgba(15, 23, 42, 0.1);
   --accent: #64748b;
   --accent-soft: rgba(100, 116, 139, 0.12);
-  --text-main: #1a1d21;
-  --text-soft: rgba(53, 65, 81, 0.63);
-  --openmail-text-tertiary: rgba(53, 65, 81, 0.45);
-  --openmail-secondary-surface: rgba(255, 255, 255, 0.56);
+  --text-main: #0c1017;
+  --text-soft: rgba(100, 116, 139, 0.55);
+  --openmail-text-tertiary: rgba(100, 116, 139, 0.4);
+  --openmail-secondary-surface: rgba(255, 255, 255, 0.82);
   --openmail-shadow-accent-xs: rgba(132, 148, 171, 0.04);
   --openmail-shadow-accent-sm: rgba(132, 148, 171, 0.08);
   --openmail-shadow-accent-md: rgba(132, 148, 171, 0.1);
@@ -435,36 +435,36 @@ html[data-openmail-theme="soft-intelligence-light"] {
   --openmail-cta-text: #f8fafc;
   --openmail-readable-line-height: 1.68;
   --openmail-readable-line-height-tight: 1.58;
-  --openmail-sidebar-surface: rgba(255, 255, 255, 0.6);
-  --openmail-list-outer: rgba(255, 255, 255, 0.58);
-  --openmail-list-inner: rgba(255, 255, 255, 0.6);
-  --openmail-ai-chrome: rgba(255, 255, 255, 0.62);
-  --openmail-surface-elevated: rgba(255, 255, 255, 0.66);
-  --openmail-chip-idle: rgba(255, 255, 255, 0.58);
-  --openmail-topnav-bg: rgba(245, 249, 255, 0.56);
-  --openmail-settings-panel-bg: rgba(255, 255, 255, 0.62);
-  --openmail-input-bg: rgba(255, 255, 255, 0.56);
-  --openmail-nav-popover-bg: rgba(255, 255, 255, 0.7);
+  --openmail-sidebar-surface: rgba(255, 255, 255, 0.9);
+  --openmail-list-outer: rgba(255, 255, 255, 0.88);
+  --openmail-list-inner: rgba(255, 255, 255, 0.92);
+  --openmail-ai-chrome: rgba(255, 255, 255, 0.9);
+  --openmail-surface-elevated: rgba(255, 255, 255, 0.94);
+  --openmail-chip-idle: rgba(255, 255, 255, 0.85);
+  --openmail-topnav-bg: rgba(248, 250, 253, 0.88);
+  --openmail-settings-panel-bg: rgba(255, 255, 255, 0.92);
+  --openmail-input-bg: rgba(255, 255, 255, 0.88);
+  --openmail-nav-popover-bg: rgba(255, 255, 255, 0.94);
   --openmail-risk-red: #b86b6b;
   --openmail-risk-amber: #c49252;
   --openmail-risk-emerald: #4a8878;
   --openmail-card-radius: 12px;
   --openmail-card-shadow:
-    0 10px 28px rgba(90, 105, 130, 0.06),
-    0 0 0 1px rgba(0, 0, 0, 0.02);
+    0 10px 28px rgba(90, 105, 130, 0.08),
+    0 0 0 1px rgba(15, 23, 42, 0.07);
   --openmail-card-elevated-shadow:
-    0 6px 20px rgba(90, 105, 130, 0.07),
-    0 0 0 1px rgba(0, 0, 0, 0.03);
+    0 6px 20px rgba(90, 105, 130, 0.09),
+    0 0 0 1px rgba(15, 23, 42, 0.08);
   --openmail-transition: all 0.15s ease;
   /* Portaled mail hover preview — light (opaque surface, sharp text; no glass) */
-  --openmail-mail-hover-bg: rgba(255, 255, 255, 0.95);
-  --openmail-mail-hover-border: rgba(0, 0, 0, 0.08);
+  --openmail-mail-hover-bg: rgba(255, 255, 255, 0.98);
+  --openmail-mail-hover-border: rgba(15, 23, 42, 0.11);
   --openmail-mail-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   --openmail-mail-hover-divider: rgba(0, 0, 0, 0.08);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] body {
-  background: radial-gradient(circle at 20% 20%, #f3f6fb, #e8edf5 40%, #dde3ec 100%);
+  background: radial-gradient(circle at 20% 20%, #e9eef6, #dfe6f0 40%, #d0d9e6 100%);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -519,10 +519,17 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-app .core-reply-de
 
 /* Main shell — soft glass (sidebar, inbox column, AI Decision Core only) */
 html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.93) 0%,
+    rgba(246, 249, 253, 0.88) 100%
+  );
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 18px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 32px rgba(15, 23, 42, 0.045),
+    0 2px 10px rgba(15, 23, 42, 0.032);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   transition: var(--openmail-transition);
@@ -531,10 +538,17 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column.card {
-  background: rgba(255, 255, 255, 0.55) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(245, 248, 252, 0.86) 100%
+  ) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 18px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 8px 32px rgba(15, 23, 42, 0.045),
+    0 2px 10px rgba(15, 23, 42, 0.032);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   transition: var(--openmail-transition);
@@ -543,10 +557,18 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column.card {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card {
-  background: rgba(255, 255, 255, 0.55) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(236, 241, 248, 0.9) 100%
+  ) !important;
+  border: 1px solid rgba(15, 23, 42, 0.13);
   border-radius: 18px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 0 0 1px rgba(15, 23, 42, 0.035),
+    0 10px 36px rgba(15, 23, 42, 0.055),
+    0 2px 10px rgba(15, 23, 42, 0.038);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: 20px 22px !important;
@@ -561,24 +583,50 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card::bef
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.4), transparent 40%);
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.38) 0%,
+    rgba(255, 255, 255, 0) 36%
+  );
   pointer-events: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-surface.card {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.97) 0%,
+    rgba(250, 252, 255, 0.91) 100%
+  );
+  border: 1px solid rgba(15, 23, 42, 0.09);
   border-radius: var(--openmail-card-radius);
-  box-shadow: var(--openmail-card-shadow);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 6px 22px rgba(15, 23, 42, 0.04),
+    0 1px 6px rgba(15, 23, 42, 0.028);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   padding: 18px !important;
   transition: var(--openmail-transition);
 }
 
+html[data-openmail-theme="soft-intelligence-light"] .openmail-list-surface.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0) 32%
+  );
+  pointer-events: none;
+}
+
 html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="true"] {
-  background: rgba(255, 255, 255, 0.58) !important;
-  border-color: rgba(0, 0, 0, 0.06) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
   border-radius: 10px;
   box-shadow: 0 4px 14px rgba(100, 118, 145, 0.07);
   color: var(--text-main) !important;
@@ -642,7 +690,7 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-list-section-title
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-search-input {
   background: var(--openmail-secondary-surface) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid var(--border) !important;
   border-radius: 10px;
   box-shadow: 0 3px 12px rgba(100, 118, 145, 0.05);
   backdrop-filter: blur(10px);
@@ -651,8 +699,8 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-list-search-input 
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-state-card.card {
-  background: rgba(255, 255, 255, 0.7) !important;
-  border-color: rgba(0, 0, 0, 0.05) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
   box-shadow: var(--openmail-card-shadow);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -693,8 +741,8 @@ html[data-openmail-theme="soft-dark"] .openmail-inbox-onboarding-retry {
 
 /** AI suggestion chip list — light glass, no dark panel */
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-suggestions-glass {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 12px;
   padding: 10px 10px 10px 8px;
   backdrop-filter: blur(12px);
@@ -708,10 +756,12 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-stack {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-pane {
-  border-color: var(--border) !important;
-  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.11) !important;
+  background: linear-gradient(180deg, #f7fafd 0%, #eef2f8 100%) !important;
   border-radius: var(--openmail-card-radius);
-  box-shadow: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1px 5px rgba(15, 23, 42, 0.045);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--idle {
@@ -775,10 +825,12 @@ html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--best-
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-de-secondary-btn {
-  border-color: rgba(0, 0, 0, 0.07) !important;
-  background: rgba(248, 250, 252, 0.95) !important;
-  color: rgba(55, 65, 81, 0.92) !important;
-  box-shadow: 0 1px 2px rgba(90, 105, 130, 0.05);
+  border-color: rgba(15, 23, 42, 0.11) !important;
+  background: rgba(241, 245, 250, 0.98) !important;
+  color: rgba(30, 41, 59, 0.94) !important;
+  box-shadow:
+    0 1px 2px rgba(90, 105, 130, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-de-secondary-btn:hover {
@@ -1114,31 +1166,39 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-reading-dialog {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--emphasis:not(:disabled) {
-  background: rgba(0, 0, 0, 0.04) !important;
-  color: rgba(0, 0, 0, 0.88) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: none;
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
   border-radius: 10px;
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--emphasis:not(:disabled):hover {
-  background: rgba(0, 0, 0, 0.06) !important;
+  background: rgba(15, 23, 42, 0.08) !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 14px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   filter: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--ready:not(:disabled) {
   background: linear-gradient(135deg, #4ade80, #22c55e) !important;
   color: #ffffff !important;
-  border-color: rgba(34, 197, 94, 0.25) !important;
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.18) !important;
+  border-color: rgba(21, 128, 61, 0.35) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 2px 10px rgba(22, 163, 74, 0.22) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--ready:not(:disabled):hover {
   transform: translateY(-0.5px);
-  box-shadow: 0 3px 12px rgba(34, 197, 94, 0.22) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.38) inset,
+    0 3px 14px rgba(22, 163, 74, 0.26) !important;
   filter: none;
 }
 
@@ -1250,25 +1310,31 @@ html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-intent-bar {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high .openmail-de-primary--high {
-  border-color: color-mix(in srgb, var(--openmail-risk-red) 32%, transparent) !important;
+  border-color: color-mix(in srgb, var(--openmail-risk-red) 42%, rgba(15, 23, 42, 0.12)) !important;
   background-image: linear-gradient(to bottom, #9f5c5c, #7d4848) !important;
   color: #fdf7f7 !important;
-  box-shadow: 0 1px 4px rgba(90, 44, 46, 0.1) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 2px 8px rgba(90, 44, 46, 0.14) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium .openmail-de-primary--medium {
-  border-color: color-mix(in srgb, var(--openmail-risk-amber) 30%, transparent) !important;
+  border-color: color-mix(in srgb, var(--openmail-risk-amber) 40%, rgba(15, 23, 42, 0.1)) !important;
   background-image: linear-gradient(to bottom, #a87a32, #8a6528) !important;
   color: #fdfaf5 !important;
-  box-shadow: 0 1px 4px rgba(100, 72, 28, 0.1) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.16) inset,
+    0 2px 8px rgba(100, 72, 28, 0.14) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe .openmail-de-primary--safe {
-  border-color: rgba(45, 105, 92, 0.22) !important;
+  border-color: rgba(35, 95, 82, 0.32) !important;
   background-image: linear-gradient(to bottom, #3d7565, #2f5d50) !important;
   border-radius: 10px !important;
   color: #f4faf8 !important;
-  box-shadow: 0 1px 5px rgba(35, 95, 82, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.16) inset,
+    0 2px 8px rgba(35, 95, 82, 0.16) !important;
   transition: var(--openmail-transition) !important;
 }
 
