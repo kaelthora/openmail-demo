@@ -9,6 +9,7 @@ import {
   useState,
   type RefObject,
 } from "react";
+import { ChevronDown, ChevronRight, Star } from "lucide-react";
 import { createPortal } from "react-dom";
 import type { OpenmailSmartFolderId, ProcessedMail } from "@/lib/mailTypes";
 import { EmailBodyWithLinks } from "@/components/EmailBodyWithLinks";
@@ -120,8 +121,20 @@ type MailPanelProps = {
 
 type ListDensity = "compact" | "comfortable";
 type SortBy = "date" | "subject";
+type InboxFilterTabId = OpenmailSmartListTabId | "favorites";
+type FavoritesFolderFilter = "all" | string;
 
 const HOVER_PREVIEW_DELAY_MS = 150;
+const FAVORITE_FOLDERS_KEY = "openmail-inbox-favorite-folders-v1";
+
+function prettifyFolderLabel(raw: string): string {
+  if (!raw) return "Unknown";
+  return raw
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 function listRowRiskBadgeLevel(mail: ProcessedMail): SecurityRiskLevel {
   const band = getMailAiRiskBand(mail);
@@ -662,8 +675,11 @@ export function MailPanel({
   const { setOrderedMailIds, onRowPointerEnter, onRowPointerLeave, onListScroll } =
     useAttentionEngine();
   const [search, setSearch] = useState("");
-  const [smartListTab, setSmartListTab] =
-    useState<OpenmailSmartListTabId>("inbox");
+  const [smartListTab, setSmartListTab] = useState<InboxFilterTabId>("inbox");
+  const [favoriteFolders, setFavoriteFolders] = useState<string[]>([]);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [favoritesFolderFilter, setFavoritesFolderFilter] =
+    useState<FavoritesFolderFilter>("all");
   const [density, setDensity] = useState<ListDensity>("comfortable");
   const [sortBy, setSortBy] = useState<SortBy>("date");
   const showSituationFeed = folderLabel === "Inbox";
@@ -671,6 +687,31 @@ export function MailPanel({
   useEffect(() => {
     if (folderLabel !== "Inbox") setSmartListTab("inbox");
   }, [folderLabel]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(FAVORITE_FOLDERS_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+      const next = parsed
+        .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+        .map((v) => v.trim());
+      if (next.length > 0) setFavoriteFolders(Array.from(new Set(next)));
+    } catch {
+      /* ignore malformed local data */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(FAVORITE_FOLDERS_KEY, JSON.stringify(favoriteFolders));
+    } catch {
+      /* private mode */
+    }
+  }, [favoriteFolders]);
 
   const autoHandledMailIds = useMemo(() => {
     const ids = new Set<string>();
@@ -707,8 +748,27 @@ export function MailPanel({
     return mails.filter((mail) => mailSearchBlob(mail).includes(q));
   }, [mails, search]);
 
+  const availableFolderIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const mail of mails) {
+      if (typeof mail.folder === "string" && mail.folder.trim().length > 0) {
+        set.add(mail.folder.trim());
+      }
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  }, [mails]);
+
+  const favoriteFolderSet = useMemo(() => new Set(favoriteFolders), [favoriteFolders]);
+
   const mailsAfterSmartTab = useMemo(() => {
     if (folderLabel !== "Inbox") return mailsAfterSearch;
+    if (smartListTab === "favorites") {
+      if (favoriteFolders.length === 0) return [];
+      if (favoritesFolderFilter === "all") {
+        return mailsAfterSearch.filter((mail) => favoriteFolderSet.has(mail.folder));
+      }
+      return mailsAfterSearch.filter((mail) => mail.folder === favoritesFolderFilter);
+    }
     return filterMailsForSmartTab(
       mailsAfterSearch,
       smartListTab,
@@ -719,6 +779,9 @@ export function MailPanel({
     mailsAfterSearch,
     smartListTab,
     autoHandledMailIds,
+    favoriteFolders.length,
+    favoriteFolderSet,
+    favoritesFolderFilter,
   ]);
 
   const displayedMails = useMemo(() => {
@@ -736,6 +799,28 @@ export function MailPanel({
     smartListTab !== "inbox" &&
     mailsAfterSearch.length > 0 &&
     displayedMails.length === 0;
+  const emptyFromFavoritesSetup =
+    folderLabel === "Inbox" &&
+    smartListTab === "favorites" &&
+    favoriteFolders.length === 0;
+
+  useEffect(() => {
+    if (smartListTab !== "favorites") return;
+    if (favoritesFolderFilter === "all") return;
+    if (!favoriteFolderSet.has(favoritesFolderFilter)) {
+      setFavoritesFolderFilter("all");
+    }
+  }, [smartListTab, favoritesFolderFilter, favoriteFolderSet]);
+
+  const toggleFavoriteFolder = useCallback((folder: string) => {
+    setFavoriteFolders((prev) => {
+      const has = prev.includes(folder);
+      if (has) {
+        return prev.filter((f) => f !== folder);
+      }
+      return [...prev, folder];
+    });
+  }, []);
 
   const threadSituations = useMemo(() => {
     const base = buildThreadSituations(displayedMails, {
@@ -907,31 +992,128 @@ export function MailPanel({
             Matches subject, sender, AI risk, and intent tags.
           </p>
           {folderLabel === "Inbox" ? (
-            <div
-              className="flex gap-0.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              role="tablist"
-              aria-label="Smart inbox views"
-            >
-              {OPENMAIL_SMART_LIST_TABS.map((tab) => {
-                const active = smartListTab === tab.id;
-                return (
+            <div className="space-y-2">
+              <div
+                className="flex gap-0.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                role="tablist"
+                aria-label="Smart inbox views"
+              >
+                {OPENMAIL_SMART_LIST_TABS.map((tab) => {
+                  const active = smartListTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      title={tab.description}
+                      className={`relative shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-[color,box-shadow] duration-200 ${
+                        active
+                          ? "text-[var(--text-main)] shadow-[0_0_14px_var(--accent-soft),inset_0_-2px_0_0_var(--accent)]"
+                          : "text-[color:var(--text-soft)] hover:text-[var(--text-main)]/95"
+                      }`}
+                      onClick={() => {
+                        setSmartListTab(tab.id);
+                        setFavoritesFolderFilter("all");
+                      }}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={smartListTab === "favorites"}
+                  title="Messages inside your favorite folders."
+                  className={`relative shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-[color,box-shadow] duration-200 ${
+                    smartListTab === "favorites"
+                      ? "text-[var(--text-main)] shadow-[0_0_14px_var(--accent-soft),inset_0_-2px_0_0_var(--accent)]"
+                      : "text-[color:var(--text-soft)] hover:text-[var(--text-main)]/95"
+                  }`}
+                  onClick={() => {
+                    setSmartListTab("favorites");
+                    setFavoritesOpen(true);
+                  }}
+                >
+                  Favorites
+                </button>
+              </div>
+
+              {smartListTab === "favorites" ? (
+                <div className="rounded-[10px] border border-[var(--border)] bg-[var(--bg-main)] p-2">
                   <button
-                    key={tab.id}
                     type="button"
-                    role="tab"
-                    aria-selected={active}
-                    title={tab.description}
-                    className={`relative shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-[color,box-shadow] duration-200 ${
-                      active
-                        ? "text-[var(--text-main)] shadow-[0_0_14px_var(--accent-soft),inset_0_-2px_0_0_var(--accent)]"
-                        : "text-[color:var(--text-soft)] hover:text-[var(--text-main)]/95"
-                    }`}
-                    onClick={() => setSmartListTab(tab.id)}
+                    className="flex w-full items-center justify-between gap-2 rounded-[8px] px-1.5 py-1 text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--text-soft)] transition-colors hover:bg-white/[0.04] hover:text-[var(--text-main)]"
+                    onClick={() => setFavoritesOpen((v) => !v)}
+                    aria-expanded={favoritesOpen}
                   >
-                    {tab.label}
+                    <span>Favorite folders</span>
+                    {favoritesOpen ? (
+                      <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+                    )}
                   </button>
-                );
-              })}
+                  {favoritesOpen ? (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          className={`rounded-md border px-2 py-1 text-[10px] transition-colors ${
+                            favoritesFolderFilter === "all"
+                              ? "border-[var(--accent)]/45 bg-[var(--accent-soft)]/30 text-[var(--text-main)]"
+                              : "border-[var(--border)] text-[color:var(--text-soft)] hover:text-[var(--text-main)]"
+                          }`}
+                          onClick={() => setFavoritesFolderFilter("all")}
+                        >
+                          All favorites
+                        </button>
+                        {favoriteFolders.map((folder) => (
+                          <button
+                            key={`fav-filter-${folder}`}
+                            type="button"
+                            className={`rounded-md border px-2 py-1 text-[10px] transition-colors ${
+                              favoritesFolderFilter === folder
+                                ? "border-[var(--accent)]/45 bg-[var(--accent-soft)]/30 text-[var(--text-main)]"
+                                : "border-[var(--border)] text-[color:var(--text-soft)] hover:text-[var(--text-main)]"
+                            }`}
+                            onClick={() => setFavoritesFolderFilter(folder)}
+                          >
+                            {prettifyFolderLabel(folder)}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="max-h-[8.5rem] space-y-1 overflow-y-auto pr-0.5">
+                        {availableFolderIds.map((folder) => {
+                          const selected = favoriteFolderSet.has(folder);
+                          return (
+                            <button
+                              key={`folder-star-${folder}`}
+                              type="button"
+                              className="flex w-full items-center justify-between rounded-md border border-[var(--border)] px-2 py-1 text-left text-[11px] text-[var(--text-main)] transition-colors hover:bg-white/[0.04]"
+                              onClick={() => toggleFavoriteFolder(folder)}
+                            >
+                              <span className="truncate">{prettifyFolderLabel(folder)}</span>
+                              <span
+                                aria-label={selected ? "Unfavorite folder" : "Favorite folder"}
+                                className={`ml-2 ${selected ? "text-amber-300" : "text-[color:var(--text-soft)]"}`}
+                              >
+                                <Star
+                                  className="h-3.5 w-3.5"
+                                  strokeWidth={1.7}
+                                  fill={selected ? "currentColor" : "none"}
+                                  aria-hidden
+                                />
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           ) : null}
           <div className="flex flex-wrap items-center gap-2">
@@ -1108,11 +1290,17 @@ export function MailPanel({
                       !listToolbar
                     }
                     emptyTitle={
-                      emptyFromSmartTabOnly ? "No messages in this tab" : undefined
+                      emptyFromFavoritesSetup
+                        ? "No favorite folders yet"
+                        : emptyFromSmartTabOnly
+                          ? "No messages in this tab"
+                          : undefined
                     }
                     emptyDetail={
-                      emptyFromSmartTabOnly
-                        ? "Try another tab, or choose Inbox to see everything that matches your search."
+                      emptyFromFavoritesSetup
+                        ? "Open Favorites and star folders to pin them here."
+                        : emptyFromSmartTabOnly
+                          ? "Try another tab, or choose Inbox to see everything that matches your search."
                         : undefined
                     }
                   />

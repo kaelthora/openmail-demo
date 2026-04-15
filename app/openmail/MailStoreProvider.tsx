@@ -18,6 +18,7 @@ import { isAccountConfigured } from "@/lib/mailAccountConfig";
 import {
   saveStoredAccount,
   clearStoredAccount,
+  loadStoredAccount,
 } from "@/lib/mailAccountStorage";
 import { extractEmail } from "@/lib/mailAddress";
 import type { EmailListItem } from "@/lib/emailListTypes";
@@ -38,6 +39,32 @@ import {
 import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
 
 const INBOX_SCOPE_KEY = "openmail-inbox-scope-v1";
+const INBOX_CACHE_KEY = "openmail-inbox-cache-v1";
+
+type InboxSessionCache = {
+  mails: MailItem[];
+  selectedMailId: string;
+  inboxScope: ServerInboxScope;
+};
+
+function loadInboxSessionCache(): InboxSessionCache | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(INBOX_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<InboxSessionCache>;
+    if (!parsed || !Array.isArray(parsed.mails)) return null;
+    const selected =
+      typeof parsed.selectedMailId === "string" ? parsed.selectedMailId : "";
+    const scope =
+      typeof parsed.inboxScope === "string" && parsed.inboxScope.length > 0
+        ? (parsed.inboxScope as ServerInboxScope)
+        : "legacy";
+    return { mails: parsed.mails, selectedMailId: selected, inboxScope: scope };
+  } catch {
+    return null;
+  }
+}
 
 /** After loading `/api/accounts`, keep scope valid so mail fetch never uses a removed id. */
 function reconcileInboxScopeAfterAccountListLoad(
@@ -117,10 +144,20 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   const { display } = useOpenmailPreferences();
   const smartNotificationsEnabledRef = useRef(display.smartNotifications);
   smartNotificationsEnabledRef.current = display.smartNotifications;
-  const [mails, setMails] = useState<MailItem[]>([]);
-  const [selectedMailId, setSelectedMailId] = useState("");
+  const cached = useMemo(
+    () => (OPENMAIL_DEMO_MODE ? null : loadInboxSessionCache()),
+    []
+  );
+  const [mails, setMails] = useState<MailItem[]>(() =>
+    OPENMAIL_DEMO_MODE ? [] : cached?.mails ?? []
+  );
+  const [selectedMailId, setSelectedMailId] = useState(
+    OPENMAIL_DEMO_MODE ? "" : cached?.selectedMailId ?? ""
+  );
   const [mailsHydrated] = useState(true);
-  const [account, setAccount] = useState<OpenMailAccountProfile | null>(null);
+  const [account, setAccount] = useState<OpenMailAccountProfile | null>(() =>
+    OPENMAIL_DEMO_MODE ? null : loadStoredAccount()
+  );
   const [accountHydrated] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -130,7 +167,9 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   const [serverMailAccounts, setServerMailAccounts] = useState<
     ServerMailAccountSummary[]
   >([]);
-  const [inboxScope, setInboxScope] = useState<ServerInboxScope>("legacy");
+  const [inboxScope, setInboxScope] = useState<ServerInboxScope>(
+    OPENMAIL_DEMO_MODE ? "legacy" : cached?.inboxScope ?? "legacy"
+  );
 
   const mailsRef = useRef(mails);
   mailsRef.current = mails;
@@ -327,8 +366,6 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       setSelectedMailId("");
       return;
     }
-    setMails([]);
-    setSelectedMailId("");
     void (async () => {
       try {
         const r = await fetch("/api/accounts");
@@ -363,6 +400,19 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     if (OPENMAIL_DEMO_MODE) return;
     void refreshMailsFromApi();
   }, [inboxScope, refreshMailsFromApi]);
+
+  /** Persist current inbox/session snapshot so remounts (e.g. opening settings) rehydrate instantly. */
+  useEffect(() => {
+    if (OPENMAIL_DEMO_MODE) return;
+    try {
+      sessionStorage.setItem(
+        INBOX_CACHE_KEY,
+        JSON.stringify({ mails, selectedMailId, inboxScope } satisfies InboxSessionCache)
+      );
+    } catch {
+      /* private mode */
+    }
+  }, [mails, selectedMailId, inboxScope]);
 
   /** Server push when IMAP watcher ingests new mail (SSE). Ingest already ran analyzeEmail; rAF-coalesced silent fetch runs full client pipeline same frame. */
   useEffect(() => {
