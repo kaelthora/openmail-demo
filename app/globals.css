@@ -410,69 +410,73 @@ html[data-openmail-theme="soft-intelligence"] .openmail-app .core-ai-risk-card--
   }
 }
 
-/* ========== OpenMail — Soft Intelligence Light (premium: layered surfaces, calm contrast) ========== */
+/* ========== OpenMail — Soft Intelligence Light (high-contrast, decision-focused) ========== */
 html[data-openmail-theme="soft-intelligence-light"] {
-  --bg-main: #e8edf4;
-  --bg-surface: rgba(252, 253, 255, 0.92);
-  --border: rgba(15, 23, 42, 0.1);
-  --accent: #64748b;
-  --accent-soft: rgba(100, 116, 139, 0.12);
-  --text-main: #0c1017;
-  --text-soft: rgba(100, 116, 139, 0.55);
-  --openmail-text-tertiary: rgba(100, 116, 139, 0.4);
-  --openmail-secondary-surface: rgba(255, 255, 255, 0.82);
-  --openmail-shadow-accent-xs: rgba(132, 148, 171, 0.04);
-  --openmail-shadow-accent-sm: rgba(132, 148, 171, 0.08);
-  --openmail-shadow-accent-md: rgba(132, 148, 171, 0.1);
-  --openmail-shadow-accent-ring: rgba(132, 148, 171, 0.14);
-  --openmail-border-accent-strong: rgba(100, 116, 139, 0.22);
-  --openmail-panel-inset: rgba(100, 116, 139, 0.08);
-  --openmail-focus-border: rgba(100, 116, 139, 0.35);
-  --openmail-focus-ring: rgba(100, 116, 139, 0.12);
-  --openmail-focus-glow: rgba(100, 116, 139, 0.08);
-  --openmail-cta-glow: rgba(100, 116, 139, 0.2);
-  --openmail-cta-fill: #64748b;
+  --bg-main: #d4dbe6;
+  --bg-surface: #f1f4f9;
+  --border: rgba(15, 23, 42, 0.14);
+  --accent: #475569;
+  --accent-soft: rgba(71, 85, 105, 0.14);
+  --text-main: #070a0f;
+  --text-soft: rgba(15, 23, 42, 0.48);
+  --openmail-text-tertiary: rgba(15, 23, 42, 0.36);
+  --openmail-secondary-surface: #f8fafc;
+  --openmail-shadow-accent-xs: rgba(51, 65, 85, 0.06);
+  --openmail-shadow-accent-sm: rgba(51, 65, 85, 0.1);
+  --openmail-shadow-accent-md: rgba(51, 65, 85, 0.12);
+  --openmail-shadow-accent-ring: rgba(51, 65, 85, 0.18);
+  --openmail-border-accent-strong: rgba(51, 65, 85, 0.28);
+  --openmail-panel-inset: rgba(51, 65, 85, 0.1);
+  --openmail-focus-border: rgba(51, 65, 105, 0.42);
+  --openmail-focus-ring: rgba(51, 65, 105, 0.16);
+  --openmail-focus-glow: rgba(51, 65, 105, 0.1);
+  --openmail-cta-glow: rgba(30, 41, 59, 0.28);
+  --openmail-cta-fill: #334155;
   --openmail-cta-text: #f8fafc;
   --openmail-readable-line-height: 1.68;
   --openmail-readable-line-height-tight: 1.58;
-  --openmail-sidebar-surface: rgba(255, 255, 255, 0.9);
-  --openmail-list-outer: rgba(255, 255, 255, 0.88);
-  --openmail-list-inner: rgba(255, 255, 255, 0.92);
-  --openmail-ai-chrome: rgba(255, 255, 255, 0.9);
-  --openmail-surface-elevated: rgba(255, 255, 255, 0.94);
-  --openmail-chip-idle: rgba(255, 255, 255, 0.85);
-  --openmail-topnav-bg: rgba(248, 250, 253, 0.88);
-  --openmail-settings-panel-bg: rgba(255, 255, 255, 0.92);
-  --openmail-input-bg: rgba(255, 255, 255, 0.88);
-  --openmail-nav-popover-bg: rgba(255, 255, 255, 0.94);
-  --openmail-risk-red: #b86b6b;
-  --openmail-risk-amber: #c49252;
-  --openmail-risk-emerald: #4a8878;
+  --openmail-sidebar-surface: #eef1f7;
+  --openmail-list-outer: #f6f8fc;
+  --openmail-list-inner: #fafbfd;
+  --openmail-ai-chrome: #d8e3f0;
+  --openmail-surface-elevated: #ffffff;
+  --openmail-chip-idle: #f1f5f9;
+  --openmail-topnav-bg: #e6ecf4;
+  --openmail-settings-panel-bg: #f4f6fa;
+  --openmail-input-bg: #ffffff;
+  --openmail-nav-popover-bg: #ffffff;
+  --openmail-risk-red: #b91c1c;
+  --openmail-risk-amber: #c2410c;
+  --openmail-risk-emerald: #047857;
   --openmail-card-radius: 12px;
   --openmail-card-shadow:
-    0 10px 28px rgba(90, 105, 130, 0.08),
-    0 0 0 1px rgba(15, 23, 42, 0.07);
+    0 1px 3px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(15, 23, 42, 0.1);
   --openmail-card-elevated-shadow:
-    0 6px 20px rgba(90, 105, 130, 0.09),
-    0 0 0 1px rgba(15, 23, 42, 0.08);
+    0 2px 8px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(15, 23, 42, 0.11);
   --openmail-transition: all 0.15s ease;
   /* Portaled mail hover preview — light (opaque surface, sharp text; no glass) */
-  --openmail-mail-hover-bg: rgba(255, 255, 255, 0.98);
-  --openmail-mail-hover-border: rgba(15, 23, 42, 0.11);
-  --openmail-mail-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --openmail-mail-hover-divider: rgba(0, 0, 0, 0.08);
-  /* Inbox column — lighter mail rows (does not affect AI panel) */
+  --openmail-mail-hover-bg: #ffffff;
+  --openmail-mail-hover-border: rgba(15, 23, 42, 0.14);
+  --openmail-mail-hover-shadow:
+    0 2px 10px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(15, 23, 42, 0.1);
+  --openmail-mail-hover-divider: rgba(15, 23, 42, 0.1);
+  /* Inbox rows — flat, low dominance vs AI Core */
   --openmail-inbox-row-shadow:
-    0 2px 10px rgba(15, 23, 42, 0.022),
-    0 0 0 1px rgba(15, 23, 42, 0.032);
-  --openmail-inbox-row-shadow-hover: 0 5px 14px rgba(15, 23, 42, 0.042);
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(15, 23, 42, 0.08);
+  --openmail-inbox-row-shadow-hover:
+    0 2px 6px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(15, 23, 42, 0.1);
   --openmail-inbox-row-shadow-selected:
-    0 3px 12px rgba(15, 23, 42, 0.03),
-    0 0 0 1px rgba(15, 23, 42, 0.038);
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.1);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] body {
-  background: radial-gradient(circle at 20% 20%, #e9eef6, #dfe6f0 40%, #d0d9e6 100%);
+  background: var(--bg-main);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -494,7 +498,7 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-hover-preview
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-hover-preview > p {
-  color: rgba(0, 0, 0, 0.85);
+  color: rgba(15, 23, 42, 0.92);
 }
 
 .openmail-mail-hover-preview-snippet {
@@ -511,16 +515,6 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-app {
   font-feature-settings: "kern" 1, "liga" 1;
 }
 
-/* Subconscious L→R flow toward AI column: barely-there warmth on the left, cooler on the right */
-html[data-openmail-theme="soft-intelligence-light"] .openmail-app > div:nth-child(2) {
-  background: linear-gradient(
-    90deg,
-    #eceff6 0%,
-    var(--bg-main) 46%,
-    #e4eaf2 100%
-  );
-}
-
 html[data-openmail-theme="soft-intelligence-light"][data-openmail-density="comfortable"] {
   --openmail-layout-gap: 1.3rem;
 }
@@ -529,67 +523,55 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-app p,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app li {
   line-height: var(--openmail-readable-line-height);
   letter-spacing: 0.01em;
+  color: rgba(15, 23, 42, 0.88);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app .core-reply-decision-surface {
   line-height: var(--openmail-readable-line-height-tight);
 }
 
-/* Main shell — soft glass (sidebar, inbox column, AI Decision Core only) */
+/* Main shell — solid surfaces, crisp edges (light: high contrast) */
 html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.93) 0%,
-    rgba(246, 249, 253, 0.88) 100%
-  );
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: var(--openmail-sidebar-surface);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 18px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.72),
-    0 8px 32px rgba(15, 23, 42, 0.045),
-    0 2px 10px rgba(15, 23, 42, 0.032);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 1px 3px rgba(15, 23, 42, 0.07),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition: var(--openmail-transition);
   position: relative;
   overflow: hidden;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column.card {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.82) 0%,
-    rgba(241, 245, 250, 0.78) 100%
-  ) !important;
-  border: 1px solid rgba(15, 23, 42, 0.07);
+  background: var(--openmail-list-outer) !important;
+  border: 1px solid rgba(15, 23, 42, 0.09);
   border-radius: 18px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 4px 22px rgba(15, 23, 42, 0.028),
-    0 1px 6px rgba(15, 23, 42, 0.02);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition: var(--openmail-transition);
   position: relative;
   overflow: hidden;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.99) 0%,
-    rgba(228, 236, 247, 0.94) 100%
-  ) !important;
-  border: 1px solid rgba(15, 23, 42, 0.17);
+  background: var(--openmail-ai-chrome) !important;
+  border: 1px solid rgba(15, 23, 42, 0.2);
   border-radius: 18px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.88),
-    0 0 0 1px rgba(15, 23, 42, 0.042),
-    0 0 72px rgba(100, 116, 139, 0.075),
-    0 12px 40px rgba(15, 23, 42, 0.06),
-    0 2px 12px rgba(15, 23, 42, 0.04);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 0 0 1px rgba(15, 23, 42, 0.08),
+    0 2px 8px rgba(15, 23, 42, 0.1),
+    0 0 20px rgba(51, 65, 85, 0.1);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   padding: 20px 22px !important;
   transition: var(--openmail-transition);
   position: relative;
@@ -597,10 +579,10 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card > div > h2 {
-  color: #05080d !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.03em;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  color: #020617 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.035em;
+  text-shadow: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card::before {
@@ -610,8 +592,8 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar.card::befo
   border-radius: inherit;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.38) 0%,
-    rgba(255, 255, 255, 0) 36%
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0) 40%
   );
   pointer-events: none;
 }
@@ -623,8 +605,8 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column.card::
   border-radius: inherit;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.22) 0%,
-    rgba(255, 255, 255, 0) 30%
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 32%
   );
   pointer-events: none;
 }
@@ -636,27 +618,23 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card::bef
   border-radius: inherit;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.52) 0%,
-    rgba(255, 255, 255, 0) 42%
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0) 38%
   );
   pointer-events: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-surface.card {
   position: relative;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.88) 0%,
-    rgba(248, 250, 253, 0.82) 100%
-  );
-  border: 1px solid rgba(15, 23, 42, 0.055);
+  background: var(--openmail-list-inner);
+  border: 1px solid rgba(15, 23, 42, 0.09);
   border-radius: var(--openmail-card-radius);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 3px 14px rgba(15, 23, 42, 0.025),
-    0 1px 4px rgba(15, 23, 42, 0.018);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   padding: 18px !important;
   transition: var(--openmail-transition);
 }
@@ -668,17 +646,19 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-list-surface.card:
   border-radius: inherit;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.28) 0%,
-    rgba(255, 255, 255, 0) 28%
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0) 26%
   );
   pointer-events: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="true"] {
-  background: rgba(255, 255, 255, 0.88) !important;
-  border-color: rgba(15, 23, 42, 0.1) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
   border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(100, 118, 145, 0.07);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
   color: var(--text-main) !important;
 }
 
@@ -690,9 +670,11 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-ac
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="false"]:hover {
-  background: rgba(255, 255, 255, 0.42) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
   color: var(--text-main) !important;
-  box-shadow: 0 0 0 1px rgba(100, 116, 139, 0.08), 0 4px 14px rgba(100, 122, 150, 0.07);
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.1),
+    0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="false"]:hover .openmail-folder-icon {
@@ -705,57 +687,62 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-ac
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-folder-btn[data-active="true"]:hover {
   box-shadow:
-    0 0 0 1px rgba(100, 116, 139, 0.1),
-    0 6px 18px rgba(100, 122, 150, 0.08);
+    0 0 0 1px rgba(15, 23, 42, 0.12),
+    0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar-select,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar-action {
-  border-color: rgba(0, 0, 0, 0.06) !important;
-  background: rgba(255, 255, 255, 0.56) !important;
-  box-shadow: 0 4px 14px rgba(100, 118, 145, 0.06);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar-select:hover,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-sidebar-action:hover:not(:disabled) {
   box-shadow:
-    0 0 0 1px rgba(100, 116, 139, 0.1),
-    0 4px 16px rgba(100, 122, 150, 0.08);
+    0 0 0 1px rgba(15, 23, 42, 0.12),
+    0 2px 6px rgba(15, 23, 42, 0.07);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-section-title {
   margin-bottom: 10px;
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--text-main);
+  color: #020617;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-section-title span {
-  opacity: 0.5;
+  opacity: 0.42;
   font-weight: 500;
+  color: var(--openmail-text-tertiary);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-search-input {
-  background: var(--openmail-secondary-surface) !important;
-  border: 1px solid rgba(15, 23, 42, 0.07) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-state-card.card {
-  background: rgba(255, 255, 255, 0.82) !important;
-  border-color: rgba(15, 23, 42, 0.055) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
   box-shadow:
-    0 4px 16px rgba(15, 23, 42, 0.028),
-    0 0 0 1px rgba(15, 23, 42, 0.035);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* Inbox onboarding — Manual setup: html theme is source of truth (fixes React vs document drift) */
@@ -793,13 +780,15 @@ html[data-openmail-theme="soft-dark"] .openmail-inbox-onboarding-retry {
 
 /** AI suggestion chip list — light glass, no dark panel */
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-suggestions-glass {
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 12px;
   padding: 10px 10px 10px 8px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.07),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-stack {
@@ -808,67 +797,74 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-stack {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-reply-pane {
-  border-color: rgba(15, 23, 42, 0.11) !important;
-  background: linear-gradient(180deg, #f7fafd 0%, #eef2f8 100%) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  background: #f8fafc !important;
   border-radius: var(--openmail-card-radius);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    0 1px 5px rgba(15, 23, 42, 0.045);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--idle {
-  background: var(--openmail-chip-idle) !important;
-  border: 1px solid var(--border) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
   color: var(--text-soft) !important;
-  opacity: 0.8 !important;
+  opacity: 1 !important;
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--idle:hover {
-  background: rgba(0, 0, 0, 0.03) !important;
-  opacity: 0.92 !important;
+  background: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.16) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-reply-tone-chip--selected {
-  background: rgba(0, 0, 0, 0.06) !important;
-  border: 1px solid rgba(0, 0, 0, 0.14) !important;
-  color: #111111 !important;
+  background: #e2e8f0 !important;
+  border: 1px solid rgba(15, 23, 42, 0.18) !important;
+  color: #020617 !important;
   opacity: 1 !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--idle {
-  background: rgba(255, 255, 255, 0.92) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  color: #1a1a1a !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
   border-radius: 8px !important;
   padding: 10px 14px !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--idle:hover {
-  border-color: var(--border) !important;
-  background: rgba(0, 0, 0, 0.02) !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
+  background: #f8fafc !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--selected {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  color: #1a1a1a !important;
+  background: #f1f5f9 !important;
+  border: 1px solid rgba(15, 23, 42, 0.16) !important;
+  color: #020617 !important;
   border-radius: 8px !important;
   padding: 10px 14px !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.07),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--best-pick {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid rgba(34, 197, 94, 0.28) !important;
+  background: #ecfdf5 !important;
+  border: 1px solid rgba(22, 163, 74, 0.45) !important;
   border-radius: 8px !important;
   padding: 10px 14px !important;
-  color: #1a1a1a !important;
-  box-shadow: 0 1px 4px rgba(22, 163, 74, 0.12);
+  color: #052e16 !important;
+  box-shadow:
+    0 1px 2px rgba(22, 101, 52, 0.12),
+    0 0 0 1px rgba(22, 163, 74, 0.12);
   transition: var(--openmail-transition);
 }
 
@@ -877,20 +873,20 @@ html[data-openmail-theme="soft-intelligence-light"] .core-suggestion-chip--best-
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-de-secondary-btn {
-  border-color: rgba(15, 23, 42, 0.11) !important;
-  background: rgba(241, 245, 250, 0.98) !important;
-  color: rgba(30, 41, 59, 0.94) !important;
+  border: 1px solid rgba(15, 23, 42, 0.14) !important;
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
   box-shadow:
-    0 1px 2px rgba(90, 105, 130, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-de-secondary-btn:hover {
-  background: rgba(241, 245, 249, 0.98) !important;
-  border-color: rgba(0, 0, 0, 0.09) !important;
+  background: #e2e8f0 !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
   box-shadow:
-    0 0 0 1px rgba(100, 116, 139, 0.1),
-    0 4px 14px rgba(100, 122, 150, 0.08);
+    0 0 0 1px rgba(15, 23, 42, 0.08),
+    0 2px 6px rgba(15, 23, 42, 0.08);
   filter: none;
 }
 
@@ -903,34 +899,34 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-de-tertiary-link:h
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-topnav {
-  border-bottom-color: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
   background: var(--openmail-topnav-bg) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.65),
-    0 6px 22px rgba(90, 105, 130, 0.06);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 1px 3px rgba(15, 23, 42, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-topnav button:hover:not(:disabled) {
   box-shadow:
-    0 0 0 1px rgba(100, 116, 139, 0.1),
-    0 4px 14px rgba(100, 122, 150, 0.08);
+    0 0 0 1px rgba(15, 23, 42, 0.12),
+    0 2px 6px rgba(15, 23, 42, 0.07);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-settings-panel {
-  border-left-color: rgba(0, 0, 0, 0.05);
+  border-left: 1px solid rgba(15, 23, 42, 0.1);
   background: var(--openmail-settings-panel-bg) !important;
-  box-shadow: -8px 0 28px rgba(90, 105, 130, 0.07);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  box-shadow: -2px 0 12px rgba(15, 23, 42, 0.08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-footer {
-  background: color-mix(in srgb, var(--openmail-ai-chrome) 92%, transparent) !important;
-  border-top-color: rgba(0, 0, 0, 0.06) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--openmail-ai-chrome) !important;
+  border-top: 1px solid rgba(15, 23, 42, 0.1) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list {
@@ -939,19 +935,19 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list {
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > button.card,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > div.group.card {
-  background: rgba(255, 255, 255, 0.42) !important;
-  border: 1px solid rgba(15, 23, 42, 0.034) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
   box-shadow: var(--openmail-inbox-row-shadow);
   border-radius: 14px;
   transition: all 0.25s ease;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > button.card:hover,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > div.group.card:hover {
-  background: rgba(255, 255, 255, 0.48) !important;
-  border-color: rgba(15, 23, 42, 0.045) !important;
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
   box-shadow: var(--openmail-inbox-row-shadow-hover);
   transform: translateY(-2px);
 }
@@ -960,8 +956,8 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > div.
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row.group.card {
-  background: rgba(255, 255, 255, 0.42) !important;
-  border: 1px solid rgba(15, 23, 42, 0.034) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
   box-shadow: var(--openmail-inbox-row-shadow) !important;
   border-radius: 14px !important;
   transform: translateY(0) !important;
@@ -971,8 +967,8 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row.group.card:hover {
-  background: rgba(255, 255, 255, 0.48) !important;
-  border-color: rgba(15, 23, 42, 0.045) !important;
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
   box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
   transform: translateY(-2px) !important;
 }
@@ -984,7 +980,7 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row.openmail-card-accent--blocked.card {
-  border-left: 4px solid #ef4444 !important;
+  border-left: 4px solid #dc2626 !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
@@ -993,7 +989,7 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row.openmail-card-accent--urgent.card {
-  border-left: 4px solid #f59e0b !important;
+  border-left: 4px solid #ea580c !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
@@ -1002,15 +998,15 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row.openmail-card-accent--safe.card {
-  border-left: 4px solid #22c55e !important;
+  border-left: 4px solid #16a34a !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.group.card {
-  background: rgba(34, 197, 94, 0.05) !important;
-  border: 1px solid rgba(15, 23, 42, 0.06) !important;
-  border-left: 4px solid #22c55e !important;
+  background: rgba(22, 163, 74, 0.08) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  border-left: 4px solid #16a34a !important;
   box-shadow: var(--openmail-inbox-row-shadow-selected) !important;
   transform: translateY(0) !important;
 }
@@ -1018,28 +1014,28 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--blocked.group.card {
-  background: rgba(254, 226, 226, 0.65) !important;
-  border-left: 4px solid #ef4444 !important;
+  background: rgba(254, 202, 202, 0.85) !important;
+  border-left: 4px solid #dc2626 !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--urgent.group.card {
-  background: rgba(254, 243, 199, 0.7) !important;
-  border-left: 4px solid #f59e0b !important;
+  background: rgba(254, 215, 170, 0.88) !important;
+  border-left: 4px solid #ea580c !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--safe.group.card {
-  background: rgba(220, 252, 231, 0.45) !important;
-  border-left: 4px solid #22c55e !important;
+  background: rgba(187, 247, 208, 0.65) !important;
+  border-left: 4px solid #16a34a !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.group.card:hover {
-  background: rgba(34, 197, 94, 0.07) !important;
+  background: rgba(22, 163, 74, 0.1) !important;
   transform: translateY(-2px) !important;
   box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
 }
@@ -1047,7 +1043,7 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--blocked.group.card:hover {
-  background: rgba(254, 202, 202, 0.55) !important;
+  background: rgba(252, 165, 165, 0.75) !important;
   transform: translateY(-2px) !important;
   box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
 }
@@ -1055,7 +1051,7 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--urgent.group.card:hover {
-  background: rgba(253, 230, 138, 0.45) !important;
+  background: rgba(254, 200, 154, 0.78) !important;
   transform: translateY(-2px) !important;
   box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
 }
@@ -1063,36 +1059,36 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--selected.openmail-card-accent--safe.group.card:hover {
-  background: rgba(187, 247, 208, 0.5) !important;
+  background: rgba(167, 243, 208, 0.72) !important;
   transform: translateY(-2px) !important;
   box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-sender {
-  font-weight: 500 !important;
-  color: #1a1d21 !important;
+  font-weight: 600 !important;
+  color: #020617 !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-time {
-  opacity: 0.72 !important;
-  color: #1a1d21 !important;
+  opacity: 1 !important;
+  color: var(--text-soft) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-subject {
-  font-weight: 500 !important;
-  color: #1a1d21 !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-preview {
-  opacity: 0.7 !important;
-  color: #1a1d21 !important;
+  opacity: 1 !important;
+  color: rgba(15, 23, 42, 0.62) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > div.openmail-thread-row--resolved.group.card {
-  background: rgba(16, 185, 129, 0.06) !important;
-  border-color: rgba(16, 185, 129, 0.22) !important;
+  background: rgba(5, 150, 105, 0.1) !important;
+  border-color: rgba(4, 120, 87, 0.35) !important;
   opacity: 1 !important;
 }
 
@@ -1104,8 +1100,8 @@ html[data-openmail-theme="soft-intelligence-light"]
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > button.openmail-situation-row.card {
-  background: rgba(255, 255, 255, 0.42) !important;
-  border: 1px solid rgba(15, 23, 42, 0.034) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
   border-radius: 14px !important;
   box-shadow: var(--openmail-inbox-row-shadow) !important;
   transform: translateY(0) !important;
@@ -1115,8 +1111,8 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > butt
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row.card:hover {
-  background: rgba(255, 255, 255, 0.48) !important;
-  border-color: rgba(15, 23, 42, 0.045) !important;
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
   box-shadow: var(--openmail-inbox-row-shadow-hover) !important;
   transform: translateY(-2px) !important;
 }
@@ -1124,9 +1120,9 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row--selected.card {
-  background: rgba(34, 197, 94, 0.05) !important;
-  border: 1px solid rgba(15, 23, 42, 0.06) !important;
-  border-left: 4px solid #22c55e !important;
+  background: rgba(22, 163, 74, 0.08) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  border-left: 4px solid #16a34a !important;
   box-shadow: var(--openmail-inbox-row-shadow-selected) !important;
   transform: translateY(0) !important;
 }
@@ -1134,22 +1130,22 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row--selected.openmail-card-accent--blocked.card {
-  background: rgba(254, 226, 226, 0.65) !important;
-  border-left: 4px solid #ef4444 !important;
+  background: rgba(254, 202, 202, 0.85) !important;
+  border-left: 4px solid #dc2626 !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row--selected.openmail-card-accent--urgent.card {
-  background: rgba(254, 243, 199, 0.7) !important;
-  border-left: 4px solid #f59e0b !important;
+  background: rgba(254, 215, 170, 0.88) !important;
+  border-left: 4px solid #ea580c !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
   .openmail-thread-list
   > button.openmail-situation-row--selected.openmail-card-accent--safe.card {
-  background: rgba(220, 252, 231, 0.45) !important;
-  border-left: 4px solid #22c55e !important;
+  background: rgba(187, 247, 208, 0.65) !important;
+  border-left: 4px solid #16a34a !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"]
@@ -1162,33 +1158,46 @@ html[data-openmail-theme="soft-intelligence-light"]
 html[data-openmail-theme="soft-intelligence-light"] .openmail-app .card:hover {
   transform: translateY(-1px);
   box-shadow:
-    0 12px 28px rgba(90, 105, 130, 0.08),
-    0 0 0 1px rgba(0, 0, 0, 0.03);
+    0 2px 8px rgba(15, 23, 42, 0.09),
+    0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-panel.card:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 0 0 1px rgba(15, 23, 42, 0.1),
+    0 3px 12px rgba(15, 23, 42, 0.12),
+    0 0 28px rgba(30, 41, 59, 0.14);
+  transform: translateY(-1px);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-toast {
-  border-color: rgba(0, 0, 0, 0.07);
-  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #ffffff;
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.04),
-    0 12px 36px rgba(0, 0, 0, 0.08);
+    0 1px 3px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(15, 23, 42, 0.06),
+    0 8px 24px rgba(15, 23, 42, 0.1);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-toast--info {
-  border-color: rgba(100, 116, 139, 0.2);
+  border-color: rgba(15, 23, 42, 0.14);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-reply-textarea--suggestion-glow {
-  border-color: rgba(100, 116, 139, 0.28) !important;
+  border-color: rgba(51, 65, 105, 0.35) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.65),
-    0 0 22px rgba(100, 116, 139, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 0 0 1px rgba(15, 23, 42, 0.06),
+    0 2px 8px rgba(30, 41, 59, 0.1);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] textarea#core-reply-textarea.core-reply-decision-surface {
   background: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.14) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] textarea#core-reply-textarea[class*="border-emerald"] {
@@ -1196,16 +1205,18 @@ html[data-openmail-theme="soft-intelligence-light"] textarea#core-reply-textarea
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-signals-box {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-signals-box ul,
 html[data-openmail-theme="soft-intelligence-light"] .openmail-ai-signals-box li {
-  color: #374151 !important;
+  color: #1e293b !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-reading-dialog {
@@ -1218,39 +1229,39 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-reading-dialog {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--emphasis:not(:disabled) {
-  background: rgba(15, 23, 42, 0.06) !important;
-  color: rgba(15, 23, 42, 0.92) !important;
-  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(15, 23, 42, 0.16) !important;
   box-shadow:
-    0 1px 3px rgba(15, 23, 42, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
   border-radius: 10px;
   transition: var(--openmail-transition);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--emphasis:not(:disabled):hover {
-  background: rgba(15, 23, 42, 0.08) !important;
+  background: #cbd5e1 !important;
   transform: translateY(-1px);
   box-shadow:
-    0 4px 14px rgba(15, 23, 42, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    0 2px 8px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
   filter: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--ready:not(:disabled) {
-  background: linear-gradient(135deg, #4ade80, #22c55e) !important;
+  background: linear-gradient(135deg, #22c55e, #15803d) !important;
   color: #ffffff !important;
-  border-color: rgba(21, 128, 61, 0.35) !important;
+  border: 1px solid rgba(21, 128, 61, 0.55) !important;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 2px 10px rgba(22, 163, 74, 0.22) !important;
+    0 1px 0 rgba(255, 255, 255, 0.25) inset,
+    0 2px 8px rgba(22, 101, 52, 0.35) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-send-reply-btn--ready:not(:disabled):hover {
   transform: translateY(-0.5px);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.38) inset,
-    0 3px 14px rgba(22, 163, 74, 0.26) !important;
+    0 1px 0 rgba(255, 255, 255, 0.3) inset,
+    0 4px 14px rgba(22, 101, 52, 0.4) !important;
   filter: none;
 }
 
@@ -1282,11 +1293,13 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-app .core-ai-risk-
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high {
   background: linear-gradient(
     to right,
-    rgba(165, 95, 98, 0.07),
-    rgba(255, 255, 255, 0.78)
+    rgba(185, 28, 28, 0.12),
+    #ffffff
   ) !important;
-  border-color: color-mix(in srgb, var(--openmail-risk-red) 28%, rgba(0, 0, 0, 0.06)) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border: 1px solid color-mix(in srgb, var(--openmail-risk-red) 42%, rgba(15, 23, 42, 0.12)) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high > div.pointer-events-none {
@@ -1296,11 +1309,13 @@ html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high > d
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium {
   background: linear-gradient(
     to right,
-    rgba(185, 140, 65, 0.07),
-    rgba(255, 255, 255, 0.8)
+    rgba(194, 65, 12, 0.12),
+    #ffffff
   ) !important;
-  border-color: color-mix(in srgb, var(--openmail-risk-amber) 26%, rgba(0, 0, 0, 0.06)) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border: 1px solid color-mix(in srgb, var(--openmail-risk-amber) 40%, rgba(15, 23, 42, 0.1)) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium > div.pointer-events-none {
@@ -1310,11 +1325,13 @@ html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium >
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe {
   background: linear-gradient(
     to right,
-    rgba(62, 118, 105, 0.06),
-    rgba(255, 255, 255, 0.84)
+    rgba(4, 120, 87, 0.1),
+    #ffffff
   ) !important;
-  border-color: color-mix(in srgb, var(--openmail-risk-emerald) 24%, rgba(0, 0, 0, 0.06)) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border: 1px solid color-mix(in srgb, var(--openmail-risk-emerald) 38%, rgba(15, 23, 42, 0.1)) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe > div.pointer-events-none {
@@ -1322,9 +1339,11 @@ html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe > d
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle {
-  background: rgba(0, 0, 0, 0.03) !important;
-  border-color: rgba(0, 0, 0, 0.07) !important;
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.04);
+  background: #f8fafc !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle > div.pointer-events-none {
@@ -1338,15 +1357,15 @@ html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-guidance {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high .core-ai-risk-guidance-label {
-  color: rgba(120, 60, 62, 0.75) !important;
+  color: #7f1d1d !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium .core-ai-risk-guidance-label {
-  color: rgba(120, 85, 28, 0.72) !important;
+  color: #9a3412 !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe .core-ai-risk-guidance-label {
-  color: rgba(45, 95, 82, 0.72) !important;
+  color: #14532d !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle .core-ai-risk-guidance-label {
@@ -1354,39 +1373,41 @@ html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--idle .co
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-intent-bar {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--high .openmail-de-primary--high {
-  border-color: color-mix(in srgb, var(--openmail-risk-red) 42%, rgba(15, 23, 42, 0.12)) !important;
-  background-image: linear-gradient(to bottom, #9f5c5c, #7d4848) !important;
-  color: #fdf7f7 !important;
+  border: 1px solid color-mix(in srgb, var(--openmail-risk-red) 55%, rgba(15, 23, 42, 0.2)) !important;
+  background-image: linear-gradient(to bottom, #b91c1c, #7f1d1d) !important;
+  color: #ffffff !important;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.18) inset,
-    0 2px 8px rgba(90, 44, 46, 0.14) !important;
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 2px 8px rgba(127, 29, 29, 0.35) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--medium .openmail-de-primary--medium {
-  border-color: color-mix(in srgb, var(--openmail-risk-amber) 40%, rgba(15, 23, 42, 0.1)) !important;
-  background-image: linear-gradient(to bottom, #a87a32, #8a6528) !important;
-  color: #fdfaf5 !important;
+  border: 1px solid color-mix(in srgb, var(--openmail-risk-amber) 52%, rgba(15, 23, 42, 0.18)) !important;
+  background-image: linear-gradient(to bottom, #ea580c, #9a3412) !important;
+  color: #ffffff !important;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.16) inset,
-    0 2px 8px rgba(100, 72, 28, 0.14) !important;
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 2px 8px rgba(154, 52, 18, 0.32) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .core-ai-risk-card--safe .openmail-de-primary--safe {
-  border-color: rgba(35, 95, 82, 0.32) !important;
-  background-image: linear-gradient(to bottom, #3d7565, #2f5d50) !important;
+  border: 1px solid rgba(6, 95, 70, 0.45) !important;
+  background-image: linear-gradient(to bottom, #047857, #065f46) !important;
   border-radius: 10px !important;
-  color: #f4faf8 !important;
+  color: #ffffff !important;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.16) inset,
-    0 2px 8px rgba(35, 95, 82, 0.16) !important;
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 2px 8px rgba(6, 95, 70, 0.35) !important;
   transition: var(--openmail-transition) !important;
 }
 
@@ -1415,13 +1436,11 @@ html[data-openmail-theme="soft-intelligence-light"] button.toggle .toggle-knob {
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .settings-card {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.92),
-    rgba(248, 250, 252, 0.88)
-  ) !important;
-  border-color: rgba(0, 0, 0, 0.06) !important;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] button.openmail-theme-choice[data-active="false"] {
@@ -1430,26 +1449,28 @@ html[data-openmail-theme="soft-intelligence-light"] button.openmail-theme-choice
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-nav-popover {
-  border-color: rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
   background: var(--openmail-nav-popover-bg) !important;
   box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+    0 2px 12px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-thread-list > div.card:not(.group) {
-  background: rgba(255, 255, 255, 0.78) !important;
-  border-color: rgba(15, 23, 42, 0.055) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] [aria-labelledby="mail-read-title"] {
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  background: #ffffff !important;
   box-shadow:
-    0 28px 72px rgba(15, 23, 42, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    0 4px 20px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-list-column button[aria-label="Close message"] {
@@ -1510,9 +1531,9 @@ html[data-openmail-theme="soft-intelligence-light"] .openmail-status-badge--wait
 }
 
 html[data-openmail-theme="soft-intelligence-light"] .openmail-status-badge--meta {
-  background: #f4f4f5 !important;
-  color: rgba(0, 0, 0, 0.72) !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: #f1f5f9 !important;
+  color: var(--openmail-text-tertiary) !important;
+  border: 1px solid rgba(15, 23, 42, 0.14) !important;
 }
 
 html[data-openmail-theme="soft-intelligence-light"] span.openmail-risk-badge[data-risk-level="dangerous"] {
