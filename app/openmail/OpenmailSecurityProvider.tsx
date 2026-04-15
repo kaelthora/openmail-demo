@@ -203,7 +203,7 @@ export function OpenmailSecurityProvider({
     () => new Set()
   );
   const mountedRef = useRef(true);
-  const { security: secPrefs } = useOpenmailPreferences();
+  const { security: secPrefs, ai: aiPrefs } = useOpenmailPreferences();
   const { record: recordGuardianTrace } = useGuardianTrace();
   const { present: presentGuardianIntercept } = useGuardianIntercept();
 
@@ -219,9 +219,13 @@ export function OpenmailSecurityProvider({
       const base: UnifiedLinkTier = demoMode
         ? demoTierToUnified(classifyDemoLinkUrl(url))
         : mapVerdictToTier(analyzeLinkUrl(url, mail).verdict);
-      return linkTierWithMailRisk(base, mail.mailAiRisk);
+      let tier = linkTierWithMailRisk(base, mail.mailAiRisk);
+      if (aiPrefs.autoProtectMode && tier === "suspicious") {
+        tier = "blocked";
+      }
+      return tier;
     },
-    [demoMode]
+    [aiPrefs.autoProtectMode, demoMode]
   );
 
   const handleLinkClick = useCallback(
@@ -293,6 +297,13 @@ export function OpenmailSecurityProvider({
           "Strict security is on — this link is treated as blocked.";
       }
 
+      if (aiPrefs.autoProtectMode && tier === "suspicious") {
+        tier = "blocked";
+        reason =
+          reason ||
+          "Auto protect is on — suspicious links are treated as blocked until reviewed.";
+      }
+
       if (tier === "safe") {
         if (secPrefs.forceSandboxLinks) {
           setLinkModal({ tier: "safe", url, mailId, reason });
@@ -316,6 +327,7 @@ export function OpenmailSecurityProvider({
       recordGuardianTrace,
       secPrefs.forceSandboxLinks,
       secPrefs.sensitivity,
+      aiPrefs.autoProtectMode,
     ]
   );
 

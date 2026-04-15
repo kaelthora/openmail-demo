@@ -40,6 +40,11 @@ export type OpenmailAiPrefs = {
    * without pressing Send. Medium risk always requires confirmation; high risk blocks send.
    */
   guardianAutoResponse: boolean;
+  /**
+   * Stricter link handling: suspicious tiers are treated like blocked for navigation
+   * and CORE link summaries.
+   */
+  autoProtectMode: boolean;
   defaultTone: PrefsReplyTone;
 };
 
@@ -72,6 +77,7 @@ export const OPENMAIL_SETTINGS_DEFAULT: OpenmailSettingsState = {
     learnFromUsage: true,
     autoResolveInbox: true,
     guardianAutoResponse: false,
+    autoProtectMode: false,
     defaultTone: "Professional",
   },
   security: {
@@ -165,6 +171,10 @@ export function parseOpenmailSettingsState(raw: string | null): OpenmailSettings
         typeof aiIn.guardianAutoResponse === "boolean"
           ? aiIn.guardianAutoResponse
           : OPENMAIL_SETTINGS_DEFAULT.ai.guardianAutoResponse,
+      autoProtectMode:
+        typeof aiIn.autoProtectMode === "boolean"
+          ? aiIn.autoProtectMode
+          : OPENMAIL_SETTINGS_DEFAULT.ai.autoProtectMode,
       defaultTone: parseTone(aiIn.defaultTone),
     };
 

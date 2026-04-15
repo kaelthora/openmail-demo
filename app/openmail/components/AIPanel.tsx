@@ -11,6 +11,13 @@ import {
 import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
 import { useOpenmailTheme } from "../OpenmailThemeProvider";
 import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
+import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
+import {
+  buildContextQuickReplies,
+  deriveIntentTags,
+  derivePrimaryAiDecision,
+  summarizeLinkRisksForMail,
+} from "@/lib/openmailDecisionIntelligence";
 import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
 
 type AIPanelProps = {
@@ -202,6 +209,9 @@ function CoreAiRiskCard({
   quickReplyBusy = false,
   safePrimaryLabel = "Quick reply",
   safeShowArchive = true,
+  recommendedCoreAction = null,
+  replyTone = "Professional",
+  onInsertQuickReply,
 }: {
   mail: ProcessedMail | null;
   /** Single-line intent / recommended action (thin bar under risk badge). */
@@ -220,11 +230,33 @@ function CoreAiRiskCard({
   safePrimaryLabel?: string;
   /** Hide when the primary action already clears the thread (e.g. ignore). */
   safeShowArchive?: boolean;
+  recommendedCoreAction?: CoreRecommendedAction | null;
+  replyTone?: ReplyTone;
+  onInsertQuickReply?: (text: string) => void;
 }) {
   const { theme } = useOpenmailTheme();
   const isLight = theme === "soft-intelligence-light";
   const { ai: aiPrefEngine, updateAi: updateAiPref } = useOpenmailPreferences();
   const band = coreRiskBand(mail);
+  const aiPrimaryDecision = useMemo(
+    () => derivePrimaryAiDecision(mail, recommendedCoreAction),
+    [mail, recommendedCoreAction]
+  );
+  const intentTags = useMemo(() => (mail ? deriveIntentTags(mail) : []), [mail]);
+  const linkRiskSummary = useMemo(
+    () =>
+      mail
+        ? summarizeLinkRisksForMail(mail, {
+            demoMode: OPENMAIL_DEMO_MODE,
+            autoProtectMode: aiPrefEngine.autoProtectMode,
+          })
+        : null,
+    [mail, aiPrefEngine.autoProtectMode]
+  );
+  const contextQuickReplies = useMemo(
+    () => (mail ? buildContextQuickReplies(mail, replyTone) : []),
+    [mail, replyTone]
+  );
   const skin = CORE_RISK_CARD[band];
   const snapshot = coreRiskSnapshot(mail);
   const whyParagraph = coreWhyMattersParagraph(mail, band);
@@ -387,6 +419,162 @@ function CoreAiRiskCard({
           <p className="text-[11px] leading-snug text-[color:var(--text-soft)]">{idleCopy}</p>
         ) : (
           <>
+            {mail ? (
+              <section
+                className={`mb-4 space-y-3 rounded-[10px] border p-3 sm:p-3.5 ${
+                  isLight
+                    ? "border-black/[0.08] bg-white/[0.92] shadow-[0_1px_4px_rgba(0,0,0,0.05)]"
+                    : "border-white/[0.08] bg-white/[0.03]"
+                }`}
+                aria-label="AI decision intelligence"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-[color:var(--text-soft)]">
+                      AI Decision
+                    </h3>
+                    <p className="text-[12px] font-medium leading-snug text-[var(--text-main)]">
+                      {aiPrimaryDecision.explanation}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-lg border px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-[0.08em] ${
+                      aiPrimaryDecision.verb === "block"
+                        ? "border-rose-500/35 bg-rose-950/35 text-rose-100"
+                        : aiPrimaryDecision.verb === "ignore"
+                          ? "border-white/[0.12] bg-white/[0.06] text-[color:var(--text-soft)]"
+                          : "border-emerald-500/30 bg-emerald-950/25 text-emerald-100"
+                    }`}
+                  >
+                    {aiPrimaryDecision.verb === "block"
+                      ? "Block"
+                      : aiPrimaryDecision.verb === "ignore"
+                        ? "Ignore"
+                        : "Reply"}
+                  </span>
+                </div>
+                {intentTags.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {intentTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
+                          isLight
+                            ? "border-black/[0.08] bg-black/[0.04] text-[#1a1a1a]"
+                            : "border-white/[0.1] bg-black/30 text-[var(--text-main)]/90"
+                        }`}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {linkRiskSummary ? (
+                  <div className="space-y-1.5">
+                    <h4 className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                      Link risk analysis
+                    </h4>
+                    {linkRiskSummary.uniqueUrlCount === 0 ? (
+                      <p className="text-[10px] leading-snug text-[color:var(--text-soft)]">
+                        No links detected in subject or body.
+                      </p>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="rounded-md border border-rose-500/30 bg-rose-950/20 px-2 py-0.5 text-[9px] font-bold text-rose-100">
+                            Blocked {linkRiskSummary.blocked}
+                          </span>
+                          <span className="rounded-md border border-amber-500/30 bg-amber-950/20 px-2 py-0.5 text-[9px] font-bold text-amber-100">
+                            Caution {linkRiskSummary.caution}
+                          </span>
+                          <span className="rounded-md border border-emerald-500/25 bg-emerald-950/15 px-2 py-0.5 text-[9px] font-bold text-emerald-100">
+                            Verified {linkRiskSummary.verified}
+                          </span>
+                        </div>
+                        {linkRiskSummary.samples.length > 0 ? (
+                          <ul className="space-y-0.5 text-[10px] leading-snug text-[color:var(--text-soft)]">
+                            {linkRiskSummary.samples.map((s) => (
+                              <li key={s.url} className="flex min-w-0 gap-2">
+                                <span
+                                  className={`shrink-0 font-semibold ${
+                                    s.label === "BLOCKED"
+                                      ? "text-rose-300"
+                                      : s.label === "CAUTION"
+                                        ? "text-amber-200"
+                                        : "text-emerald-200/90"
+                                  }`}
+                                >
+                                  {s.label}
+                                </span>
+                                <span className="min-w-0 truncate" title={s.url}>
+                                  {s.host}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+                ) : null}
+                {onInsertQuickReply && contextQuickReplies.length > 0 ? (
+                  <div className="space-y-1.5 border-t border-[var(--border)] pt-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h4 className="text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--text-soft)]">
+                        Quick replies ({replyTone})
+                      </h4>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {contextQuickReplies.map((line, qi) => (
+                        <button
+                          key={`ctx-qr-${qi}-${line.slice(0, 24)}`}
+                          type="button"
+                          className={`rounded-lg border px-2.5 py-1.5 text-left text-[10px] font-medium leading-snug transition-colors ${
+                            isLight
+                              ? "border-black/[0.08] bg-white text-[#111] hover:bg-gray-50"
+                              : "border-[var(--border)] bg-transparent text-[var(--text-main)]/90 hover:border-[var(--accent)]/35 hover:bg-white/[0.04]"
+                          }`}
+                          onClick={() => onInsertQuickReply(line)}
+                        >
+                          {line}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-3">
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-semibold text-[var(--text-main)]">
+                      Auto protect mode
+                    </span>
+                    <p className="text-[9px] leading-snug text-[color:var(--text-soft)]">
+                      Suspicious links are handled like blocked (clicks + summary).
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={aiPrefEngine.autoProtectMode}
+                    className="toggle shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]/35"
+                    onClick={() =>
+                      updateAiPref({
+                        autoProtectMode: !aiPrefEngine.autoProtectMode,
+                      })
+                    }
+                  >
+                    <span
+                      className={`toggle-track border transition-colors duration-200 ${
+                        aiPrefEngine.autoProtectMode
+                          ? "border-[var(--accent)]/50 bg-[var(--accent-soft)]"
+                          : "border-white/[0.1] bg-[color:var(--openmail-input-bg)]"
+                      }`}
+                    >
+                      <span className="toggle-knob bg-[var(--text-main)] shadow-sm" />
+                    </span>
+                  </button>
+                </div>
+              </section>
+            ) : null}
             <div className="flex min-w-0 flex-row items-start gap-3">
               <div className="core-ai-risk-guidance min-w-0 flex-1 space-y-4">
                 <section className="space-y-1">
@@ -504,7 +692,7 @@ function CoreAiRiskCard({
                 <span
                   className={`core-ai-risk-guidance-label text-[9px] font-semibold uppercase tracking-[0.12em] ${skin.guidanceMuted}`}
                 >
-                  AI decision
+                  Guidance
                 </span>
                 <p className="w-full text-right text-[12px] font-medium leading-snug text-[var(--text-main)]/90 line-clamp-3">
                   {decisionLine}
@@ -851,6 +1039,12 @@ export function AIPanel({
               }
               safePrimaryLabel={safeEnginePrimaryLabel}
               safeShowArchive={safeEngineShowArchive}
+              recommendedCoreAction={recommendedCoreAction}
+              replyTone={replyTone}
+              onInsertQuickReply={(text) => {
+                onReplyChange(text);
+                setUserTyping(true);
+              }}
             />
           ) : null}
 

@@ -1381,6 +1381,16 @@ export function OpenmailSettingsPanel({
                       })
                     }
                   />
+                  <ToggleRow
+                    label="Auto protect mode"
+                    description="Treats suspicious links like blocked ones for clicks and tightens CORE link summaries — decide-first safety without changing your inbox sync."
+                    on={prefs.ai.autoProtectMode}
+                    onToggle={() =>
+                      prefs.updateAi({
+                        autoProtectMode: !prefs.ai.autoProtectMode,
+                      })
+                    }
+                  />
                   <SettingField
                     label="Default reply tone"
                     description="Starting tone for new drafts. You can still change tone per message in CORE."
