@@ -14,7 +14,11 @@ import { useMailStore } from "../MailStoreProvider";
 import { useOpenmailToast } from "../OpenmailToastProvider";
 import { useSmartNotifications } from "../SmartNotificationsProvider";
 import type { OpenmailUiTheme } from "@/lib/openmailTheme";
-import type { SettingsSection } from "@/lib/openmailSettingsPrefs";
+import {
+  OPENMAIL_SETTINGS_DEFAULT,
+  type OpenmailSecurityPrefs,
+  type SettingsSection,
+} from "@/lib/openmailSettingsPrefs";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
 import { GUARDIAN_ETHICAL_GUARDRAILS } from "@/lib/guardianEngine";
 import {
@@ -50,6 +54,14 @@ const navBtnIdle =
   "text-[color:var(--text-soft)] hover:bg-white/[0.05] hover:text-[var(--text-main)]";
 const navBtnActive =
   "bg-[var(--accent-soft)] text-[var(--text-main)] shadow-[0_0_12px_var(--accent-soft)]";
+
+function isAutoProtectModeEnabled(security: OpenmailSecurityPrefs): boolean {
+  return (
+    security.sensitivity === "strict" &&
+    security.forceSandboxLinks &&
+    security.blockRiskyAttachments
+  );
+}
 
 function ToggleRow({
   label,
@@ -1028,6 +1040,27 @@ export function OpenmailSettingsPanel({
 
               {prefs.activeSection === "security" ? (
                 <>
+                  <SettingSectionCard
+                    title="Auto Protect Mode"
+                    description="Turns on strict link handling, forces every link through the protected preview, and blocks risky attachments. Uses the same switches below—no separate engine."
+                  >
+                    <ToggleRow
+                      label="Auto Protect Mode"
+                      description="When on: Security strictness, Force sandbox for links, and Block risky attachments are all enabled. When off: they return to OpenMail defaults."
+                      on={isAutoProtectModeEnabled(prefs.security)}
+                      onToggle={() =>
+                        prefs.updateSecurity(
+                          isAutoProtectModeEnabled(prefs.security)
+                            ? { ...OPENMAIL_SETTINGS_DEFAULT.security }
+                            : {
+                                sensitivity: "strict",
+                                forceSandboxLinks: true,
+                                blockRiskyAttachments: true,
+                              }
+                        )
+                      }
+                    />
+                  </SettingSectionCard>
                   <SettingSectionCard
                     title="Links & attachments"
                     description="Decide how OpenMail handles risky URLs and files before you interact with them."
