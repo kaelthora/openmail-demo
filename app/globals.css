@@ -446,11 +446,11 @@ html[data-openmail-theme="soft-intelligence-light"] {
   --openmail-card-radius: 12px;
   --openmail-card-shadow: 0 12px 36px rgba(112, 130, 156, 0.08);
   --openmail-transition: all 0.15s ease;
-  /* Portaled mail hover preview — light (matches elevated surfaces) */
-  --openmail-mail-hover-bg: rgba(255, 255, 255, 0.68);
-  --openmail-mail-hover-border: rgba(255, 255, 255, 0.24);
-  --openmail-mail-hover-shadow: 0 10px 28px rgba(112, 130, 156, 0.1);
-  --openmail-mail-hover-divider: rgba(255, 255, 255, 0.26);
+  /* Portaled mail hover preview — light (opaque surface, sharp text; no glass) */
+  --openmail-mail-hover-bg: rgba(255, 255, 255, 0.95);
+  --openmail-mail-hover-border: rgba(0, 0, 0, 0.08);
+  --openmail-mail-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --openmail-mail-hover-divider: rgba(0, 0, 0, 0.08);
 }
 
 html[data-openmail-theme="soft-intelligence-light"] body {
@@ -470,6 +470,16 @@ html[data-openmail-theme="soft-intelligence-light"] body {
   box-shadow: var(--openmail-mail-hover-shadow);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+/* Light theme: solid preview surface — no blur, high-contrast text */
+html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-hover-preview {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-openmail-theme="soft-intelligence-light"] .openmail-mail-hover-preview > p {
+  color: rgba(0, 0, 0, 0.85);
 }
 
 .openmail-mail-hover-preview-snippet {
