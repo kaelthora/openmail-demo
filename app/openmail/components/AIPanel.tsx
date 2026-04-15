@@ -13,6 +13,23 @@ import { useOpenmailTheme } from "../OpenmailThemeProvider";
 import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
 
+/** Short “AI thinking” copy when a message is selected (staggered; skipped if motion reduced / animations off). */
+const AI_THINKING_STEPS = [
+  "Analyzing...",
+  "Checking sender",
+  "Checking domain",
+  "Detecting intent",
+  "Evaluating risk",
+] as const;
+
+const AI_THINKING_STEP_MS = 420;
+
+function shouldSkipAiThinkingSequence(): boolean {
+  if (typeof window === "undefined") return false;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
+  return document.documentElement.getAttribute("data-openmail-animations") === "off";
+}
+
 type AIPanelProps = {
   selectedMail: ProcessedMail | null;
   /** When set to the same mail, reply textarea is not auto-focused (reading overlay). */
@@ -581,6 +598,8 @@ export function AIPanel({
   const [acceptedSuggestionIndex, setAcceptedSuggestionIndex] = useState<number | null>(null);
   const [decisionToReplyCue, setDecisionToReplyCue] = useState(false);
   const [highRiskSendAck, setHighRiskSendAck] = useState(false);
+  /** Sequential “thinking” labels before showing the risk card; null = show decision UI. */
+  const [thinkingStep, setThinkingStep] = useState<number | null>(null);
   const glowClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const acceptClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const decisionToReplyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -589,12 +608,41 @@ export function AIPanel({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const selectedMailIdRef = useRef<string | null>(null);
   selectedMailIdRef.current = selectedMail?.id ?? null;
+  const thinkingTimersRef = useRef<number[]>([]);
 
   useEffect(() => {
     setUserTyping(false);
     setHighRiskSendAck(false);
     suggestionPreviewBaseRef.current = null;
     suggestionPreviewIndexRef.current = null;
+  }, [selectedMail?.id]);
+
+  useEffect(() => {
+    const clearThinkingTimers = () => {
+      for (const id of thinkingTimersRef.current) {
+        window.clearTimeout(id);
+      }
+      thinkingTimersRef.current = [];
+    };
+    clearThinkingTimers();
+    if (!selectedMail?.id) {
+      setThinkingStep(null);
+      return;
+    }
+    if (shouldSkipAiThinkingSequence()) {
+      setThinkingStep(null);
+      return;
+    }
+    setThinkingStep(0);
+    for (let i = 1; i < AI_THINKING_STEPS.length; i++) {
+      const id = window.setTimeout(() => setThinkingStep(i), AI_THINKING_STEP_MS * i);
+      thinkingTimersRef.current.push(id);
+    }
+    const doneId = window.setTimeout(() => {
+      setThinkingStep(null);
+    }, AI_THINKING_STEP_MS * AI_THINKING_STEPS.length + AI_THINKING_STEP_MS);
+    thinkingTimersRef.current.push(doneId);
+    return clearThinkingTimers;
   }, [selectedMail?.id]);
 
   useEffect(() => {
@@ -639,6 +687,10 @@ export function AIPanel({
       if (glowClearRef.current) clearTimeout(glowClearRef.current);
       if (acceptClearRef.current) clearTimeout(acceptClearRef.current);
       if (decisionToReplyTimerRef.current) clearTimeout(decisionToReplyTimerRef.current);
+      for (const id of thinkingTimersRef.current) {
+        window.clearTimeout(id);
+      }
+      thinkingTimersRef.current = [];
     };
   }, []);
 
@@ -823,36 +875,60 @@ export function AIPanel({
           AI Decision Core
         </h2>
 
+        {selectedMail && thinkingStep !== null ? (
+          <div
+            className="openmail-ai-thinking -mt-1 mb-3 shrink-0"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <p
+              key={thinkingStep}
+              className="openmail-ai-thinking-label text-[11px] font-medium leading-snug tracking-[0.02em] text-[color:var(--text-soft)]"
+            >
+              {AI_THINKING_STEPS[thinkingStep]}
+            </p>
+          </div>
+        ) : null}
+
         <div
           key={selectedMail?.id ?? "__idle__"}
           className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden${
             selectedMail ? " fade-in" : ""
           }`}
         >
-          {aiPrefs.autoAnalyze ? (
-            <CoreAiRiskCard
-              mail={selectedMail}
-              intentBarLabel={selectedMail ? intentBarLine.label : null}
-              intentBarTitle={selectedMail ? intentBarLine.title : null}
-              transitionActive={decisionToReplyCue}
-              onPrimaryAction={triggerDecisionToReplyCue}
-              onBlockAndReport={onDecisionBlockAndReport}
-              onOpenSandbox={onRiskOpenSandbox}
-              onQuickReply={() => void handleProceedClick()}
-              onArchive={onDecisionArchive}
-              onMarkSafe={onRiskMarkSafe}
-              actionBusy={riskActionBusy}
-              quickReplyBusy={
-                proceedBusy ||
-                sending ||
-                guardianBlocksCoreSend ||
-                aiReplyLoading ||
-                guardianDraftLoading
-              }
-              safePrimaryLabel={safeEnginePrimaryLabel}
-              safeShowArchive={safeEngineShowArchive}
-            />
-          ) : null}
+          <div
+            className={`min-h-0 shrink-0 transition-opacity duration-300 ease-out ${
+              selectedMail && thinkingStep !== null && aiPrefs.autoAnalyze
+                ? "pointer-events-none select-none opacity-[0.22]"
+                : "opacity-100"
+            }`}
+          >
+            {aiPrefs.autoAnalyze ? (
+              <CoreAiRiskCard
+                mail={selectedMail}
+                intentBarLabel={selectedMail ? intentBarLine.label : null}
+                intentBarTitle={selectedMail ? intentBarLine.title : null}
+                transitionActive={decisionToReplyCue}
+                onPrimaryAction={triggerDecisionToReplyCue}
+                onBlockAndReport={onDecisionBlockAndReport}
+                onOpenSandbox={onRiskOpenSandbox}
+                onQuickReply={() => void handleProceedClick()}
+                onArchive={onDecisionArchive}
+                onMarkSafe={onRiskMarkSafe}
+                actionBusy={riskActionBusy}
+                quickReplyBusy={
+                  proceedBusy ||
+                  sending ||
+                  guardianBlocksCoreSend ||
+                  aiReplyLoading ||
+                  guardianDraftLoading
+                }
+                safePrimaryLabel={safeEnginePrimaryLabel}
+                safeShowArchive={safeEngineShowArchive}
+              />
+            ) : null}
+          </div>
 
           <div className="openmail-ai-reply-stack mt-6 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-t border-[var(--border)] pt-7">
             {selectedMail && highRiskUiLock ? (
