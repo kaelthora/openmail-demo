@@ -163,6 +163,68 @@ html[data-openmail-animations="off"] .openmail-topnav * {
   animation-duration: 0.001ms !important;
 }
 
+/* ========== OpenMail micro-interactions (subtle, fast) ========== */
+.openmail-app button,
+.openmail-app [role="button"],
+.openmail-app input,
+.openmail-app select,
+.openmail-app textarea,
+.openmail-app a {
+  outline: none;
+}
+
+.openmail-app button,
+.openmail-app [role="button"] {
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.openmail-app button:hover:not(:disabled),
+.openmail-app [role="button"]:hover:not([aria-disabled="true"]) {
+  filter: brightness(1.03);
+}
+
+.openmail-app button:active:not(:disabled),
+.openmail-app [role="button"]:active:not([aria-disabled="true"]) {
+  transform: scale(0.98);
+}
+
+.openmail-app button:focus-visible,
+.openmail-app [role="button"]:focus-visible,
+.openmail-app input:focus-visible,
+.openmail-app select:focus-visible,
+.openmail-app textarea:focus-visible,
+.openmail-app a:focus-visible {
+  box-shadow: 0 0 0 2px rgba(100, 150, 255, 0.25);
+}
+
+.openmail-app .card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.openmail-app .card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(12, 20, 32, 0.08);
+}
+
+.openmail-app a {
+  transition: opacity 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.openmail-app a:hover {
+  opacity: 0.92;
+  text-decoration-color: currentColor;
+}
+
+.openmail-app .openmail-thread-row,
+.openmail-app .openmail-situation-row,
+.openmail-app .openmail-folder-btn,
+.openmail-app .mail-body-link,
+.openmail-app .mail-attachment-btn {
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
 @keyframes openmail-settings-section-in {
   from {
     opacity: 0;
