@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Page() {
   return (
-    <div className="h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_15%_10%,rgba(108,66,66,0.045)_0%,rgba(10,10,10,0)_35%),radial-gradient(circle_at_82%_4%,rgba(108,66,66,0.03)_0%,rgba(10,10,10,0)_38%),#0a0a0a] text-[var(--text-main)]">
+    <div className="h-screen w-full overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)]">
       {/* HERO */}
       <main className="mx-auto flex h-full w-full max-w-5xl flex-col justify-center px-6 py-4">
         <section className="text-center">
