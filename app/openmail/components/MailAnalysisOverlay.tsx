@@ -48,7 +48,7 @@ export function MailAnalysisOverlay({ highRisk = false, onComplete }: MailAnalys
 
     const ids: ReturnType<typeof setTimeout>[] = [];
     const schedule = (fn: () => void, ms: number) => {
-      const id = window.setTimeout(() => run(fn), ms);
+      const id: ReturnType<typeof setTimeout> = setTimeout(() => run(fn), ms);
       ids.push(id);
       return id;
     };
