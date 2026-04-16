@@ -123,10 +123,9 @@ html[data-openmail-theme="soft-dark"] {
 }
 
 html[data-openmail-theme="soft-dark"] body {
-  background:
-    radial-gradient(circle at 20% 10%, #161a22 0%, #101216 58%),
-    radial-gradient(circle at 80% 0%, rgba(0, 0, 0, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 65% 80%, rgba(176, 112, 112, 0.018) 0%, transparent 44%);
+  /* Match `MainLayout` shell: solid `--bg-main` only (no body gradients). */
+  background-color: var(--bg-main);
+  background-image: none;
   color: var(--text-main);
 }
 

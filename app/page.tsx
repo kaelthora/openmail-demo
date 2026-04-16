@@ -2,7 +2,10 @@ import Link from "next/link";
 
 export default function Page() {
   return (
-    <div className="h-screen w-full overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)]">
+    <div
+      className="h-screen w-full overflow-hidden text-[var(--text-main)]"
+      style={{ backgroundColor: "var(--bg-main)" }}
+    >
       {/* HERO */}
       <main className="mx-auto flex h-full w-full max-w-5xl flex-col justify-center px-6 py-4">
         <section className="text-center">

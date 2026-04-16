@@ -1,5 +1,3 @@
-import Script from "next/script";
-import { getOpenmailThemeBootScript } from "@/lib/openmailThemeBootScript";
 import { GuardianInterceptProvider } from "./GuardianInterceptProvider";
 import { GuardianTraceProvider } from "./GuardianTraceProvider";
 import MailStoreProvider from "./MailStoreProvider";
@@ -16,11 +14,6 @@ export default function OpenMailLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>
-      <Script
-        id="openmail-theme-boot"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: getOpenmailThemeBootScript() }}
-      />
       <OpenmailThemeProvider>
         <OpenmailPreferencesProvider>
           <UserBehaviorProvider>

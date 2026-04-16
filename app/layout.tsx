@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Script from "next/script";
+import { getOpenmailThemeBootScript } from "@/lib/openmailThemeBootScript";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,8 +14,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="relative bg-gradient-to-br from-[#020617] via-[#020617] to-[#030b1a] text-white">
+    <html lang="en" suppressHydrationWarning>
+      <body className="relative min-h-screen bg-[var(--bg-main)] text-[var(--text-main)]">
+        <Script
+          id="openmail-theme-boot"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: getOpenmailThemeBootScript() }}
+        />
         {children}
       </body>
     </html>
