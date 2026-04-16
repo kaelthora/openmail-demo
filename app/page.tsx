@@ -17,7 +17,7 @@ export default function Page() {
           <Link
             href="/openmail"
             prefetch={false}
-            className="mt-4 inline-block rounded-lg border border-[#6a4444]/55 bg-[#6f4747] px-5 py-2 text-sm font-medium text-[#f2e7e7] no-underline transition hover:scale-105 hover:bg-[#7a4d4d]"
+            className="mt-4 inline-block rounded-lg border border-[#6a4444]/55 bg-[#6f4747] px-5 py-2 text-sm font-medium text-[#f2e7e7] no-underline transition-[background-color,box-shadow] duration-200 ease-out hover:bg-[#583535] hover:shadow-[0_0_28px_rgba(100,52,52,0.12)]"
           >
             Try OpenMail (see how it thinks)
           </Link>
