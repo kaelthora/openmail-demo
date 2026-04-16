@@ -61,6 +61,7 @@ import {
   OPENMAIL_SMART_LIST_TABS,
   type OpenmailSmartListTabId,
 } from "@/lib/openmailListSmartTabs";
+import { MailAnalysisOverlay } from "./MailAnalysisOverlay";
 
 const SMART_INBOX_TAB_ICON: Record<OpenmailSmartListTabId, LucideIcon> = {
   inbox: Inbox,
@@ -792,6 +793,21 @@ export function MailPanel({
     return ids;
   }, [autoResolvedEntries]);
   const [overlayAnimOpen, setOverlayAnimOpen] = useState(false);
+  /** Visual gate only — AI data is unchanged; blocks reading UI until scan animation completes. */
+  const [mailScanReleasedId, setMailScanReleasedId] = useState<string | null>(null);
+  const isAnalyzing =
+    readingMailId != null && mailScanReleasedId !== readingMailId;
+  const handleMailAnalysisComplete = useCallback(() => {
+    if (readingMailId) setMailScanReleasedId(readingMailId);
+  }, [readingMailId]);
+
+  useEffect(() => {
+    if (readingMailId == null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reader closed externally (e.g. mail removed); reset scan gate
+      setMailScanReleasedId(null);
+    }
+  }, [readingMailId]);
+
   const [hoverPreview, setHoverPreview] = useState<{
     mail: ProcessedMail;
     anchor: DOMRect;
@@ -944,6 +960,7 @@ export function MailPanel({
   const closeReadingAnimated = useCallback(
     (afterClose?: () => void) => {
       setOverlayAnimOpen(false);
+      setMailScanReleasedId(null);
       clearOverlayCloseTimer();
       overlayCloseTimerRef.current = setTimeout(() => {
         overlayCloseTimerRef.current = null;
@@ -967,6 +984,11 @@ export function MailPanel({
     return () => cancelAnimationFrame(id);
   }, [readingMail?.id, clearOverlayCloseTimer]);
 
+  const mailAnalysisHighRisk = useMemo(
+    () => (readingMail ? getMailAiRiskBand(readingMail) === "high" : false),
+    [readingMail]
+  );
+
   useEffect(() => {
     if (readingMailId && !mails.some((m) => m.id === readingMailId)) {
       onExitReading();
@@ -984,11 +1006,11 @@ export function MailPanel({
   useEffect(() => {
     if (!readingMailId) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeReadingAnimated();
+      if (e.key === "Escape" && !isAnalyzing) closeReadingAnimated();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [readingMailId, closeReadingAnimated]);
+  }, [readingMailId, closeReadingAnimated, isAnalyzing]);
 
   useEffect(
     () => () => {
@@ -1601,44 +1623,64 @@ export function MailPanel({
                   overlayAnimOpen
                     ? "opacity-100"
                     : "pointer-events-none opacity-0"
-                }`}
-                onClick={() => closeReadingAnimated()}
+                } ${isAnalyzing ? "cursor-not-allowed" : ""}`}
+                onClick={() => {
+                  if (!isAnalyzing) closeReadingAnimated();
+                }}
               />
               <div className="pointer-events-none absolute inset-0 z-[25] flex min-h-0 items-stretch justify-center p-2.5 sm:p-3.5">
                 <div
                   role="dialog"
                   aria-modal="true"
                   aria-labelledby="mail-read-title"
-                  className={`openmail-reading-dialog flex min-h-0 w-full max-w-full flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(11,11,13,0.94)] shadow-[0_28px_72px_rgba(0,0,0,0.72),inset_0_1px_0_rgba(255,255,255,0.06)] transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none [-webkit-backdrop-filter:blur(20px)] backdrop-blur-xl ${
+                  className={`openmail-reading-dialog relative flex min-h-0 w-full max-w-full flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(11,11,13,0.94)] shadow-[0_28px_72px_rgba(0,0,0,0.72),inset_0_1px_0_rgba(255,255,255,0.06)] transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none [-webkit-backdrop-filter:blur(20px)] backdrop-blur-xl ${
                     overlayAnimOpen
                       ? "pointer-events-auto scale-100 opacity-100"
                       : "pointer-events-none scale-[0.97] opacity-0"
                   }`}
                 >
-                  <MailReadingView
-                    key={readingMail.id}
-                    mail={readingMail}
-                    folderLabel={folderLabel}
-                    smartFiling={smartFilingForReading}
-                    onClose={() => closeReadingAnimated()}
-                    onReply={() => closeReadingAnimated()}
-                    onArchive={
-                      onReadingArchive
-                        ? () =>
-                            closeReadingAnimated(() =>
-                              onReadingArchive(readingMail.id)
-                            )
-                        : undefined
-                    }
-                    onDelete={
-                      onReadingDelete
-                        ? () =>
-                            closeReadingAnimated(() =>
-                              onReadingDelete(readingMail.id)
-                            )
-                        : undefined
-                    }
-                  />
+                  <div
+                    className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden ${
+                      isAnalyzing ? "invisible" : ""
+                    }`}
+                    aria-hidden={isAnalyzing}
+                  >
+                    <MailReadingView
+                      key={readingMail.id}
+                      mail={readingMail}
+                      folderLabel={folderLabel}
+                      smartFiling={smartFilingForReading}
+                      onClose={() => {
+                        if (!isAnalyzing) closeReadingAnimated();
+                      }}
+                      onReply={() => {
+                        if (!isAnalyzing) closeReadingAnimated();
+                      }}
+                      onArchive={
+                        onReadingArchive
+                          ? () =>
+                              closeReadingAnimated(() =>
+                                onReadingArchive(readingMail.id)
+                              )
+                          : undefined
+                      }
+                      onDelete={
+                        onReadingDelete
+                          ? () =>
+                              closeReadingAnimated(() =>
+                                onReadingDelete(readingMail.id)
+                              )
+                          : undefined
+                      }
+                    />
+                  </div>
+                  {isAnalyzing ? (
+                    <MailAnalysisOverlay
+                      key={readingMail.id}
+                      highRisk={mailAnalysisHighRisk}
+                      onComplete={handleMailAnalysisComplete}
+                    />
+                  ) : null}
                 </div>
               </div>
             </>
