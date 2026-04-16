@@ -16,7 +16,9 @@ import {
   ChevronRight,
   Clock,
   Inbox,
+  Link2,
   MinusCircle,
+  Paperclip,
   Star,
   type LucideIcon,
 } from "lucide-react";
@@ -24,7 +26,7 @@ import { createPortal } from "react-dom";
 import type { OpenmailSmartFolderId, ProcessedMail } from "@/lib/mailTypes";
 import { EmailBodyWithLinks } from "@/components/EmailBodyWithLinks";
 import { MailAttachments } from "@/components/MailAttachments";
-import { getMailAiRiskBand } from "@/lib/mailContentSecurity";
+import { extractUrlsFromText, getMailAiRiskBand } from "@/lib/mailContentSecurity";
 import type { SecurityRiskLevel } from "@/app/openmail/components/security/types";
 import { RiskBadge } from "@/app/openmail/components/security/RiskBadge";
 import { useOpenmailTheme } from "@/app/openmail/OpenmailThemeProvider";
@@ -164,6 +166,57 @@ function listRowRiskBadgeLevel(mail: ProcessedMail): SecurityRiskLevel {
   }
   if (band === "medium") return "suspicious";
   return "safe";
+}
+
+function mailListRowHasAttachments(mail: ProcessedMail): boolean {
+  return Array.isArray(mail.attachments) && mail.attachments.length > 0;
+}
+
+/** Uses same URL extraction as link analysis (preview + body sample). */
+function mailListRowHasLinks(mail: ProcessedMail): boolean {
+  const blob = [
+    mail.subject ?? "",
+    mail.preview ?? "",
+    (mail.content ?? "").slice(0, 8000),
+  ].join("\n");
+  return extractUrlsFromText(blob).length > 0;
+}
+
+function listRowMetaIconClass(level: SecurityRiskLevel): string {
+  if (level === "dangerous") return "text-red-400/85";
+  if (level === "suspicious" || level === "trusted_flagged") {
+    return "text-amber-400/85";
+  }
+  return "text-emerald-400/80";
+}
+
+function MailListRowContentIcons({
+  mail,
+  riskLevel,
+}: {
+  mail: ProcessedMail;
+  riskLevel: SecurityRiskLevel;
+}) {
+  const showAtt = mailListRowHasAttachments(mail);
+  const showLink = mailListRowHasLinks(mail);
+  if (!showAtt && !showLink) return null;
+  const iconCls = `h-3.5 w-3.5 shrink-0 stroke-[1.5] ${listRowMetaIconClass(riskLevel)}`;
+  const aria =
+    showAtt && showLink
+      ? "Has attachments and links"
+      : showAtt
+        ? "Has attachments"
+        : "Contains links";
+  return (
+    <span
+      className="flex shrink-0 items-center gap-0.5 opacity-95"
+      role="img"
+      aria-label={aria}
+    >
+      {showAtt ? <Paperclip className={iconCls} aria-hidden /> : null}
+      {showLink ? <Link2 className={iconCls} aria-hidden /> : null}
+    </span>
+  );
 }
 
 /** Light theme: left-rail accent on list cards (blocked / urgent / safe). */
@@ -1416,6 +1469,7 @@ export function MailPanel({
                           <span className="text-right text-xs tabular-nums text-[color:var(--text-soft)] opacity-60">
                             {timeLine || "—"}
                           </span>
+                          <MailListRowContentIcons mail={anchor} riskLevel={riskLevel} />
                           <RiskBadge level={riskLevel} size="sm" />
                         </div>
                       </div>
@@ -1525,6 +1579,7 @@ export function MailPanel({
                             Auto-sent by AI
                           </span>
                         ) : null}
+                        <MailListRowContentIcons mail={mail} riskLevel={riskLevel} />
                         <RiskBadge level={riskLevel} size="sm" />
                       </div>
                     </div>
