@@ -27,6 +27,8 @@ import {
   guardianTraceSourceLabel,
 } from "@/lib/guardianTrace";
 import { useGuardianTrace } from "../GuardianTraceProvider";
+import { isGmailDomainEmail } from "@/lib/accountConfigJson";
+import { GMAIL_APP_PASSWORD_HELP_URL } from "@/lib/gmailConnectionHelp";
 import {
   emptyAccountProfile,
   type MailTransportSecurity,
@@ -754,6 +756,22 @@ function SettingsAccountsServer({
             autoComplete="new-password"
           />
         </label>
+        {isGmailDomainEmail(addEmail) ? (
+          <p className={`${hintQuick} mb-2`}>
+            <span className="block font-medium text-[var(--text-main)]">
+              For Gmail:
+            </span>
+            Use an App Password (not your regular password).{" "}
+            <a
+              href={GMAIL_APP_PASSWORD_HELP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-[var(--accent)] underline underline-offset-2 transition-opacity hover:opacity-90"
+            >
+              How to generate it
+            </a>
+          </p>
+        ) : null}
         {addMode === "manual" ? (
           <div className={`mb-2 space-y-3 pt-3 ${manualSep}`}>
             <label className="block">

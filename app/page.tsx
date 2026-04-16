@@ -22,6 +22,10 @@ export default function Page() {
             Try OpenMail (see how it thinks)
           </Link>
 
+          <p className="mt-1.5 text-[10px] leading-snug text-[#9a908d]">
+            Gmail supported (App password required)
+          </p>
+
           <p className="mt-2 text-xs text-[#9a908d]">No tracking. No data. Ever.</p>
         </section>
 

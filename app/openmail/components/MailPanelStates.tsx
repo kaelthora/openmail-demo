@@ -1,5 +1,7 @@
 "use client";
 
+import { GMAIL_APP_PASSWORD_HELP_URL } from "@/lib/gmailConnectionHelp";
+
 type MailListSkeletonProps = {
   rows?: number;
   density: "compact" | "comfortable";
@@ -130,6 +132,18 @@ export function MailListInboxOnboarding({
           Manual setup
         </button>
       </div>
+      <p className="max-w-[280px] text-[10px] leading-relaxed text-[color:var(--text-soft)]">
+        <span className="font-medium text-[var(--text-main)]">For Gmail:</span> use an App
+        Password (not your regular password).{" "}
+        <a
+          href={GMAIL_APP_PASSWORD_HELP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-[var(--accent)] underline underline-offset-2 transition-opacity hover:opacity-90"
+        >
+          How to generate it
+        </a>
+      </p>
       <p className="max-w-[280px] text-[10px] leading-relaxed text-[color:var(--text-soft)]">
         IMAP read-only. Your emails stay on your provider.
       </p>

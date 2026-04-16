@@ -43,6 +43,12 @@ export function parseSmtpConfigJson(value: unknown): SmtpAccountConfig | null {
   };
 }
 
+/** True when the address is hosted on Gmail / Google Mail. */
+export function isGmailDomainEmail(email: string): boolean {
+  const d = email.trim().toLowerCase().split("@")[1] ?? "";
+  return d === "gmail.com" || d === "googlemail.com";
+}
+
 export function inferProviderLabel(email: string): string | null {
   const d = email.trim().toLowerCase().split("@")[1] ?? "";
   if (!d) return null;
