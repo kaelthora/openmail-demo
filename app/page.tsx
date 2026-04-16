@@ -8,7 +8,7 @@ export default function Page() {
         <section className="text-center">
           <h1 className="text-4xl font-semibold md:text-6xl">OpenMail</h1>
           <p className="mt-2 text-base text-gray-300 md:text-lg">
-          An inbox that thinks before you act.
+            Your inbox is being manipulated. OpenMail stops it.
           </p>
 
           <Link
@@ -16,10 +16,19 @@ export default function Page() {
             prefetch={false}
             className="mt-4 inline-block rounded-lg bg-white px-5 py-2 text-sm font-medium text-black no-underline transition hover:scale-105"
           >
-            Secure my inbox
+            Try OpenMail (see how it thinks)
           </Link>
 
           <p className="mt-2 text-xs text-gray-500">No tracking. No data. Ever.</p>
+        </section>
+
+        <section className="mt-4 border-t border-white/5 pt-4 text-left text-sm text-gray-300 md:text-base">
+          <p className="font-semibold text-white">Example</p>
+          <p className="mt-2 text-gray-400">Email: &quot;URGENT: verify your account&quot;</p>
+          <p className="mt-2">OpenMail analysis:</p>
+          <p className="mt-1">→ Domain mismatch (googgle.com)</p>
+          <p>→ Intent: pressure + impersonation</p>
+          <p>→ Decision: BLOCKED</p>
         </section>
 
         {/* THREAT */}
@@ -62,7 +71,11 @@ export default function Page() {
         {/* FINAL */}
         <section className="mt-4 border-t border-white/5 pt-4 text-center">
           <p className="text-xl md:text-2xl">You don&apos;t need a better inbox.</p>
-          <p className="mt-1 text-2xl font-semibold md:text-3xl">You need protection.</p>
+          <p className="mt-1 text-2xl font-semibold md:text-3xl">
+            Most scams don&apos;t look like scams.
+            <br />
+            That&apos;s why they work.
+          </p>
         </section>
       </main>
     </div>
