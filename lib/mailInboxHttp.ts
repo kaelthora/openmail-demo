@@ -4,6 +4,7 @@ import {
   isAccountNotFoundInboxMessage,
   isLegacyImapEnvMissingMessage,
 } from "@/lib/legacyImapEnvMissing";
+import { inboxDiag } from "@/lib/openmailInboxDiag";
 import { listInboxEmailListItems } from "@/lib/mailInboxFetch";
 
 export type ParsedInboxScope =
@@ -43,6 +44,10 @@ export async function parseInboxFetchRequest(
     }
   }
 
+  inboxDiag("mail-fetch-api", "parseInboxFetchRequest:reject", {
+    reason: "missing_accountId_and_legacy",
+    method: request.method,
+  });
   return {
     ok: false,
     response: NextResponse.json(
@@ -70,11 +75,18 @@ export async function jsonMailInboxListResponse(
 ): Promise<Response> {
   try {
     const emails = await listInboxEmailListItems(accountId);
+    inboxDiag("mail-fetch-api", "jsonMailInboxListResponse:ok", {
+      accountId: accountId ?? "legacy",
+      emailCount: emails.length,
+    });
     return NextResponse.json({ emails });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to load mail";
     /** Legacy IMAP with no env vars — first-run, not a server outage. */
     if (accountId == null && isLegacyImapEnvMissingMessage(message)) {
+      inboxDiag("mail-fetch-api", "jsonMailInboxListResponse:setupRequired_legacyEnv", {
+        messageSnippet: message.slice(0, 120),
+      });
       return NextResponse.json({
         emails: [] as EmailListItem[],
         setupRequired: true,
@@ -82,12 +94,21 @@ export async function jsonMailInboxListResponse(
     }
     /** Prisma row gone (e.g. removed account) — prompt to connect, not 404 error UI. */
     if (accountId != null && isAccountNotFoundInboxMessage(message)) {
+      inboxDiag("mail-fetch-api", "jsonMailInboxListResponse:setupRequired_accountGone", {
+        accountId,
+        messageSnippet: message.slice(0, 120),
+      });
       return NextResponse.json({
         emails: [] as EmailListItem[],
         setupRequired: true,
       });
     }
     const status = inboxFetchErrorStatus(message);
+    inboxDiag("mail-fetch-api", "jsonMailInboxListResponse:error", {
+      accountId: accountId ?? "legacy",
+      status,
+      messageSnippet: message.slice(0, 160),
+    });
     return NextResponse.json(
       { error: message, emails: [] as EmailListItem[] },
       { status }

@@ -7,6 +7,7 @@ import {
 // DEMO MODE: Prisma disabled for Vercel deployment (stub in lib/db.ts)
 import { prisma } from "@/lib/db";
 import type { ImapAccountConfig, SmtpAccountConfig } from "@/lib/mailAccountConfig";
+import { inboxDiag } from "@/lib/openmailInboxDiag";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,11 +61,17 @@ export async function GET() {
     const rows = await prisma.account.findMany({
       orderBy: { createdAt: "asc" },
     });
-    return NextResponse.json({
-      accounts: rows.map(sanitizeAccount),
+    const accounts = rows.map(sanitizeAccount);
+    inboxDiag("mail-fetch-api", "GET /api/accounts:ok", {
+      accountCount: accounts.length,
+      ids: accounts.map((a) => a.id),
     });
+    return NextResponse.json({ accounts });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to list accounts";
+    inboxDiag("mail-fetch-api", "GET /api/accounts:error", {
+      message: message.slice(0, 200),
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

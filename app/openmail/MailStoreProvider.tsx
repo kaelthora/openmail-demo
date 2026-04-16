@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -39,9 +40,15 @@ import {
   isLegacyImapEnvMissingMessage,
 } from "@/lib/legacyImapEnvMissing";
 import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
+import { inboxDiag } from "@/lib/openmailInboxDiag";
 
 const INBOX_SCOPE_KEY = "openmail-inbox-scope-v1";
 const INBOX_CACHE_KEY = "openmail-inbox-cache-v1";
+
+/** Survives React Strict Mode remount so hydrate log fires once per tab load. */
+let inboxHydrateDiagModuleLogged = false;
+
+let latestRequestId = 0;
 
 type InboxSessionCache = {
   mails: MailItem[];
@@ -176,6 +183,21 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   const mailsRef = useRef(mails);
   mailsRef.current = mails;
 
+  useLayoutEffect(() => {
+    if (OPENMAIL_DEMO_MODE || inboxHydrateDiagModuleLogged) return;
+    inboxHydrateDiagModuleLogged = true;
+    inboxDiag("mail-store", "hydrate:initialState", {
+      mailsCount: mails.length,
+      inboxRows: mails.filter((m) => m.folder === "inbox").length,
+      selectedMailId,
+      inboxScope,
+      hadSessionCache: cached != null,
+      sessionCacheMails: cached?.mails?.length ?? 0,
+    });
+    // Intentionally once per page load (see module flag); snapshot right after first paint.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- diagnostic snapshot only
+  }, []);
+
   /** Latest silent inbox fetch — superseded requests abort so UI never flashes stale data. */
   const silentInboxFetchRef = useRef<AbortController | null>(null);
   /** Coalesce burst `new_mail` events to one refresh per animation frame (instant vs fixed delay). */
@@ -186,7 +208,19 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     accountId?: ServerInboxScope;
   }) => {
     if (OPENMAIL_DEMO_MODE) return { ok: true };
+    const requestId = Date.now();
+    latestRequestId = requestId;
     const silent = opts?.silent === true;
+    const scope = opts?.accountId ?? inboxScope;
+    inboxDiag("mail-store", "refreshMailsFromApi:start", {
+      silent,
+      scope,
+      inboxScopeState: inboxScope,
+      accountIdOpt: opts?.accountId ?? null,
+      prevMailsTotal: mailsRef.current.length,
+      prevInboxCount: mailsRef.current.filter((m) => m.folder === "inbox")
+        .length,
+    });
     if (!silent) {
       setMailsFetchError(null);
       setMailsLoading(true);
@@ -197,7 +231,6 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     }
     const signal = silent ? silentInboxFetchRef.current?.signal : undefined;
     try {
-      const scope = opts?.accountId ?? inboxScope;
       const q =
         scope === "legacy"
           ? "?legacy=1"
@@ -211,6 +244,19 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         error?: string;
         setupRequired?: boolean;
       };
+      inboxDiag("mail-store", "refreshMailsFromApi:response", {
+        silent,
+        scope,
+        httpStatus: res.status,
+        ok: res.ok,
+        emailCount: Array.isArray(data.emails) ? data.emails.length : -1,
+        setupRequired: data.setupRequired === true,
+        errorSnippet: typeof data.error === "string" ? data.error.slice(0, 160) : null,
+      });
+      if (requestId !== latestRequestId) {
+        console.warn("[OpenMail] Ignoring outdated response");
+        return { ok: true };
+      }
       if (!res.ok) {
         const msg = data.error || "Could not load messages";
         /** Stale/deleted saved account, or legacy env missing — onboarding, not outage. */
@@ -218,6 +264,10 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
           isAccountNotFoundInboxMessage(msg) ||
           (scope === "legacy" && isLegacyImapEnvMissingMessage(msg));
         if (onboardingFetch) {
+          inboxDiag("mail-store", "refreshMailsFromApi:onboardingStripInbox", {
+            scope,
+            msgSnippet: msg.slice(0, 120),
+          });
           setInboxSetupRequired(true);
           setMailsFetchError(null);
           setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
@@ -226,37 +276,72 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         }
         setInboxSetupRequired(false);
         if (!silent) setMailsFetchError(msg);
+        inboxDiag("mail-store", "refreshMailsFromApi:httpErrorNoMerge", {
+          scope,
+          msgSnippet: msg.slice(0, 120),
+        });
         return { ok: false, error: msg };
       }
       if (data.setupRequired === true) {
+        inboxDiag("mail-store", "refreshMailsFromApi:setupRequiredStripInbox", {
+          scope,
+          emailCount: Array.isArray(data.emails) ? data.emails.length : 0,
+        });
         setInboxSetupRequired(true);
         setMailsFetchError(null);
-        setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
+        setMails((prev) => {
+          console.warn("[OpenMail] setupRequired → preserving inbox");
+          return prev;
+        });
         setSelectedMailId("");
         return { ok: true, setupRequired: true };
       }
       setInboxSetupRequired(false);
       const incoming = (data.emails ?? []).map(emailApiItemToMailItem);
+      const incomingInbox = incoming.filter((m) => m.folder === "inbox");
       setMails((prev) => {
+        if (!incomingInbox || incomingInbox.length === 0) {
+          console.warn("[OpenMail] Empty inbox fetch → keeping previous inbox");
+          return prev;
+        }
         const rest = prev.filter((m) => m.folder !== "inbox");
-        return [...incoming, ...rest];
+        const next = [...incomingInbox, ...rest];
+        inboxDiag("mail-store", "refreshMailsFromApi:mergeInbox", {
+          silent,
+          scope,
+          prevTotal: prev.length,
+          prevInbox: prev.filter((m) => m.folder === "inbox").length,
+          incomingInbox: incomingInbox.length,
+          restNonInbox: rest.length,
+          nextTotal: next.length,
+        });
+        return next;
       });
-      setSelectedMailId((sel) => {
-        if (sel && incoming.some((m) => m.id === sel)) return sel;
-        const first = incoming.find((m) => !m.deleted);
-        return first?.id ?? "";
-      });
+      if (incomingInbox.length > 0) {
+        setSelectedMailId((sel) => {
+          if (sel && incoming.some((m) => m.id === sel)) return sel;
+          const first = incoming.find((m) => !m.deleted);
+          return first?.id ?? "";
+        });
+      }
       return { ok: true };
     } catch (e) {
       const aborted =
         (e instanceof DOMException && e.name === "AbortError") ||
         (e instanceof Error && e.name === "AbortError");
       if (silent && aborted) {
+        inboxDiag("mail-store", "refreshMailsFromApi:abortedSilent", { scope });
         return { ok: true };
       }
       setInboxSetupRequired(false);
       const msg = e instanceof Error ? e.message : "Could not load messages";
       if (!silent) setMailsFetchError(msg);
+      inboxDiag("mail-store", "refreshMailsFromApi:catch", {
+        scope,
+        silent,
+        aborted,
+        msg,
+      });
       return { ok: false, error: msg };
     } finally {
       if (!silent) setMailsLoading(false);
@@ -368,6 +453,10 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       setSelectedMailId("");
       return;
     }
+    inboxDiag("mail-store", "boot:accountsFetchStart", {
+      initialMailsCount: mailsRef.current.length,
+      initialInboxScope: inboxScope,
+    });
     void (async () => {
       try {
         const r = await fetch("/api/accounts");
@@ -385,13 +474,24 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         const prevScope: ServerInboxScope =
           !saved || saved === "legacy" ? "legacy" : saved;
         const next = reconcileInboxScopeAfterAccountListLoad(prevScope, list);
+        inboxDiag("mail-store", "boot:accountsResolved", {
+          accountsHttpOk: r.ok,
+          accountsCount: list.length,
+          savedScopeKey: saved,
+          prevScope,
+          nextScope: next,
+          scopeChanged: next !== prevScope,
+        });
         try {
           sessionStorage.setItem(INBOX_SCOPE_KEY, next);
         } catch {
           /* private mode */
         }
         setInboxScope(next);
-      } catch {
+      } catch (bootErr) {
+        inboxDiag("mail-store", "boot:accountsFetchFailed", {
+          err: bootErr instanceof Error ? bootErr.message : String(bootErr),
+        });
         setServerMailAccounts([]);
         setInboxScope("legacy");
       }
@@ -400,6 +500,9 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
 
   useEffect(() => {
     if (OPENMAIL_DEMO_MODE) return;
+    inboxDiag("mail-store", "effect:inboxScopeChanged→refresh", {
+      inboxScope,
+    });
     void refreshMailsFromApi();
   }, [inboxScope, refreshMailsFromApi]);
 
