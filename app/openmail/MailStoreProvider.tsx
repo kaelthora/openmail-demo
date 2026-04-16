@@ -44,6 +44,7 @@ import { inboxDiag } from "@/lib/openmailInboxDiag";
 
 const INBOX_SCOPE_KEY = "openmail-inbox-scope-v1";
 const INBOX_CACHE_KEY = "openmail-inbox-cache-v1";
+const INBOX_CACHE_KEY_ALT = "openmail-inbox-cache";
 
 /** Survives React Strict Mode remount so hydrate log fires once per tab load. */
 let inboxHydrateDiagModuleLogged = false;
@@ -58,21 +59,24 @@ type InboxSessionCache = {
 
 function loadInboxSessionCache(): InboxSessionCache | null {
   if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(INBOX_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<InboxSessionCache>;
-    if (!parsed || !Array.isArray(parsed.mails)) return null;
-    const selected =
-      typeof parsed.selectedMailId === "string" ? parsed.selectedMailId : "";
-    const scope =
-      typeof parsed.inboxScope === "string" && parsed.inboxScope.length > 0
-        ? (parsed.inboxScope as ServerInboxScope)
-        : "legacy";
-    return { mails: parsed.mails, selectedMailId: selected, inboxScope: scope };
-  } catch {
-    return null;
+  for (const key of [INBOX_CACHE_KEY, INBOX_CACHE_KEY_ALT]) {
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw) as Partial<InboxSessionCache>;
+      if (!parsed || !Array.isArray(parsed.mails)) continue;
+      const selected =
+        typeof parsed.selectedMailId === "string" ? parsed.selectedMailId : "";
+      const scope =
+        typeof parsed.inboxScope === "string" && parsed.inboxScope.length > 0
+          ? (parsed.inboxScope as ServerInboxScope)
+          : "legacy";
+      return { mails: parsed.mails, selectedMailId: selected, inboxScope: scope };
+    } catch {
+      /* try next key */
+    }
   }
+  return null;
 }
 
 /** After loading `/api/accounts`, keep scope valid so mail fetch never uses a removed id. */
@@ -223,7 +227,12 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     });
     if (!silent) {
       setMailsFetchError(null);
-      setMailsLoading(true);
+      const keepListVisible = mailsRef.current.some(
+        (m) => m.folder === "inbox" && !m.deleted
+      );
+      if (!keepListVisible) {
+        setMailsLoading(true);
+      }
     } else {
       silentInboxFetchRef.current?.abort();
       const ac = new AbortController();
@@ -394,6 +403,21 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       const list = j.accounts ?? [];
       setServerMailAccounts(list);
       setInboxScope((prev) => {
+        if (list.length === 0) {
+          if (prev !== "legacy") {
+            const hasInbox = mailsRef.current.some(
+              (m) => m.folder === "inbox" && !m.deleted
+            );
+            if (hasInbox) return prev;
+          }
+          if (prev === "legacy") return prev;
+          try {
+            sessionStorage.setItem(INBOX_SCOPE_KEY, "legacy");
+          } catch {
+            /* private mode */
+          }
+          return "legacy";
+        }
         const next = reconcileInboxScopeAfterAccountListLoad(prev, list);
         if (next === prev) return prev;
         try {
@@ -510,10 +534,13 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   useEffect(() => {
     if (OPENMAIL_DEMO_MODE) return;
     try {
-      sessionStorage.setItem(
-        INBOX_CACHE_KEY,
-        JSON.stringify({ mails, selectedMailId, inboxScope } satisfies InboxSessionCache)
-      );
+      const payload = JSON.stringify({
+        mails,
+        selectedMailId,
+        inboxScope,
+      } satisfies InboxSessionCache);
+      sessionStorage.setItem(INBOX_CACHE_KEY, payload);
+      sessionStorage.setItem(INBOX_CACHE_KEY_ALT, payload);
     } catch {
       /* private mode */
     }
