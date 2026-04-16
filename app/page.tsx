@@ -3,84 +3,94 @@ import Link from "next/link";
 export default function Page() {
   return (
     <div
-      className="flex h-screen max-h-screen w-full flex-col items-center justify-center overflow-hidden px-5 py-3"
-      style={{ backgroundColor: "#050505" }}
+      className="flex h-screen max-h-screen w-full flex-col overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(ellipse 95% 70% at 50% 22%, #140c0c 0%, #0a0707 38%, #050505 72%)",
+      }}
     >
-      <main className="flex w-full min-h-0 max-h-full max-w-[720px] flex-col items-center justify-center">
-        <div className="flex w-full min-h-0 max-h-full flex-col gap-4 overflow-hidden text-[clamp(14px,1.85vmin,16px)] leading-[1.28] text-[#b8b0ab]">
-          {/* Hero — tight, impactful */}
-          <section className="shrink-0 text-center">
-            <h1 className="text-[clamp(40px,5.5vmin,48px)] font-bold leading-[1.05] tracking-tight text-[#f5f2f0]">
-              OpenMail
-            </h1>
-            <div className="mt-1 space-y-0 text-[clamp(14px,1.85vmin,16px)] leading-[1.35] text-[#c9c2bd]">
-              <p>Your inbox is being manipulated.</p>
-              <p>OpenMail sees it.</p>
-              <p>Before you do.</p>
-            </div>
+      <main className="mx-auto flex h-full min-h-0 w-full max-w-[720px] flex-col justify-between px-5 pb-6 pt-5 sm:px-6">
+        {/* Hero — top dominance */}
+        <section className="shrink-0 text-center">
+          <h1 className="text-[clamp(40px,6vmin,52px)] font-bold leading-[0.98] tracking-[-0.02em] text-[#f7f5f4]">
+            OpenMail
+          </h1>
+          <div className="mt-1.5 space-y-0 leading-[1.28] text-[clamp(14px,1.9vmin,16px)] text-[#9d948f]">
+            <p>Your inbox is being manipulated.</p>
+            <p>OpenMail sees it.</p>
+            <p>Before you do.</p>
+          </div>
 
-            <Link
-              href="/openmail"
-              prefetch={false}
-              className="mt-2 inline-block rounded-lg border border-[#6a4444]/55 bg-[#5c3838] px-5 py-2 text-[15px] font-semibold leading-tight text-[#f8f4f3] no-underline shadow-[0_0_0_1px_rgba(106,68,68,0.25)] transition-[background-color,box-shadow] duration-200 ease-out hover:bg-[#4a2d2d] hover:shadow-[0_0_24px_rgba(120,60,60,0.15)]"
-            >
-              Secure my inbox
-            </Link>
+          <Link
+            href="/openmail"
+            prefetch={false}
+            className="mt-2.5 inline-block rounded-[10px] border border-[#5c3535]/80 bg-[#3d2222] px-6 py-2.5 text-[15px] font-semibold leading-tight text-[#fffefd] no-underline shadow-[0_0_0_1px_rgba(90,45,45,0.4),0_0_40px_rgba(110,40,40,0.18)] transition-[background-color,box-shadow,transform] duration-200 ease-out hover:bg-[#351d1d] hover:shadow-[0_0_0_1px_rgba(120,55,55,0.45),0_0_48px_rgba(130,45,45,0.22)] active:scale-[0.99]"
+          >
+            Secure my inbox
+          </Link>
 
-            <p className="mt-2 text-[13px] leading-tight text-[#8a827d]">
-              No tracking. No data. Ever.
-            </p>
-          </section>
+          <p className="mt-2 text-[12px] font-medium leading-tight tracking-wide text-[#6e6763]">
+            No tracking. No data. Ever.
+          </p>
+        </section>
 
-          {/* Core — compact */}
-          <section className="shrink-0 border-t border-[#2a2424] pt-4 text-left">
-            <p className="text-[clamp(20px,2.4vmin,24px)] font-semibold leading-[1.2] text-[#ebe6e3]">
+        {/* Center column: impact + ethics + intelligence */}
+        <div className="flex min-h-0 w-full flex-1 flex-col justify-center gap-5 overflow-hidden py-2">
+          {/* Core — visual centerpiece */}
+          <section className="shrink-0 rounded-lg px-1 py-3 text-left sm:px-2 sm:py-4">
+            <p className="text-[clamp(22px,3.8vmin,30px)] font-semibold leading-[1.12] tracking-[-0.015em] text-[#ece8e5]">
               You don&apos;t read emails wrong.
             </p>
-            <p className="mt-1 text-[clamp(22px,2.65vmin,26px)] font-bold leading-[1.18] text-[#faf8f6]">
+            <p className="mt-2 text-[clamp(28px,5vmin,40px)] font-extrabold leading-[1.08] tracking-[-0.02em] text-[#ffffff]">
               You get manipulated.
             </p>
-
-            <div className="mt-2 space-y-0 text-[clamp(14px,1.85vmin,16px)] leading-[1.35] text-[#c4bcb7]">
-              <p>OpenMail detects it instantly.</p>
-              <p>But it never decides for you.</p>
-              <p>No tracking.</p>
-              <p>No data collection.</p>
-              <p>No hidden actions.</p>
-              <p className="text-[#b5aea9]">Not even us.</p>
-            </div>
           </section>
 
-          {/* AI / investor */}
-          <section className="shrink-0 border-t border-[#2a2424] pt-4 text-left">
-            <p className="text-[clamp(14px,1.85vmin,16px)] font-medium text-[#a69e99]">
+          {/* Ethics — trust */}
+          <section className="shrink-0 space-y-1.5 text-left text-[clamp(13px,1.75vmin,15px)] leading-[1.38] text-[#5c5652]">
+            <p>OpenMail detects it instantly.</p>
+            <p>
+              But it{" "}
+              <span className="font-semibold text-[#b5aca6]">never decides for you</span>.
+            </p>
+            <p>No tracking.</p>
+            <p>No data collection.</p>
+            <p>No hidden actions.</p>
+            <p className="pt-0.5 font-semibold text-[#d8d2cd]">
+              You stay in control. Always.
+            </p>
+          </section>
+
+          {/* Intelligence */}
+          <section className="shrink-0 text-left">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#5a5450]">
               OpenMail doesn&apos;t filter emails.
             </p>
-            <p className="mt-1.5 text-[clamp(22px,2.65vmin,26px)] font-bold leading-[1.2] text-[#faf8f6]">
+            <p className="mt-2 text-[clamp(24px,4.2vmin,34px)] font-bold leading-[1.1] tracking-[-0.02em] text-[#f2eeeb]">
               It reads intent.
             </p>
-            <ul className="mt-2 space-y-0.5 font-mono text-[13px] leading-[1.4] text-[#9a928d]">
-              <li>→ Intent analysis</li>
-              <li>→ Behavioral patterns</li>
-              <li>→ Domain validation</li>
-              <li>→ Risk scoring</li>
-              <li>→ Autonomous protection</li>
+            <ul className="mt-2.5 space-y-0.5 font-mono text-[11.5px] leading-[1.45] text-[#6e6661] sm:text-[12px]">
+              <li>Intent analysis</li>
+              <li>Behavioral patterns</li>
+              <li>Domain validation</li>
+              <li>Risk scoring</li>
+              <li>Autonomous protection</li>
             </ul>
-            <p className="mt-2 text-[clamp(14px,1.85vmin,16px)] font-medium text-[#a89f9a]">
+            <p className="mt-2.5 text-[clamp(13px,1.75vmin,15px)] font-medium text-[#8a827c]">
               No rules. Just decisions.
             </p>
           </section>
-
-          {/* Final */}
-          <section className="shrink-0 border-t border-[#2a2424] pt-4 text-center">
-            <p className="text-[clamp(20px,2.4vmin,24px)] font-semibold text-[#e8e3e0]">
-              You don&apos;t need a better inbox.
-            </p>
-            <p className="mt-1 text-[clamp(22px,2.7vmin,26px)] font-bold leading-[1.12] text-[#ffffff]">
-              You need control.
-            </p>
-          </section>
         </div>
+
+        {/* Final — bottom lock */}
+        <section className="shrink-0 text-center">
+          <p className="text-[clamp(18px,2.6vmin,22px)] font-medium leading-snug text-[#c4bbb5]">
+            You don&apos;t need a better inbox.
+          </p>
+          <p className="mt-1 text-[clamp(22px,3.2vmin,28px)] font-bold leading-[1.1] tracking-[-0.02em] text-[#f0ebe8]">
+            You need <span className="font-black text-white">control</span>.
+          </p>
+        </section>
       </main>
     </div>
   );
