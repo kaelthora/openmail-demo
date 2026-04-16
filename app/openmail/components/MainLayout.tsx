@@ -222,6 +222,11 @@ export function MainLayout({
   const toggleSidebar = useCallback(() => setSidebarOpen((o) => !o), []);
   const [composeOpen, setComposeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  /** True while the reading-pane mail security overlay runs — AI Decision stays in “Analyzing…”. */
+  const [readingAnalysisPending, setReadingAnalysisPending] = useState(false);
+  const handleReadingAnalysisChange = useCallback((pending: boolean) => {
+    setReadingAnalysisPending(pending);
+  }, []);
   const [accountsAddModeIntent, setAccountsAddModeIntent] = useState<
     "quick" | "manual" | null
   >(null);
@@ -328,10 +333,12 @@ export function MainLayout({
             timeCompression={timeCompression}
             smartFilingPrompt={quickClassifyPrompt ?? null}
             listToolbar={listToolbar}
+            onReadingAnalysisChange={handleReadingAnalysisChange}
           />
           <AIPanel
             selectedMail={selectedMail}
             readingMailId={readingMailId}
+            readingAnalysisPending={readingAnalysisPending}
             actionLabel={actionLabel}
             onProceed={onProceed}
             proceedBusy={proceedBusy}

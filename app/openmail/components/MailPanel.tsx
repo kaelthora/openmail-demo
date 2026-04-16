@@ -138,6 +138,8 @@ type MailPanelProps = {
     onSpam: () => void;
     showMove?: boolean;
   } | null;
+  /** Keeps AI Decision panel in sync with the reading-pane security overlay (visual only). */
+  onReadingAnalysisChange?: (pending: boolean) => void;
 };
 
 type ListDensity = "compact" | "comfortable";
@@ -733,6 +735,7 @@ export function MailPanel({
   showInboxOnboarding = false,
   onInboxConnectGmail,
   onInboxManualSetup,
+  onReadingAnalysisChange,
 }: MailPanelProps) {
   const { mailsFetchError: storeMailsFetchError } = useMailStore();
   const listErrorCombined = (listFetchError ?? storeMailsFetchError ?? "").trim();
@@ -807,6 +810,10 @@ export function MailPanel({
       setMailScanReleasedId(null);
     }
   }, [readingMailId]);
+
+  useLayoutEffect(() => {
+    onReadingAnalysisChange?.(isAnalyzing);
+  }, [isAnalyzing, onReadingAnalysisChange]);
 
   const [hoverPreview, setHoverPreview] = useState<{
     mail: ProcessedMail;

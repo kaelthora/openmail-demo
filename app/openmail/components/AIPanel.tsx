@@ -34,6 +34,8 @@ type AIPanelProps = {
   selectedMail: ProcessedMail | null;
   /** When set to the same mail, reply textarea is not auto-focused (reading overlay). */
   readingMailId?: string | null;
+  /** While true, CORE holds final AI decision UI until the reading-pane scan overlay finishes. */
+  readingAnalysisPending?: boolean;
   actionLabel: string;
   onProceed: () => void | Promise<void>;
   proceedBusy?: boolean;
@@ -550,6 +552,7 @@ function isListSearchField(el: Element | null): boolean {
 export function AIPanel({
   selectedMail,
   readingMailId = null,
+  readingAnalysisPending = false,
   actionLabel,
   onProceed,
   proceedBusy = false,
@@ -617,6 +620,14 @@ export function AIPanel({
     suggestionPreviewIndexRef.current = null;
   }, [selectedMail?.id]);
 
+  const inReadingScan = useMemo(
+    () =>
+      readingAnalysisPending === true &&
+      readingMailId != null &&
+      selectedMail?.id === readingMailId,
+    [readingAnalysisPending, readingMailId, selectedMail?.id]
+  );
+
   useEffect(() => {
     const clearThinkingTimers = () => {
       for (const id of thinkingTimersRef.current) {
@@ -629,6 +640,22 @@ export function AIPanel({
       setThinkingStep(null);
       return;
     }
+
+    if (inReadingScan) {
+      setThinkingStep(0);
+      return clearThinkingTimers;
+    }
+
+    const readingUnlockedSameMail =
+      readingMailId != null &&
+      readingMailId === selectedMail.id &&
+      readingAnalysisPending === false;
+
+    if (readingUnlockedSameMail) {
+      setThinkingStep(null);
+      return clearThinkingTimers;
+    }
+
     if (shouldSkipAiThinkingSequence()) {
       setThinkingStep(null);
       return;
@@ -643,7 +670,7 @@ export function AIPanel({
     }, AI_THINKING_STEP_MS * AI_THINKING_STEPS.length + AI_THINKING_STEP_MS);
     thinkingTimersRef.current.push(doneId);
     return clearThinkingTimers;
-  }, [selectedMail?.id]);
+  }, [selectedMail?.id, inReadingScan, readingAnalysisPending, readingMailId]);
 
   useEffect(() => {
     if (!selectedMail?.id) return;
@@ -875,18 +902,19 @@ export function AIPanel({
           AI Decision Core
         </h2>
 
-        {selectedMail && thinkingStep !== null ? (
+        {selectedMail && (thinkingStep !== null || inReadingScan) ? (
           <div
             className="openmail-ai-thinking -mt-1 mb-3 shrink-0"
             role="status"
             aria-live="polite"
             aria-atomic="true"
+            aria-busy={inReadingScan}
           >
             <p
-              key={thinkingStep}
+              key={inReadingScan ? "scan" : thinkingStep}
               className="openmail-ai-thinking-label text-[11px] font-medium leading-snug tracking-[0.02em] text-[color:var(--text-soft)]"
             >
-              {AI_THINKING_STEPS[thinkingStep]}
+              {inReadingScan ? "Analyzing…" : AI_THINKING_STEPS[thinkingStep!]}
             </p>
           </div>
         ) : null}
@@ -899,9 +927,11 @@ export function AIPanel({
         >
           <div
             className={`min-h-0 shrink-0 transition-opacity duration-300 ease-out ${
-              selectedMail && thinkingStep !== null && aiPrefs.autoAnalyze
-                ? "pointer-events-none select-none opacity-[0.22]"
-                : "opacity-100"
+              inReadingScan
+                ? "pointer-events-none select-none opacity-0 blur-[2px]"
+                : selectedMail && thinkingStep !== null && aiPrefs.autoAnalyze
+                  ? "pointer-events-none select-none opacity-[0.22]"
+                  : "opacity-100"
             }`}
           >
             {aiPrefs.autoAnalyze ? (
@@ -930,7 +960,11 @@ export function AIPanel({
             ) : null}
           </div>
 
-          <div className="openmail-ai-reply-stack mt-6 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-t border-[var(--border)] pt-7">
+          <div
+            className={`openmail-ai-reply-stack mt-6 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-t border-[var(--border)] pt-7 transition-opacity duration-300 ease-out ${
+              inReadingScan ? "pointer-events-none select-none opacity-0 blur-[1px]" : "opacity-100"
+            }`}
+          >
             {selectedMail && highRiskUiLock ? (
               <div
                 className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2.5 text-[12px] font-semibold leading-snug text-red-100 shadow-[0_0_20px_rgba(220,38,38,0.12)]"
