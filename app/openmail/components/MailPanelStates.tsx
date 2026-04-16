@@ -133,15 +133,18 @@ export function MailListInboxOnboarding({
         </button>
       </div>
       <p className="max-w-[280px] text-[10px] leading-relaxed text-[color:var(--text-soft)]">
-        <span className="font-medium text-[var(--text-main)]">For Gmail:</span> use an App
-        Password (not your regular password).{" "}
+        Gmail requires an App Password for security.
+        <br />
+        Your regular password won&apos;t work.
+        <br />
+        <br />
         <a
           href={GMAIL_APP_PASSWORD_HELP_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-[var(--accent)] underline underline-offset-2 transition-opacity hover:opacity-90"
+          className="font-semibold text-[var(--accent)] underline underline-offset-2 transition-opacity hover:opacity-90"
         >
-          How to generate it
+          Generate it in 30 seconds →
         </a>
       </p>
       <p className="max-w-[280px] text-[10px] leading-relaxed text-[color:var(--text-soft)]">
