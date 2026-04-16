@@ -2,8 +2,8 @@ export type OpenmailUiTheme = "soft-dark" | "soft-intelligence-light";
 
 export const OPENMAIL_THEME_STORAGE_KEY = "openmail-ui-theme-v1";
 
-/** Default: Light (premium). Legacy values map to Soft dark. */
-export const OPENMAIL_THEME_DEFAULT: OpenmailUiTheme = "soft-intelligence-light";
+/** Default: Soft dark. Legacy values map to Soft dark. */
+export const OPENMAIL_THEME_DEFAULT: OpenmailUiTheme = "soft-dark";
 
 const THEMES: readonly OpenmailUiTheme[] = ["soft-dark", "soft-intelligence-light"];
 

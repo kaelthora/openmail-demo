@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useOpenmailTheme } from "@/app/openmail/OpenmailThemeProvider";
 
 type OpenMailTopNavProps = {
   /** Mailbox / session label (email or legacy env). */
@@ -61,6 +62,34 @@ function IconSettings({ className }: { className?: string }) {
   );
 }
 
+function IconMoon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconSun({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M12 2.75v2.5M12 18.75v2.5M21.25 12h-2.5M5.25 12h-2.5M18.54 5.46l-1.77 1.77M7.23 16.77l-1.77 1.77M18.54 18.54l-1.77-1.77M7.23 7.23 5.46 5.46"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function IconUser({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -100,6 +129,7 @@ export function OpenMailTopNav({
   profilePrimary,
   profileSecondary,
 }: OpenMailTopNavProps) {
+  const { theme, setTheme } = useOpenmailTheme();
   const identity = accountIdentity.trim() || "OpenMail";
   const folder = folderLabel.trim() || "Inbox";
   const initials = useMemo(() => accountAvatarInitials(identity), [identity]);
@@ -109,6 +139,7 @@ export function OpenMailTopNav({
   );
   const [profileOpen, setProfileOpen] = useState(false);
   const profileWrapRef = useRef<HTMLDivElement>(null);
+  const darkMode = theme === "soft-dark";
 
   useEffect(() => {
     if (!profileOpen) return;
@@ -195,6 +226,22 @@ export function OpenMailTopNav({
             }}
           >
             <IconSettings className="h-[18px] w-[18px]" />
+          </button>
+          <button
+            type="button"
+            className={navIconBtn}
+            aria-label={darkMode ? "Switch to light theme" : "Switch to dark theme"}
+            aria-pressed={darkMode}
+            onClick={() => {
+              setProfileOpen(false);
+              setTheme(darkMode ? "soft-intelligence-light" : "soft-dark");
+            }}
+          >
+            {darkMode ? (
+              <IconSun className="h-[18px] w-[18px]" />
+            ) : (
+              <IconMoon className="h-[18px] w-[18px]" />
+            )}
           </button>
 
           <div ref={profileWrapRef} className="relative ml-0.5">
