@@ -530,11 +530,14 @@ function MailReadingView({
     onDismiss: () => void;
   } | null;
 }) {
+  const { setAppMode } = useAppMode();
   const { theme } = useOpenmailTheme();
   const isLightTheme = theme === "soft-intelligence-light";
   const securityInput = useMemo(() => toSecurityInput(mail), [mail]);
   const attachmentItems = useMemo(() => toAttachmentItems(mail), [mail]);
   const mailRisk = useMemo(() => getMailAiRiskBand(mail), [mail]);
+  const showDemoConvertBox =
+    mailRisk === "high" && !!mail.demoClassification && mail.demoClassification.label === "BLOCKED";
   const senderLine = mail.sender || mail.title || "—";
   const subjectLine = mail.subject?.trim() || "(No subject)";
   const dateLine = formatMailDate(mail.date);
@@ -682,6 +685,28 @@ function MailReadingView({
                 </p>
               </>
             )}
+          </div>
+        ) : null}
+        {showDemoConvertBox ? (
+          <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-950/20 px-4 py-3.5">
+            <p className="text-[14px] font-semibold text-amber-100/95">
+              You wouldn&apos;t have caught this.
+            </p>
+            <p className="mt-1 text-[12px] leading-snug text-amber-100/80">
+              Try this on your real inbox.
+            </p>
+            <button
+              type="button"
+              className="mt-3 rounded-lg border border-amber-400/35 bg-amber-500/12 px-3 py-1.5 text-[11px] font-semibold text-amber-50 transition-colors hover:border-amber-300/55 hover:bg-amber-500/20"
+              onClick={() => {
+                setAppMode("real");
+                if (typeof window !== "undefined") {
+                  window.location.href = "/openmail?mode=real&connect=1";
+                }
+              }}
+            >
+              Secure my inbox
+            </button>
           </div>
         ) : null}
 

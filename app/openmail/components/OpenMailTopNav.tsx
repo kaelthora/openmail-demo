@@ -13,6 +13,7 @@ type OpenMailTopNavProps = {
   onToggleSidebar: () => void;
   onFocusSearch: () => void;
   onSettingsPanelOpen: () => void;
+  onTryRealInbox?: () => void;
   profilePrimary: string;
   profileSecondary?: string | null;
 };
@@ -127,6 +128,7 @@ export function OpenMailTopNav({
   onToggleSidebar,
   onFocusSearch,
   onSettingsPanelOpen,
+  onTryRealInbox,
   profilePrimary,
   profileSecondary,
 }: OpenMailTopNavProps) {
@@ -214,6 +216,15 @@ export function OpenMailTopNav({
             >
               {modeBadgeDemo ? "DEMO MODE" : "LIVE INBOX"}
             </span>
+            {modeBadgeDemo && onTryRealInbox ? (
+              <button
+                type="button"
+                className="inline-flex shrink-0 rounded-full border border-[var(--accent)]/40 bg-[var(--accent-soft)]/35 px-2.5 py-1 text-[10px] font-semibold leading-none text-[var(--text-main)] transition-colors hover:border-[var(--accent)]/55 hover:bg-[var(--accent-soft)]/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/20"
+                onClick={onTryRealInbox}
+              >
+                Try this on your inbox
+              </button>
+            ) : null}
           </div>
         </div>
 

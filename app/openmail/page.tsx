@@ -359,6 +359,7 @@ function OpenMailPageContent() {
   const searchParams = useSearchParams();
   const notifyMailId = searchParams.get("mail");
   const modeParam = searchParams.get("mode");
+  const connectParam = searchParams.get("connect");
   const { appMode, setAppMode } = useAppMode();
   const isDemoSession = appMode === "demo" || OPENMAIL_DEMO_MODE;
 
@@ -2145,6 +2146,7 @@ function OpenMailPageContent() {
             }
           : undefined
       }
+      forceAccountsConnectFlow={connectParam === "1" || connectParam === "true"}
     />
     {mailOpenRiskGate ? (
       <SecurityModal

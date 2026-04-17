@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { OpenmailSidebarFolderId } from "@/lib/openmailNavFolders";
 import type { OpenmailSmartFolderId, ProcessedMail } from "@/lib/mailTypes";
 import type { ServerInboxScope, ServerMailAccountSummary } from "@/lib/serverInboxTypes";
@@ -9,6 +11,7 @@ import type { SettingsSection } from "@/lib/openmailSettingsPrefs";
 import type { GuardianAutoResponseMode } from "@/lib/guardianAutoResponse";
 import { useOpenmailPreferences } from "../OpenmailPreferencesProvider";
 import { useMailStore } from "../MailStoreProvider";
+import { useAppMode } from "@/app/AppModeProvider";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
 import { isInboxOnboardingFetchMessage } from "@/lib/legacyImapEnvMissing";
 import type { CoreRecommendedAction, ReplyState, ReplyTone } from "./types";
@@ -125,6 +128,8 @@ type MainLayoutProps = {
     /** When false, hide non-critical “Move to folder” (e.g. HIGH RISK mail selected). */
     showMove?: boolean;
   } | null;
+  /** Query-driven: auto-open Settings > Accounts connect flow. */
+  forceAccountsConnectFlow?: boolean;
 };
 
 export function MainLayout({
@@ -204,7 +209,10 @@ export function MainLayout({
   timeCompression,
   quickClassifyPrompt,
   listToolbar = null,
+  forceAccountsConnectFlow = false,
 }: MainLayoutProps) {
+  const router = useRouter();
+  const { appMode, setAppMode } = useAppMode();
   const { mailsFetchError: storeListFetchError } = useMailStore();
   const listErrorCombined = listFetchError ?? storeListFetchError ?? null;
   /** Prop OR legacy env message in store (fixes silent refresh leaving stale error). */
@@ -258,6 +266,11 @@ export function MainLayout({
     setAccountsAddModeIntent(null);
   }, []);
 
+  useEffect(() => {
+    if (!forceAccountsConnectFlow) return;
+    openAccountsConnectFlow("quick");
+  }, [forceAccountsConnectFlow, openAccountsConnectFlow]);
+
   const focusListSearch = useCallback(() => {
     const el = listSearchInputRef.current;
     if (!el) return;
@@ -276,6 +289,11 @@ export function MainLayout({
         onSettingsPanelOpen={() => {
           setAccountsAddModeIntent(null);
           setSettingsOpen(true);
+        }}
+        onTryRealInbox={() => {
+          setAppMode("real");
+          openAccountsConnectFlow("quick");
+          router.replace("/openmail?mode=real", { scroll: false });
         }}
         profilePrimary={navProfilePrimary}
         profileSecondary={navProfileSecondary}
@@ -383,6 +401,20 @@ export function MainLayout({
         accountsInitialAddMode={accountsAddModeIntent}
         onAccountsInitialAddModeConsumed={consumeAccountsAddModeIntent}
       />
+      {appMode === "demo" ? (
+        <div className="pointer-events-none absolute bottom-2 left-0 right-0 z-20 flex justify-center">
+          <Link
+            href="/"
+            prefetch={false}
+            className="pointer-events-auto text-[11px] font-medium text-[color:var(--text-soft)]/60 no-underline transition-opacity hover:opacity-100"
+            onClick={() => {
+              setAppMode(null);
+            }}
+          >
+            ← Back to landing
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
 }
