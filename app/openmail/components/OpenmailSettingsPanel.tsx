@@ -449,7 +449,7 @@ function SettingsAccountsServer({
     const email = addEmail.trim();
     const isGmailQuick =
       addMode === "quick" && email.toLowerCase().endsWith("@gmail.com");
-    const password = addPassword.replace(/\s/g, "");
+    const password = addPassword;
     setFormError(null);
     setShowRetry(false);
     setConnectAttempts(0);
@@ -477,9 +477,9 @@ function SettingsAccountsServer({
           let res: Response;
           if (addMode === "quick") {
             if (isGmailQuick) {
-              res = await fetch(apiUrl("/api/connect"), {
+              console.log("SENDING:", email, password);
+              res = await fetch("/api/connect", {
                 method: "POST",
-                credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   email: email.trim(),
