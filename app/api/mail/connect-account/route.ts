@@ -211,25 +211,11 @@ async function verifySmtp(account: OpenMailAccountProfile) {
   await transporter.verify();
 }
 
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const email = (url.searchParams.get("email") ?? "").trim();
-  const password = (url.searchParams.get("password") ?? "").trim();
-  if (!email || !password) {
-    return NextResponse.json(
-      { ok: false, error: "Email and password are required" },
-      { status: 400 }
-    );
-  }
-  try {
-    const profile = buildProfileForGmail(email, password);
-    await verifyImap(profile);
-    return NextResponse.json({ ok: true });
-  } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "IMAP connection failed: Unknown error";
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
-  }
+export async function GET() {
+  return NextResponse.json(
+    { ok: false, error: "Use POST with JSON body for credentials" },
+    { status: 405 }
+  );
 }
 
 export async function POST(request: Request) {
@@ -245,8 +231,9 @@ export async function POST(request: Request) {
     }
 
     const email = (body.email ?? "").trim();
-    const password = body.password ?? "";
+    const password = (body.password ?? "").replace(/\s/g, "");
     const mode = body.mode ?? "auto";
+    console.log("CONNECT:", email);
 
     if (!email || !password) {
       return NextResponse.json(

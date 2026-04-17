@@ -449,7 +449,7 @@ function SettingsAccountsServer({
     const email = addEmail.trim();
     const isGmailQuick =
       addMode === "quick" && email.toLowerCase().endsWith("@gmail.com");
-    const password = addPassword;
+    const password = addPassword.replace(/\s/g, "");
     setFormError(null);
     setShowRetry(false);
     setConnectAttempts(0);
@@ -468,7 +468,7 @@ function SettingsAccountsServer({
       isGmailQuick ? "Using optimized Gmail connection" : "Connecting securely..."
     );
     try {
-      const maxAttempts = 3;
+      const maxAttempts = isGmailQuick ? 1 : 3;
       let lastErr: string | null = null;
       for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         setConnectAttempts(attempt);
@@ -476,12 +476,24 @@ function SettingsAccountsServer({
         try {
           let res: Response;
           if (addMode === "quick") {
-            res = await fetch(apiUrl("/api/mail/connect-account"), {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ mode: "auto", email, password }),
-            });
+            if (isGmailQuick) {
+              res = await fetch(apiUrl("/api/connect"), {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email: email.trim(),
+                  password: password.replace(/\s/g, ""),
+                }),
+              });
+            } else {
+              res = await fetch(apiUrl("/api/mail/connect-account"), {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ mode: "auto", email, password }),
+              });
+            }
           } else {
             const base = emptyAccountProfile();
             const manual: OpenMailAccountProfile = {
@@ -523,14 +535,41 @@ function SettingsAccountsServer({
             error?: string;
             message?: string;
           };
-          if (!res.ok || data.ok === false || !data.account) {
+          if (!res.ok || data.ok === false) {
             throw new Error(data.error || "Could not verify IMAP/SMTP");
+          }
+          const account =
+            data.account ??
+            (isGmailQuick
+              ? ({
+                  ...emptyAccountProfile(),
+                  id: `tmp-${Date.now()}`,
+                  label: email.split("@")[0] || "Primary",
+                  email,
+                  imap: {
+                    host: "imap.gmail.com",
+                    port: 993,
+                    username: email,
+                    password,
+                    security: "ssl",
+                  },
+                  smtp: {
+                    host: "smtp.gmail.com",
+                    port: 587,
+                    username: email,
+                    password,
+                    security: "tls",
+                  },
+                } satisfies OpenMailAccountProfile)
+              : null);
+          if (!account) {
+            throw new Error("Could not verify IMAP/SMTP");
           }
           if (data.message) {
             setConnectStep(data.message);
           }
           setConnectStep("Loading inbox...");
-          createdId = await persistConnectedAccount(data.account);
+          createdId = await persistConnectedAccount(account);
           await refreshServerAccounts();
           setInboxScopePersist(createdId);
           const loadRes = await refreshMailsFromApi({ accountId: createdId });

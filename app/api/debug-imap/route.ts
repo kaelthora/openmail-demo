@@ -75,10 +75,25 @@ async function verifyGmailImapWithRetry(
   );
 }
 
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const email = (url.searchParams.get("email") ?? "").trim();
-  const password = (url.searchParams.get("password") ?? "").trim();
+export async function GET() {
+  return NextResponse.json(
+    { ok: false, error: "Use POST with JSON body for credentials" },
+    { status: 405 }
+  );
+}
+
+export async function POST(request: Request) {
+  let body: { email?: string; password?: string };
+  try {
+    body = (await request.json()) as { email?: string; password?: string };
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Invalid request body" },
+      { status: 400 }
+    );
+  }
+  const email = (body.email ?? "").trim();
+  const password = (body.password ?? "").replace(/\s/g, "");
   if (!email || !password) {
     return NextResponse.json(
       { ok: false, error: "Email and password are required" },
