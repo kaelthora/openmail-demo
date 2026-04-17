@@ -126,9 +126,11 @@ async function handleConnect(req, res) {
     await testImap(email, password, 1);
     res.json({ ok: true });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "IMAP connection failed: unknown error";
-    res.status(500).json({ ok: false, error: message });
+    res.status(500).json({
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+      details: err,
+    });
   }
 }
 

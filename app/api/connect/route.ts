@@ -23,8 +23,13 @@ export async function POST(request: Request) {
     await testImap(email, cleanPassword, 2);
     return NextResponse.json({ ok: true });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "IMAP connection failed: Unknown error";
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: err instanceof Error ? err.message : String(err),
+        details: err,
+      },
+      { status: 500 }
+    );
   }
 }
