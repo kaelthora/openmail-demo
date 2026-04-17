@@ -375,7 +375,6 @@ function OpenMailPageContent() {
     sendComposeMail,
     mailsLoading,
     mailsFetchError,
-    inboxSetupRequired,
     refreshMailsFromApi,
     syncFromImap,
     isSyncing,
@@ -2013,16 +2012,9 @@ function OpenMailPageContent() {
     () =>
       !isDemoSession &&
       activeFolder === "inbox" &&
-      (inboxSetupRequired ||
-        serverMailAccounts.length === 0 ||
+      (serverMailAccounts.length === 0 ||
         isInboxOnboardingFetchMessage(mailsFetchError ?? "")),
-    [
-      isDemoSession,
-      activeFolder,
-      inboxSetupRequired,
-      serverMailAccounts.length,
-      mailsFetchError,
-    ]
+    [isDemoSession, activeFolder, serverMailAccounts.length, mailsFetchError]
   );
 
   return (

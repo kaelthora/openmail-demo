@@ -568,10 +568,15 @@ function SettingsAccountsServer({
           if (data.message) {
             setConnectStep(data.message);
           }
-          setConnectStep("Loading inbox...");
           createdId = await persistConnectedAccount(account);
           await refreshServerAccounts();
           setInboxScopePersist(createdId);
+          setConnectStep("Syncing inbox…");
+          const syncRes = await syncServerInbox({ accountId: createdId });
+          if (!syncRes.ok) {
+            console.warn("[OpenMail] post-connect sync:", syncRes.error);
+          }
+          setConnectStep("Loading inbox…");
           const loadRes = await refreshMailsFromApi({ accountId: createdId });
           if (!loadRes.ok) {
             throw new Error(loadRes.error || "Could not load inbox");
@@ -636,6 +641,7 @@ function SettingsAccountsServer({
     persistConnectedAccount,
     refreshServerAccounts,
     setInboxScopePersist,
+    syncServerInbox,
     refreshMailsFromApi,
     removeServerAccount,
     toast,

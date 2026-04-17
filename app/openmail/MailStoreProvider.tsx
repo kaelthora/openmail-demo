@@ -291,7 +291,24 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       silentInboxFetchRef.current = ac;
     }
     const signal = silent ? silentInboxFetchRef.current?.signal : undefined;
-    try {
+    const postEmailsSyncOnce = async (accScope: ServerInboxScope) => {
+      if (effectiveDemoMode) return true;
+      try {
+        const body = accScope === "legacy" ? {} : { accountId: accScope };
+        const res = await fetch(apiUrl("/api/emails/sync"), {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const sj = (await res.json()) as { success?: boolean; error?: string };
+        return res.ok && sj.success !== false;
+      } catch {
+        return false;
+      }
+    };
+
+    const fetchMailbox = async () => {
       const q =
         scope === "legacy"
           ? "?legacy=1"
@@ -306,6 +323,11 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         error?: string;
         setupRequired?: boolean;
       };
+      return { res, data };
+    };
+
+    try {
+      let { res, data } = await fetchMailbox();
       inboxDiag("mail-store", "refreshMailsFromApi:response", {
         silent,
         scope,
@@ -344,25 +366,104 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         });
         return { ok: false, error: msg };
       }
-      if (data.setupRequired === true) {
-        inboxDiag("mail-store", "refreshMailsFromApi:setupRequiredStripInbox", {
+      /** Legacy env missing — still blocks onboarding UI only for legacy scope. */
+      if (data.setupRequired === true && scope === "legacy") {
+        inboxDiag("mail-store", "refreshMailsFromApi:setupRequiredLegacy", {
           scope,
           emailCount: Array.isArray(data.emails) ? data.emails.length : 0,
         });
         setInboxSetupRequired(true);
         setMailsFetchError(null);
         setMails((prev) => {
-          console.warn("[OpenMail] setupRequired → preserving inbox");
+          console.warn("[OpenMail] setupRequired (legacy) → preserving inbox");
           return prev;
         });
         setSelectedMailId("");
         return { ok: true, setupRequired: true };
       }
+      /** Saved account: IMAP ingest then refetch so connect / first load is not stuck on setupRequired or empty DB. */
+      if (data.setupRequired === true && scope !== "legacy") {
+        inboxDiag("mail-store", "refreshMailsFromApi:setupRequiredRetryWithSync", {
+          scope,
+        });
+        await postEmailsSyncOnce(scope);
+        if (requestId !== latestRequestId) {
+          console.warn("[OpenMail] Ignoring outdated response");
+          return { ok: true };
+        }
+        ({ res, data } = await fetchMailbox());
+        inboxDiag("mail-store", "refreshMailsFromApi:afterSyncRefetch", {
+          silent,
+          scope,
+          httpStatus: res.status,
+          ok: res.ok,
+          emailCount: Array.isArray(data.emails) ? data.emails.length : -1,
+          setupRequired: data.setupRequired === true,
+        });
+        if (requestId !== latestRequestId) {
+          console.warn("[OpenMail] Ignoring outdated response");
+          return { ok: true };
+        }
+        if (!res.ok) {
+          const msg = data.error || "Could not load messages";
+          setInboxSetupRequired(false);
+          if (!silent) setMailsFetchError(msg);
+          return { ok: false, error: msg };
+        }
+      }
+      if (data.setupRequired === true && scope !== "legacy") {
+        inboxDiag("mail-store", "refreshMailsFromApi:setupRequiredPersistNonLegacy", {
+          scope,
+          emailCount: Array.isArray(data.emails) ? data.emails.length : 0,
+        });
+        setInboxSetupRequired(true);
+        setMailsFetchError(null);
+        setMails((prev) => prev);
+        setSelectedMailId("");
+        return { ok: true, setupRequired: true };
+      }
       setInboxSetupRequired(false);
-      const incoming = (data.emails ?? []).map(emailApiItemToMailItem);
-      const incomingInbox = incoming.filter((m) => m.folder === "inbox");
+      let incoming = (data.emails ?? []).map(emailApiItemToMailItem);
+      let incomingInbox = incoming.filter((m) => m.folder === "inbox");
+      if (incomingInbox.length === 0 && scope !== "legacy") {
+        inboxDiag("mail-store", "refreshMailsFromApi:emptyInboxImapResync", {
+          scope,
+        });
+        await postEmailsSyncOnce(scope);
+        if (requestId !== latestRequestId) {
+          console.warn("[OpenMail] Ignoring outdated response");
+          return { ok: true };
+        }
+        ({ res, data } = await fetchMailbox());
+        if (requestId !== latestRequestId) {
+          console.warn("[OpenMail] Ignoring outdated response");
+          return { ok: true };
+        }
+        if (!res.ok) {
+          const msg = data.error || "Could not load messages";
+          setInboxSetupRequired(false);
+          if (!silent) setMailsFetchError(msg);
+          return { ok: false, error: msg };
+        }
+        if (data.setupRequired === true) {
+          setInboxSetupRequired(scope === "legacy");
+          setMailsFetchError(null);
+          if (scope === "legacy") {
+            setMails((prev) => prev);
+            setSelectedMailId("");
+            return { ok: true, setupRequired: true };
+          }
+        } else {
+          setInboxSetupRequired(false);
+        }
+        incoming = (data.emails ?? []).map(emailApiItemToMailItem);
+        incomingInbox = incoming.filter((m) => m.folder === "inbox");
+      }
       setMails((prev) => {
         if (!incomingInbox || incomingInbox.length === 0) {
+          if (scope !== "legacy") {
+            return prev.filter((m) => m.folder !== "inbox");
+          }
           console.warn("[OpenMail] Empty inbox fetch → keeping previous inbox");
           return prev;
         }
