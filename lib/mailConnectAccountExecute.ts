@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  LAST_IMAP_CONNECT_EMAIL_COOKIE,
+  lastImapConnectCookieOptions,
+} from "@/lib/lastImapConnectCookie";
 import { ImapFlow } from "imapflow";
 import nodemailer from "nodemailer";
 import {
@@ -271,7 +275,17 @@ export async function executeMailConnectAccountPost(
         "[connect] SMTP verification failed but IMAP succeeded — allowing connection"
       );
     }
-    return NextResponse.json({ ok: true, account, message: optimizedMessage });
+    const res = NextResponse.json({
+      ok: true,
+      account,
+      message: optimizedMessage,
+    });
+    res.cookies.set(
+      LAST_IMAP_CONNECT_EMAIL_COOKIE,
+      account.email.trim().toLowerCase(),
+      lastImapConnectCookieOptions()
+    );
+    return res;
   } catch (e) {
     const raw = e instanceof Error ? e.message : "Could not connect";
     console.error("IMAP: ERROR", raw);

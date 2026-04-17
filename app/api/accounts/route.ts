@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import {
@@ -5,6 +6,7 @@ import {
   parseImapConfigJson,
   parseSmtpConfigJson,
 } from "@/lib/accountConfigJson";
+import { LAST_IMAP_CONNECT_EMAIL_COOKIE } from "@/lib/lastImapConnectCookie";
 import { prisma } from "@/lib/db";
 import type { ImapAccountConfig, SmtpAccountConfig } from "@/lib/mailAccountConfig";
 import { inboxDiag } from "@/lib/openmailInboxDiag";
@@ -96,6 +98,20 @@ function sanitizeAccount(a: {
   };
 }
 
+/** Fallback row when Prisma is empty but `/api/connect` succeeded (cookie). */
+function tempAccountFromLastConnectEmail(email: string) {
+  const e = email.trim().toLowerCase();
+  return {
+    id: "temp",
+    email: e,
+    provider: null as string | null,
+    imap: null,
+    smtp: null,
+    hasImapPassword: false,
+    hasSmtpPassword: false,
+  };
+}
+
 function readImapBody(raw: unknown): ImapAccountConfig | null {
   if (!raw || typeof raw !== "object") return null;
   return parseImapConfigJson(raw);
@@ -106,52 +122,51 @@ function readSmtpBody(raw: unknown): SmtpAccountConfig | null {
   return parseSmtpConfigJson(raw);
 }
 
+/**
+ * Always HTTP 200 with `{ ok: true, accounts }`.
+ * If Prisma fails or is empty, falls back to last successful IMAP connect (cookie), else `[]`.
+ */
 export async function GET() {
-  try {
-    const missing = assertDatabaseUrl();
-    if (missing) return missing;
+  let accounts: ReturnType<typeof sanitizeAccount>[] = [];
 
-    const rows = await prisma.account.findMany({
-      orderBy: { createdAt: "asc" },
-    });
-    const accounts = rows.map((row) => {
-      try {
-        return sanitizeAccount(row);
-      } catch (e) {
-        logAccountsRouteError("GET.sanitizeAccount", e);
-        throw new Error("Stored account row could not be parsed (imap/smtp JSON)");
+  const dbUrl = typeof process.env.DATABASE_URL === "string" && process.env.DATABASE_URL.trim();
+  if (dbUrl) {
+    try {
+      const rows = await prisma.account.findMany({
+        orderBy: { createdAt: "asc" },
+      });
+      for (const row of rows) {
+        try {
+          accounts.push(sanitizeAccount(row));
+        } catch (e) {
+          logAccountsRouteError("GET.sanitizeAccount", e);
+        }
       }
-    });
-    console.info(`[openmail][accounts] fetched ${accounts.length} account(s)`);
-    inboxDiag("mail-fetch-api", "GET /api/accounts:ok", {
-      accountCount: accounts.length,
-      ids: accounts.map((a) => a.id),
-    });
-    return NextResponse.json({ ok: true as const, accounts });
-  } catch (e) {
-    logAccountsRouteError("GET", e);
-    if (e instanceof Prisma.PrismaClientInitializationError) {
-      const message =
-        "Could not connect to the database. Check DATABASE_URL and that the database is reachable.";
-      inboxDiag("mail-fetch-api", "GET /api/accounts:error", {
-        message: message.slice(0, 200),
-      });
-      return jsonFail(503, message);
+    } catch (e) {
+      logAccountsRouteError("GET.prisma", e);
+      accounts = [];
     }
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      const message = prismaKnownUserMessage(e);
-      inboxDiag("mail-fetch-api", "GET /api/accounts:error", {
-        message: message.slice(0, 200),
-      });
-      return jsonFail(500, message);
-    }
-    const message =
-      e instanceof Error ? e.message : "Failed to list accounts";
-    inboxDiag("mail-fetch-api", "GET /api/accounts:error", {
-      message: message.slice(0, 200),
-    });
-    return jsonFail(500, message);
   }
+
+  if (accounts.length === 0) {
+    try {
+      const jar = await cookies();
+      const last = jar.get(LAST_IMAP_CONNECT_EMAIL_COOKIE)?.value ?? "";
+      if (last.includes("@")) {
+        accounts = [tempAccountFromLastConnectEmail(last)];
+      }
+    } catch (e) {
+      logAccountsRouteError("GET.cookies", e);
+      accounts = [];
+    }
+  }
+
+  console.info(`[openmail][accounts] GET returning ${accounts.length} account(s)`);
+  inboxDiag("mail-fetch-api", "GET /api/accounts:ok", {
+    accountCount: accounts.length,
+    ids: accounts.map((a) => a.id),
+  });
+  return NextResponse.json({ ok: true as const, accounts }, { status: 200 });
 }
 
 export async function POST(request: Request) {
@@ -213,7 +228,9 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ ok: true as const, account });
+    const res = NextResponse.json({ ok: true as const, account });
+    res.cookies.delete(LAST_IMAP_CONNECT_EMAIL_COOKIE);
+    return res;
   } catch (e) {
     logAccountsRouteError("POST", e);
 
