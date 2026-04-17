@@ -4,5 +4,10 @@ export const API_URL =
 
 export function apiUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  // Browser calls should stay same-origin to hit Next API routes (/api/*)
+  // and avoid cross-origin/CORS + route mismatch issues.
+  if (typeof window !== "undefined") {
+    return normalizedPath;
+  }
   return `${API_URL}${normalizedPath}`;
 }
