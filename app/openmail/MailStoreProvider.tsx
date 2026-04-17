@@ -66,8 +66,13 @@ function demoEmailItems(): MailItem[] {
     subject: d.subject,
     preview: d.preview,
     content: `${d.preview}\n\nSignals: ${d.tags.join(", ")}`,
-    aiPreview: d.risk === "high" ? "High-risk phishing pattern detected" : "Elevated risk detected",
-    confidence: d.risk === "high" ? 94 : 72,
+    aiPreview:
+      d.risk === "high"
+        ? "High-risk phishing pattern detected"
+        : d.risk === "medium"
+          ? "Elevated risk detected"
+          : "Low-risk suspicious context",
+    confidence: d.risk === "high" ? 94 : d.risk === "medium" ? 72 : 38,
     needsReply: false,
     deleted: false,
     archived: false,
@@ -79,16 +84,24 @@ function demoEmailItems(): MailItem[] {
       ? [
           {
             id: `att-${d.id}`,
-            name: "invoice.pdf",
-            mimeType: "application/pdf",
-            riskLevel: d.risk === "high" ? "blocked" : "suspicious",
+            name: ("attachmentName" in d ? d.attachmentName : undefined) ?? "attachment.pdf",
+            mimeType:
+              ("attachmentMimeType" in d ? d.attachmentMimeType : undefined) ??
+              "application/pdf",
+            riskLevel:
+              d.risk === "high"
+                ? "blocked"
+                : d.risk === "medium"
+                  ? "suspicious"
+                  : "safe",
           },
         ]
       : [],
     demoClassification: {
-      label: d.risk === "high" ? "BLOCKED" : "SUSPICIOUS",
-      score: d.risk === "high" ? 96 : 68,
+      label: d.risk === "high" ? "BLOCKED" : d.risk === "medium" ? "SUSPICIOUS" : "SAFE",
+      score: d.risk === "high" ? 96 : d.risk === "medium" ? 68 : 28,
     },
+    demoLabel: "demoLabel" in d ? d.demoLabel : undefined,
     linkQuarantine: d.hasLink,
   }));
 }

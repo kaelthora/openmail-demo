@@ -1621,6 +1621,11 @@ export function MailPanel({
                     </div>
                     {demoMode && mail.demoClassification ? (
                       <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        {mail.demoLabel ? (
+                          <span className="rounded-md border border-amber-500/30 bg-amber-500/12 px-1.5 py-0.5 text-[9px] font-semibold text-amber-200/90">
+                            {mail.demoLabel}
+                          </span>
+                        ) : null}
                         {mail.demoClassification.label === "BLOCKED" && mail.linkQuarantine ? (
                           <span className="rounded-md border border-amber-500/30 bg-amber-500/12 px-1.5 py-0.5 text-[9px] font-semibold text-amber-200/90">
                             Most users click this

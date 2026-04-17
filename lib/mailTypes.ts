@@ -78,6 +78,8 @@ export type MailItem = {
     label: "SAFE" | "SUSPICIOUS" | "BLOCKED";
     score: number;
   };
+  /** Demo-only urgency/impact label shown in inbox row chips. */
+  demoLabel?: string;
   /** Demo: keep high_risk mail visible in main inbox (e.g. crypto trap) */
   demoAlwaysShowInInbox?: boolean;
   /** Link-defense UI: force quarantine classification on next process */
