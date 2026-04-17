@@ -62,6 +62,7 @@ export async function GET() {
       orderBy: { createdAt: "asc" },
     });
     const accounts = rows.map(sanitizeAccount);
+    console.info(`[openmail][accounts] fetched ${accounts.length} account(s)`);
     inboxDiag("mail-fetch-api", "GET /api/accounts:ok", {
       accountCount: accounts.length,
       ids: accounts.map((a) => a.id),
@@ -69,6 +70,7 @@ export async function GET() {
     return NextResponse.json({ accounts });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to list accounts";
+    console.error(`[openmail][accounts] fetch failed: ${message}`);
     inboxDiag("mail-fetch-api", "GET /api/accounts:error", {
       message: message.slice(0, 200),
     });
@@ -110,10 +112,12 @@ export async function POST(request: Request) {
         smtpConfig: smtp as object,
       },
     });
+    console.info(`[openmail][accounts] saved account id=${row.id} email=${email}`);
 
     return NextResponse.json({ account: sanitizeAccount(row) });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Create failed";
+    console.error(`[openmail][accounts] save failed: ${message}`);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

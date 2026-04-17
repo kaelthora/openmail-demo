@@ -521,8 +521,6 @@ function SettingsAccountsServer({
           createdId = await persistConnectedAccount(data.account);
           await refreshServerAccounts();
           setInboxScopePersist(createdId);
-          const syncRes = await syncServerInbox({ accountId: createdId });
-          if (!syncRes.ok) throw new Error(syncRes.error || "Sync failed");
           const loadRes = await refreshMailsFromApi({ accountId: createdId });
           if (!loadRes.ok) {
             throw new Error(loadRes.error || "Could not load inbox");
@@ -581,7 +579,6 @@ function SettingsAccountsServer({
     persistConnectedAccount,
     refreshServerAccounts,
     setInboxScopePersist,
-    syncServerInbox,
     refreshMailsFromApi,
     removeServerAccount,
     toast,

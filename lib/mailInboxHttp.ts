@@ -75,6 +75,9 @@ export async function jsonMailInboxListResponse(
 ): Promise<Response> {
   try {
     const emails = await listInboxEmailListItems(accountId);
+    console.info(
+      `[openmail][inbox] fetch success account=${accountId ?? "legacy"} count=${emails.length}`
+    );
     inboxDiag("mail-fetch-api", "jsonMailInboxListResponse:ok", {
       accountId: accountId ?? "legacy",
       emailCount: emails.length,
@@ -82,6 +85,9 @@ export async function jsonMailInboxListResponse(
     return NextResponse.json({ emails });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to load mail";
+    console.error(
+      `[openmail][inbox] fetch failed account=${accountId ?? "legacy"}: ${message}`
+    );
     /** Legacy IMAP with no env vars — first-run, not a server outage. */
     if (accountId == null && isLegacyImapEnvMissingMessage(message)) {
       inboxDiag("mail-fetch-api", "jsonMailInboxListResponse:setupRequired_legacyEnv", {
