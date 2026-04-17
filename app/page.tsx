@@ -9,7 +9,7 @@ export default function Page() {
           "radial-gradient(ellipse 95% 70% at 50% 22%, #140c0c 0%, #0a0707 38%, #050505 72%)",
       }}
     >
-      <main className="flex w-full max-w-xl flex-col gap-5 text-left">
+      <main className="flex w-full max-w-xl flex-col gap-5 text-center">
         {/* 1–2: Title + subtitle + CTA */}
         <section className="shrink-0">
           <h1 className="text-[clamp(40px,6vmin,52px)] font-bold leading-[0.98] tracking-[-0.02em] text-[#f7f5f4]">
@@ -67,7 +67,7 @@ export default function Page() {
           <p className="mt-2 text-[clamp(24px,4.2vmin,34px)] font-bold leading-[1.1] tracking-[-0.02em] text-[#f2eeeb]">
             It reads intent.
           </p>
-          <ul className="mt-2 space-y-1 font-mono text-[11.5px] leading-[1.45] text-[#6e6661] sm:text-[12px]">
+          <ul className="mt-2 inline-block space-y-1 text-left font-mono text-[11.5px] leading-[1.45] text-[#6e6661] sm:text-[12px]">
             <li>Intent analysis</li>
             <li>Behavioral patterns</li>
             <li>Domain validation</li>
