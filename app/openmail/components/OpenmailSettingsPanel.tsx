@@ -475,25 +475,13 @@ function SettingsAccountsServer({
         let createdId: string | null = null;
         try {
           let res: Response;
+          let connectPayload: Record<string, unknown>;
           if (addMode === "quick") {
-            if (isGmailQuick) {
-              console.log("SENDING:", email, password);
-              res = await fetch("/api/connect", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  email: email.trim(),
-                  password: password.replace(/\s/g, ""),
-                }),
-              });
-            } else {
-              res = await fetch(apiUrl("/api/mail/connect-account"), {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ mode: "auto", email, password }),
-              });
-            }
+            connectPayload = {
+              mode: "auto",
+              email,
+              password,
+            };
           } else {
             const base = emptyAccountProfile();
             const manual: OpenMailAccountProfile = {
@@ -516,59 +504,49 @@ function SettingsAccountsServer({
                 security: smtpSec,
               },
             };
-            res = await fetch(apiUrl("/api/mail/connect-account"), {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                mode: "manual",
-                email,
-                password,
-                manual,
-              }),
-            });
+            connectPayload = {
+              mode: "manual",
+              email,
+              password,
+              manual,
+            };
           }
+          console.log("SENDING:", connectPayload.email, connectPayload.password);
+          res = await fetch(apiUrl("/api/connect"), {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(connectPayload),
+          });
           setConnectStep("Verifying server...");
-          const data = (await res.json()) as {
+          const connectData = (await res.json()) as {
             ok?: boolean;
             account?: OpenMailAccountProfile;
             error?: string;
             message?: string;
+            accountId?: string;
           };
-          if (!res.ok || data.ok === false) {
-            throw new Error(data.error || "Could not verify IMAP/SMTP");
+          console.log("CONNECT RESPONSE:", connectData);
+          if (!res.ok || connectData.ok === false) {
+            throw new Error(
+              typeof connectData.error === "string"
+                ? connectData.error
+                : "Could not verify IMAP/SMTP"
+            );
           }
-          const account =
-            data.account ??
-            (isGmailQuick
-              ? ({
-                  ...emptyAccountProfile(),
-                  id: `tmp-${Date.now()}`,
-                  label: email.split("@")[0] || "Primary",
-                  email,
-                  imap: {
-                    host: "imap.gmail.com",
-                    port: 993,
-                    username: email,
-                    password,
-                    security: "ssl",
-                  },
-                  smtp: {
-                    host: "smtp.gmail.com",
-                    port: 587,
-                    username: email,
-                    password,
-                    security: "tls",
-                  },
-                } satisfies OpenMailAccountProfile)
-              : null);
+          const account = connectData.account;
           if (!account) {
             throw new Error("Could not verify IMAP/SMTP");
           }
-          if (data.message) {
-            setConnectStep(data.message);
+          if (connectData.message) {
+            setConnectStep(connectData.message);
           }
-          createdId = await persistConnectedAccount(account);
+          const savedAccountId = await persistConnectedAccount(account);
+          createdId =
+            typeof connectData.accountId === "string" &&
+            connectData.accountId.trim().length > 0
+              ? connectData.accountId.trim()
+              : savedAccountId;
           await refreshServerAccounts();
           setInboxScopePersist(createdId);
           setConnectStep("Syncing inbox…");

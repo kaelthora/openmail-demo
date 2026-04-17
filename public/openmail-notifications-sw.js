@@ -1,5 +1,7 @@
 /* global self, indexedDB */
 
+const API_BASE = "https://openmail-demo-production.up.railway.app";
+
 const DB_NAME = "openmail-notify-v1";
 const STORE = "dismissed";
 
@@ -63,11 +65,11 @@ self.addEventListener("notificationclick", (event) => {
 
   if (action === "quick-send") {
     event.waitUntil(
-      fetch(`${origin}/api/emails/quick-reply`, {
+      fetch(`${API_BASE}/api/emails/quick-reply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mailId }),
-        credentials: "same-origin",
+        credentials: "include",
       })
         .then((res) => res.json().catch(() => ({})))
         .then((j) => {

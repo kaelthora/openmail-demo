@@ -1,35 +1,24 @@
 import { NextResponse } from "next/server";
-import { testImap } from "@/lib/testImap";
+import {
+  executeMailConnectAccountPost,
+  type MailConnectAccountBody,
+} from "@/lib/mailConnectAccountExecute";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  let body: { email?: string; password?: string };
+  let body: MailConnectAccountBody;
   try {
-    body = (await request.json()) as { email?: string; password?: string };
+    body = (await request.json()) as MailConnectAccountBody;
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const email = (body.email ?? "").trim();
-  const password = body.password ?? "";
-  if (!email || !password) {
-    return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
-  }
-  const cleanPassword = password.replace(/\s/g, "");
+  const normalized: MailConnectAccountBody = {
+    ...body,
+    mode: body.mode ?? "auto",
+  };
 
-  try {
-    await testImap(email, cleanPassword, 2);
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: err instanceof Error ? err.message : String(err),
-        details: err,
-      },
-      { status: 500 }
-    );
-  }
+  return executeMailConnectAccountPost(normalized);
 }

@@ -9,6 +9,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
+import { apiUrl } from "@/lib/config";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
 import { readDismissedNotifyIds } from "@/lib/openmailNotifyDismissedIdb";
 import {
@@ -136,8 +137,8 @@ export function SmartNotificationsProvider({ children }: { children: ReactNode }
       let items: NotifyItem[] = [];
       try {
         const res = await fetch(
-          `/api/emails/by-ids?ids=${encodeURIComponent(ids.join(","))}`,
-          { cache: "no-store" }
+          apiUrl(`/api/emails/by-ids?ids=${encodeURIComponent(ids.join(","))}`),
+          { cache: "no-store", credentials: "include" }
         );
         const data = (await res.json()) as { items?: NotifyItem[] };
         items = Array.isArray(data.items) ? data.items : [];
