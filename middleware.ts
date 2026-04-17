@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+function withCorsHeaders(response: NextResponse): NextResponse {
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type')
+  return response
+}
+
 /**
  * No redirect from "/" to "/openmail" — the app lives only at `/openmail` after an explicit navigation.
  * "/" is served without Basic Auth so the marketing landing is visible first.
@@ -17,6 +24,13 @@ function isPublicMarketingOrAsset(pathname: string): boolean {
 }
 
 export function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    if (request.method === 'OPTIONS') {
+      return withCorsHeaders(new NextResponse(null, { status: 200 }))
+    }
+    return withCorsHeaders(NextResponse.next())
+  }
+
   if (isPublicMarketingOrAsset(request.nextUrl.pathname)) {
     return NextResponse.next()
   }
