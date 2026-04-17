@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "node server.js",
-    "start:web": "next start",
+    "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -24,8 +23,6 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
     "imapflow": "^1.2.18",
     "lamejs": "^1.2.1",
     "lucide-react": "^1.8.0",
