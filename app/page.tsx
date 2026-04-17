@@ -50,21 +50,24 @@ export default function Page() {
 
         {/* 3: Main statement */}
         <section className="shrink-0 rounded-lg py-3">
-          <p className="text-[clamp(22px,3.8vmin,30px)] font-semibold leading-[1.12] tracking-[-0.015em] text-[#ece8e5]">
-            You don&apos;t read emails wrong.
-          </p>
           <p className="mt-2 text-[clamp(28px,5vmin,40px)] font-extrabold leading-[1.08] tracking-[-0.02em] text-[#ffffff]">
             You get manipulated.
+          </p>
+          <p className="mt-2 text-[clamp(13px,1.75vmin,15px)] leading-[1.38] text-[#5c5652]">
+            OpenMail detects instantly.
+          </p>
+          <p className="text-[clamp(13px,1.75vmin,15px)] leading-[1.38] text-[#5c5652]">
+            You decide.
+            <br />
+            Until risk is certain.
+          </p>
+          <p className="text-[clamp(13px,1.75vmin,15px)] leading-[1.38] text-[#5c5652]">
+            Then protection takes over.
           </p>
         </section>
 
         {/* 4: Ethics */}
         <section className="shrink-0 space-y-1 text-[clamp(13px,1.75vmin,15px)] leading-[1.38] text-[#5c5652]">
-          <p>OpenMail detects it instantly.</p>
-          <p>
-            But it{" "}
-            <span className="font-semibold text-[#b5aca6]">never decides for you</span>.
-          </p>
           <p>No tracking.</p>
           <p>No data collection.</p>
           <p>No hidden actions.</p>
@@ -89,7 +92,11 @@ export default function Page() {
             <li>Autonomous protection</li>
           </ul>
           <p className="mt-2 text-[clamp(13px,1.75vmin,15px)] font-medium text-[#8a827c]">
-            No rules. Just decisions.
+            No noise.
+            <br />
+            No manipulation.
+            <br />
+            No way through.
           </p>
         </section>
 
