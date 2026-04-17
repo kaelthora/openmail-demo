@@ -54,6 +54,9 @@ export function computeSmartFolderSuggestion(
   mail: ProcessedMail,
   memory: UserBehaviorMemoryV1
 ): { folder: OpenmailSmartFolderId; confidencePct: number } | null {
+  if (mail.securityLevel === "high_risk" || mail.syncedAi?.risk === "high") {
+    return null;
+  }
   if (
     mail.deleted ||
     mail.archived ||

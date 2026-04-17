@@ -33,8 +33,11 @@ export function SmartFolderSuggestionBar({
   mail,
   enabled = true,
 }: SmartFolderSuggestionBarProps) {
-  const { moveMailToSmartFolder, dismissSmartFolderSuggestion } = useMailStore();
+  const { moveMailToSmartFolder, dismissSmartFolderSuggestion, setMails, softDeleteMail } =
+    useMailStore();
   const behavior = useUserBehavior();
+  const highRiskBlocked =
+    mail.securityLevel === "high_risk" || mail.syncedAi?.risk === "high";
 
   const suggestion = useMemo(() => {
     if (!enabled || !behavior.hydrated) return null;
@@ -43,7 +46,47 @@ export function SmartFolderSuggestionBar({
 
   const [changeOpen, setChangeOpen] = useState(false);
 
-  if (!enabled || !suggestion) return null;
+  if (!enabled) return null;
+  if (highRiskBlocked) {
+    return (
+      <div className={suggestPanel}>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[12px] opacity-45" aria-hidden>
+            ⚠
+          </span>
+          <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-red-200/80">
+            Security decision
+          </span>
+        </div>
+        <p className="mt-2 text-[11px] font-medium leading-snug text-red-100/90">
+          Threat detected.
+          <br />
+          Action blocked by default.
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className={barBtn}
+            onClick={() =>
+              setMails((prev) =>
+                prev.map((m) =>
+                  m.id === mail.id
+                    ? { ...m, important: true, spam: true, linkQuarantine: true, read: true }
+                    : m
+                )
+              )
+            }
+          >
+            Report
+          </button>
+          <button type="button" className={barBtn} onClick={() => softDeleteMail(mail.id)}>
+            Delete
+          </button>
+        </div>
+      </div>
+    );
+  }
+  if (!suggestion) return null;
 
   const senderLine = mail.sender || mail.title || "";
   const domain = domainFromSenderLine(senderLine);
@@ -152,6 +195,8 @@ export function SmartFolderListRowHint({
 }) {
   const { moveMailToSmartFolder, dismissSmartFolderSuggestion } = useMailStore();
   const behavior = useUserBehavior();
+  const highRiskBlocked =
+    mail.securityLevel === "high_risk" || mail.syncedAi?.risk === "high";
 
   const suggestion = useMemo(() => {
     if (!enabled || !behavior.hydrated) return null;
@@ -160,7 +205,16 @@ export function SmartFolderListRowHint({
 
   const [menuOpen, setMenuOpen] = useState(false);
 
-  if (!enabled || !suggestion) return null;
+  if (!enabled) return null;
+  if (highRiskBlocked) {
+    return (
+      <div className="pointer-events-auto mt-1.5 rounded-md border border-red-500/25 bg-red-500/10 px-2 py-1 text-[10px] font-medium text-red-200/90">
+        <span className="font-semibold text-red-100">Security decision:</span>{" "}
+        Threat detected. Action blocked by default.
+      </div>
+    );
+  }
+  if (!suggestion) return null;
 
   const senderLine = mail.sender || mail.title || "";
   const domain = domainFromSenderLine(senderLine);

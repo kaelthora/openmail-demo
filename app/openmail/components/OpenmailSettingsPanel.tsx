@@ -346,6 +346,9 @@ function SettingsAccountsServer({
   const [imapUser, setImapUser] = useState("");
   const [smtpUser, setSmtpUser] = useState("");
   const [connectBusy, setConnectBusy] = useState(false);
+  const [connectStep, setConnectStep] = useState<string | null>(null);
+  const [connectAttempts, setConnectAttempts] = useState(0);
+  const [showRetry, setShowRetry] = useState(false);
   const [removeBusy, setRemoveBusy] = useState<string | null>(null);
   const [syncBusy, setSyncBusy] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -439,9 +442,13 @@ function SettingsAccountsServer({
   );
 
   const handleConnect = useCallback(async () => {
+    const sleep = (ms: number) =>
+      new Promise<void>((resolve) => setTimeout(resolve, ms));
     const email = addEmail.trim();
     const password = addPassword;
     setFormError(null);
+    setShowRetry(false);
+    setConnectAttempts(0);
     if (!email || !password) {
       setFormError("Email and password are required.");
       return;
@@ -453,80 +460,111 @@ function SettingsAccountsServer({
       }
     }
     setConnectBusy(true);
+    setConnectStep("Connecting securely...");
     try {
-      let res: Response;
-      if (addMode === "quick") {
-        res = await fetch("/api/mail/connect-account", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: "auto", email, password }),
-        });
-      } else {
-        const base = emptyAccountProfile();
-        const manual: OpenMailAccountProfile = {
-          ...base,
-          id: `tmp-${Date.now()}`,
-          label: email.split("@")[0] || "Primary",
-          email,
-          imap: {
-            host: addImap.trim(),
-            port: imapPort,
-            username: (imapUser.trim() || email).trim(),
-            password,
-            security: imapSec,
-          },
-          smtp: {
-            host: addSmtp.trim(),
-            port: smtpPort,
-            username: (smtpUser.trim() || email).trim(),
-            password,
-            security: smtpSec,
-          },
-        };
-        res = await fetch("/api/mail/connect-account", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            mode: "manual",
-            email,
-            password,
-            manual,
-          }),
-        });
+      const maxAttempts = 3;
+      let lastErr: string | null = null;
+      for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        setConnectAttempts(attempt);
+        let createdId: string | null = null;
+        try {
+          let res: Response;
+          if (addMode === "quick") {
+            res = await fetch("/api/mail/connect-account", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ mode: "auto", email, password }),
+            });
+          } else {
+            const base = emptyAccountProfile();
+            const manual: OpenMailAccountProfile = {
+              ...base,
+              id: `tmp-${Date.now()}`,
+              label: email.split("@")[0] || "Primary",
+              email,
+              imap: {
+                host: addImap.trim(),
+                port: imapPort,
+                username: (imapUser.trim() || email).trim(),
+                password,
+                security: imapSec,
+              },
+              smtp: {
+                host: addSmtp.trim(),
+                port: smtpPort,
+                username: (smtpUser.trim() || email).trim(),
+                password,
+                security: smtpSec,
+              },
+            };
+            res = await fetch("/api/mail/connect-account", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                mode: "manual",
+                email,
+                password,
+                manual,
+              }),
+            });
+          }
+          setConnectStep("Verifying server...");
+          const data = (await res.json()) as {
+            ok?: boolean;
+            account?: OpenMailAccountProfile;
+            error?: string;
+          };
+          if (!res.ok || data.ok === false || !data.account) {
+            throw new Error(data.error || "Could not verify IMAP/SMTP");
+          }
+          setConnectStep("Loading inbox...");
+          createdId = await persistConnectedAccount(data.account);
+          await refreshServerAccounts();
+          setInboxScopePersist(createdId);
+          const syncRes = await syncServerInbox({ accountId: createdId });
+          if (!syncRes.ok) throw new Error(syncRes.error || "Sync failed");
+          const loadRes = await refreshMailsFromApi({ accountId: createdId });
+          if (!loadRes.ok) {
+            throw new Error(loadRes.error || "Could not load inbox");
+          }
+          lastErr = null;
+          toast.success("Account connected and inbox ready");
+          break;
+        } catch (err) {
+          if (createdId) {
+            await removeServerAccount(createdId);
+          }
+          lastErr = err instanceof Error ? err.message : "Connection failed";
+          if (attempt < maxAttempts) {
+            setConnectStep("Connecting securely...");
+            await sleep(1000);
+          }
+        }
       }
-      const data = (await res.json()) as {
-        ok?: boolean;
-        account?: OpenMailAccountProfile;
-        error?: string;
-      };
-      if (!res.ok || data.ok === false || !data.account) {
-        throw new Error(data.error || "Could not verify IMAP/SMTP");
-      }
-      const newId = await persistConnectedAccount(data.account);
-      await refreshServerAccounts();
-      setInboxScopePersist(newId);
-      const syncRes = await syncServerInbox({ accountId: newId });
-      const loadRes = await refreshMailsFromApi({ accountId: newId });
-      if (!syncRes.ok) {
-        toast.error(
-          `Account saved, but sync failed: ${syncRes.error || "unknown error"}`
-        );
-      } else if (!loadRes.ok) {
-        toast.error(
-          `Account saved, but inbox did not load: ${loadRes.error || "unknown error"}`
-        );
-      } else {
-        toast.success("Account saved and inbox updated");
+      if (lastErr) {
+        if (addMode === "quick") {
+          setAddMode("manual");
+          setFormError(
+            "Connection failed. Please retry or use manual setup. Automatic detection could not verify this provider."
+          );
+        } else {
+          setFormError("Connection failed. Please retry or use manual setup.");
+        }
+        setShowRetry(true);
+        return;
       }
       setAddPassword("");
       setAddImap("");
       setAddSmtp("");
       setImapUser("");
       setSmtpUser("");
+      setShowRetry(false);
     } catch (e) {
       setFormError(e instanceof Error ? e.message : "Connection failed");
+      setShowRetry(true);
     } finally {
       setConnectBusy(false);
+      setConnectStep(null);
     }
   }, [
     addEmail,
@@ -545,6 +583,7 @@ function SettingsAccountsServer({
     setInboxScopePersist,
     syncServerInbox,
     refreshMailsFromApi,
+    removeServerAccount,
     toast,
   ]);
 
@@ -619,8 +658,8 @@ function SettingsAccountsServer({
       <div className="space-y-2">
         {serverMailAccounts.length === 0 ? (
           <p className={emptyBox}>
-            No saved mailboxes yet. Connect one below—Quick uses Thunderbird
-            autodiscover when your provider supports it.
+            No saved mailboxes yet. Connect one below. Quick connect
+            automatically detects and verifies your email setup.
           </p>
         ) : null}
         {serverMailAccounts.map((a) => {
@@ -730,6 +769,19 @@ function SettingsAccountsServer({
         {formError ? (
           <p className={formErrBox}>
             {formError}
+          </p>
+        ) : null}
+        {connectBusy && connectStep ? (
+          <p
+            className={
+              isLight
+                ? "mb-3 rounded-lg border border-black/[0.08] bg-white/80 px-3 py-2 text-[12px] text-[#333]"
+                : "mb-3 rounded-lg border border-white/[0.08] bg-[#101010] px-3 py-2 text-[12px] text-[var(--text-main)]"
+            }
+            aria-live="polite"
+          >
+            {connectStep}
+            {connectAttempts > 0 ? ` (attempt ${connectAttempts}/3)` : ""}
           </p>
         ) : null}
         <label className="mb-2 block">
@@ -887,8 +939,7 @@ function SettingsAccountsServer({
           </div>
         ) : (
           <p className={hintQuick}>
-            Uses public autodiscover for your domain, then verifies IMAP and
-            SMTP before saving.
+            Automatically detects and verifies your email setup before saving.
           </p>
         )}
         <button
@@ -899,6 +950,15 @@ function SettingsAccountsServer({
         >
           {connectBusy ? "Verifying & saving…" : "Connect and save"}
         </button>
+        {showRetry && !connectBusy ? (
+          <button
+            type="button"
+            className={`${btnSecondary} mt-2 w-full`}
+            onClick={() => void handleConnect()}
+          >
+            Retry connection
+          </button>
+        ) : null}
       </div>
     </div>
   );
