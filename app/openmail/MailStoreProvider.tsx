@@ -230,7 +230,8 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   const [syncError, setSyncError] = useState<string | null>(null);
   const [mailsLoading, setMailsLoading] = useState(!effectiveDemoMode);
   const [mailsFetchError, setMailsFetchError] = useState<string | null>(null);
-  const [inboxSetupRequired, setInboxSetupRequired] = useState(false);
+  /** Intentionally always false: inbox must render after connect even when API sets `setupRequired`. */
+  const inboxSetupRequired = false;
   const [serverMailAccounts, setServerMailAccounts] = useState<
     ServerMailAccountSummary[]
   >([]);
@@ -355,13 +356,11 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
             scope,
             msgSnippet: msg.slice(0, 120),
           });
-          setInboxSetupRequired(true);
           setMailsFetchError(null);
           setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
           setSelectedMailId("");
-          return { ok: true, setupRequired: true };
+          return { ok: true };
         }
-        setInboxSetupRequired(false);
         if (!silent) setMailsFetchError(msg);
         inboxDiag("mail-store", "refreshMailsFromApi:httpErrorNoMerge", {
           scope,
@@ -369,24 +368,12 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         });
         return { ok: false, error: msg };
       }
-      /** Legacy env missing — still blocks onboarding UI only for legacy scope. */
-      if (data.setupRequired === true && scope === "legacy") {
-        inboxDiag("mail-store", "refreshMailsFromApi:setupRequiredLegacy", {
-          scope,
-          emailCount: Array.isArray(data.emails) ? data.emails.length : 0,
-        });
-        setInboxSetupRequired(true);
-        setMailsFetchError(null);
-        setMails((prev) => {
-          console.warn("[OpenMail] setupRequired (legacy) → preserving inbox");
-          return prev;
-        });
-        setSelectedMailId("");
-        return { ok: true, setupRequired: true };
-      }
-      /** Saved account: IMAP ingest then refetch so connect / first load is not stuck on setupRequired or empty DB. */
+      /**
+       * `setupRequired` from the API is ignored for UI gating — inbox always merges.
+       * Optional ingest + refetch for saved accounts may improve first paint after connect.
+       */
       if (data.setupRequired === true && scope !== "legacy") {
-        inboxDiag("mail-store", "refreshMailsFromApi:setupRequiredRetryWithSync", {
+        inboxDiag("mail-store", "refreshMailsFromApi:setupOptionalSyncRefetch", {
           scope,
         });
         await postEmailsSyncOnce(scope);
@@ -395,7 +382,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
           return { ok: true };
         }
         ({ res, data } = await fetchMailbox());
-        inboxDiag("mail-store", "refreshMailsFromApi:afterSyncRefetch", {
+        inboxDiag("mail-store", "refreshMailsFromApi:afterOptionalSyncRefetch", {
           silent,
           scope,
           httpStatus: res.status,
@@ -413,29 +400,15 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
             isAccountNotFoundInboxMessage(msg) ||
             (scope === "legacy" && isLegacyImapEnvMissingMessage(msg));
           if (onboardingFetch) {
-            setInboxSetupRequired(true);
             setMailsFetchError(null);
             setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
             setSelectedMailId("");
-            return { ok: true, setupRequired: true };
+            return { ok: true };
           }
-          setInboxSetupRequired(false);
           if (!silent) setMailsFetchError(msg);
           return { ok: false, error: msg };
         }
       }
-      if (data.setupRequired === true && scope !== "legacy") {
-        inboxDiag("mail-store", "refreshMailsFromApi:setupRequiredPersistNonLegacy", {
-          scope,
-          emailCount: Array.isArray(data.emails) ? data.emails.length : 0,
-        });
-        setInboxSetupRequired(true);
-        setMailsFetchError(null);
-        setMails((prev) => prev);
-        setSelectedMailId("");
-        return { ok: true, setupRequired: true };
-      }
-      setInboxSetupRequired(false);
       let incoming = (data.emails ?? []).map(emailApiItemToMailItem);
       let incomingInbox = incoming.filter((m) => m.folder === "inbox");
       if (incomingInbox.length === 0 && scope !== "legacy") {
@@ -458,26 +431,13 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
             isAccountNotFoundInboxMessage(msg) ||
             (scope === "legacy" && isLegacyImapEnvMissingMessage(msg));
           if (onboardingFetch) {
-            setInboxSetupRequired(true);
             setMailsFetchError(null);
             setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
             setSelectedMailId("");
-            return { ok: true, setupRequired: true };
+            return { ok: true };
           }
-          setInboxSetupRequired(false);
           if (!silent) setMailsFetchError(msg);
           return { ok: false, error: msg };
-        }
-        if (data.setupRequired === true) {
-          setInboxSetupRequired(scope === "legacy");
-          setMailsFetchError(null);
-          if (scope === "legacy") {
-            setMails((prev) => prev);
-            setSelectedMailId("");
-            return { ok: true, setupRequired: true };
-          }
-        } else {
-          setInboxSetupRequired(false);
         }
         incoming = (data.emails ?? []).map(emailApiItemToMailItem);
         incomingInbox = incoming.filter((m) => m.folder === "inbox");
@@ -519,7 +479,6 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         inboxDiag("mail-store", "refreshMailsFromApi:abortedSilent", { scope });
         return { ok: true };
       }
-      setInboxSetupRequired(false);
       const msg = e instanceof Error ? e.message : "Could not load messages";
       if (!silent) setMailsFetchError(msg);
       inboxDiag("mail-store", "refreshMailsFromApi:catch", {
@@ -670,7 +629,6 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   useEffect(() => {
     setSyncError(null);
     setMailsFetchError(null);
-    setInboxSetupRequired(false);
     if (effectiveDemoMode) {
       setMailsLoading(false);
       setMails(demoEmailItems());
