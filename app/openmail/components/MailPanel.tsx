@@ -90,7 +90,7 @@ type MailPanelProps = {
   onEnterReading: (mail: ProcessedMail) => void;
   onExitReading: () => void;
   folderLabel: string;
-  /** Inbox loading from `/api/mail/fetch` */
+  /** Inbox loading from `/api/inbox` */
   listLoading?: boolean;
   listFetchError?: string | null;
   onRetryListFetch?: () => void | Promise<void>;

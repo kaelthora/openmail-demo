@@ -35,6 +35,7 @@ import {
   type OpenMailAccountProfile,
 } from "@/lib/mailAccountConfig";
 import { apiUrl } from "@/lib/config";
+import type { ServerMailAccountSummary } from "@/lib/serverInboxTypes";
 
 type OpenmailSettingsPanelProps = {
   open: boolean;
@@ -330,6 +331,7 @@ function SettingsAccountsServer({
     inboxScope,
     setInboxScopePersist,
     refreshServerAccounts,
+    registerConnectedAccountRow,
     removeServerAccount,
     syncServerInbox,
     refreshMailsFromApi,
@@ -527,7 +529,7 @@ function SettingsAccountsServer({
             accountId?: string;
           };
           console.log("CONNECT RESPONSE:", connectData);
-          if (!res.ok || connectData.ok === false) {
+          if (!res.ok || connectData.ok !== true) {
             throw new Error(
               typeof connectData.error === "string"
                 ? connectData.error
@@ -547,13 +549,27 @@ function SettingsAccountsServer({
             connectData.accountId.trim().length > 0
               ? connectData.accountId.trim()
               : savedAccountId;
-          await refreshServerAccounts();
+          const accountRow: ServerMailAccountSummary = {
+            id: createdId,
+            email: account.email,
+            provider: null,
+            imap: {
+              host: account.imap.host,
+              port: account.imap.port,
+              username: account.imap.username,
+              security: account.imap.security,
+            },
+            smtp: {
+              host: account.smtp.host,
+              port: account.smtp.port,
+              username: account.smtp.username,
+              security: account.smtp.security,
+            },
+            hasImapPassword: true,
+            hasSmtpPassword: true,
+          };
+          registerConnectedAccountRow(accountRow);
           setInboxScopePersist(createdId);
-          setConnectStep("Syncing inbox…");
-          const syncRes = await syncServerInbox({ accountId: createdId });
-          if (!syncRes.ok) {
-            console.warn("[OpenMail] post-connect sync:", syncRes.error);
-          }
           setConnectStep("Loading inbox…");
           const loadRes = await refreshMailsFromApi({ accountId: createdId });
           if (!loadRes.ok) {
@@ -617,9 +633,8 @@ function SettingsAccountsServer({
     imapUser,
     smtpUser,
     persistConnectedAccount,
-    refreshServerAccounts,
+    registerConnectedAccountRow,
     setInboxScopePersist,
-    syncServerInbox,
     refreshMailsFromApi,
     removeServerAccount,
     toast,

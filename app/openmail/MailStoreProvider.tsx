@@ -161,12 +161,14 @@ export type MailStoreValue = {
   serverMailAccounts: ServerMailAccountSummary[];
   inboxScope: ServerInboxScope;
   setInboxScopePersist: (scope: ServerInboxScope) => void;
-  /** POST `/api/emails/sync` after `GET /api/mail/fetch` for the active `inboxScope`, or `accountId` when provided. */
+  /** POST `/api/emails/sync` after inbox load for the active `inboxScope`, or `accountId` when provided. */
   syncServerInbox: (opts?: {
     accountId?: ServerInboxScope;
   }) => Promise<{ ok: boolean; error?: string }>;
   /** Reload `/api/accounts` (e.g. after add/remove in Settings). */
   refreshServerAccounts: () => Promise<{ ok: boolean; error?: string }>;
+  /** Merge a saved mailbox row after connect without refetching `/api/accounts`. */
+  registerConnectedAccountRow: (row: ServerMailAccountSummary) => void;
   /** DELETE Prisma account, refresh list, and fix `inboxScope` if it pointed at the row. */
   removeServerAccount: (id: string) => Promise<{ ok: boolean; error?: string }>;
   account: OpenMailAccountProfile | null;
@@ -313,12 +315,13 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         scope === "legacy"
           ? "?legacy=1"
           : `?accountId=${encodeURIComponent(scope)}`;
-      const res = await fetch(apiUrl(`/api/mail/fetch${q}`), {
+      const res = await fetch(apiUrl(`/api/inbox${q}`), {
         cache: "no-store",
         credentials: "include",
         signal,
       });
       const data = (await res.json()) as {
+        ok?: boolean;
         emails?: EmailListItem[];
         error?: string;
         setupRequired?: boolean;
@@ -341,7 +344,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         console.warn("[OpenMail] Ignoring outdated response");
         return { ok: true };
       }
-      if (!res.ok) {
+      if (!res.ok || data.ok !== true) {
         const msg = data.error || "Could not load messages";
         /** Stale/deleted saved account, or legacy env missing — onboarding, not outage. */
         const onboardingFetch =
@@ -404,8 +407,18 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
           console.warn("[OpenMail] Ignoring outdated response");
           return { ok: true };
         }
-        if (!res.ok) {
+        if (!res.ok || data.ok !== true) {
           const msg = data.error || "Could not load messages";
+          const onboardingFetch =
+            isAccountNotFoundInboxMessage(msg) ||
+            (scope === "legacy" && isLegacyImapEnvMissingMessage(msg));
+          if (onboardingFetch) {
+            setInboxSetupRequired(true);
+            setMailsFetchError(null);
+            setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
+            setSelectedMailId("");
+            return { ok: true, setupRequired: true };
+          }
           setInboxSetupRequired(false);
           if (!silent) setMailsFetchError(msg);
           return { ok: false, error: msg };
@@ -439,8 +452,18 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
           console.warn("[OpenMail] Ignoring outdated response");
           return { ok: true };
         }
-        if (!res.ok) {
+        if (!res.ok || data.ok !== true) {
           const msg = data.error || "Could not load messages";
+          const onboardingFetch =
+            isAccountNotFoundInboxMessage(msg) ||
+            (scope === "legacy" && isLegacyImapEnvMissingMessage(msg));
+          if (onboardingFetch) {
+            setInboxSetupRequired(true);
+            setMailsFetchError(null);
+            setMails((prev) => prev.filter((m) => m.folder !== "inbox"));
+            setSelectedMailId("");
+            return { ok: true, setupRequired: true };
+          }
           setInboxSetupRequired(false);
           if (!silent) setMailsFetchError(msg);
           return { ok: false, error: msg };
@@ -590,6 +613,18 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       return { ok: false, error: "Could not load accounts" };
     }
   }, []);
+
+  const registerConnectedAccountRow = useCallback(
+    (row: ServerMailAccountSummary) => {
+      setServerMailAccounts((prev) => {
+        if (prev.some((a) => a.id === row.id)) {
+          return prev.map((a) => (a.id === row.id ? row : a));
+        }
+        return [...prev, row];
+      });
+    },
+    []
+  );
 
   const removeServerAccount = useCallback(
     async (id: string) => {
@@ -1166,6 +1201,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       setInboxScopePersist,
       syncServerInbox,
       refreshServerAccounts,
+      registerConnectedAccountRow,
       removeServerAccount,
       account,
       accountHydrated,
@@ -1199,6 +1235,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       setInboxScopePersist,
       syncServerInbox,
       refreshServerAccounts,
+      registerConnectedAccountRow,
       removeServerAccount,
       account,
       accountHydrated,
