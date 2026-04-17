@@ -445,6 +445,8 @@ function SettingsAccountsServer({
     const sleep = (ms: number) =>
       new Promise<void>((resolve) => setTimeout(resolve, ms));
     const email = addEmail.trim();
+    const isGmailQuick =
+      addMode === "quick" && email.toLowerCase().endsWith("@gmail.com");
     const password = addPassword;
     setFormError(null);
     setShowRetry(false);
@@ -460,7 +462,9 @@ function SettingsAccountsServer({
       }
     }
     setConnectBusy(true);
-    setConnectStep("Connecting securely...");
+    setConnectStep(
+      isGmailQuick ? "Using optimized Gmail connection" : "Connecting securely..."
+    );
     try {
       const maxAttempts = 3;
       let lastErr: string | null = null;
@@ -513,9 +517,13 @@ function SettingsAccountsServer({
             ok?: boolean;
             account?: OpenMailAccountProfile;
             error?: string;
+            message?: string;
           };
           if (!res.ok || data.ok === false || !data.account) {
             throw new Error(data.error || "Could not verify IMAP/SMTP");
+          }
+          if (data.message) {
+            setConnectStep(data.message);
           }
           setConnectStep("Loading inbox...");
           createdId = await persistConnectedAccount(data.account);
@@ -534,7 +542,11 @@ function SettingsAccountsServer({
           }
           lastErr = err instanceof Error ? err.message : "Connection failed";
           if (attempt < maxAttempts) {
-            setConnectStep("Connecting securely...");
+            setConnectStep(
+              isGmailQuick
+                ? "Using optimized Gmail connection"
+                : "Connecting securely..."
+            );
             await sleep(1000);
           }
         }
@@ -543,7 +555,9 @@ function SettingsAccountsServer({
         if (addMode === "quick") {
           setAddMode("manual");
           setFormError(
-            "Connection failed. Please retry or use manual setup. Automatic detection could not verify this provider."
+            isGmailQuick
+              ? "Connection failed. Please retry or use manual setup."
+              : "Connection failed. Please retry or use manual setup. Automatic detection could not verify this provider."
           );
         } else {
           setFormError("Connection failed. Please retry or use manual setup.");

@@ -30,6 +30,10 @@ function extractDomain(email: string): string {
   return email.trim().toLowerCase().split("@")[1] ?? "";
 }
 
+function isGmailAddress(email: string): boolean {
+  return email.trim().toLowerCase().endsWith("@gmail.com");
+}
+
 function parseServerBlock(xml: string, type: "imap" | "smtp") {
   const rx = new RegExp(
     `<(incomingServer|outgoingServer)[^>]*type="${type}"[^>]*>([\\s\\S]*?)<\\/\\1>`,
@@ -95,6 +99,31 @@ function buildProfileFromAuto(email: string, password: string, auto: Awaited<Ret
       port: auto.smtp.port,
       security: auto.smtp.security,
       username: smtpUser,
+      password,
+    },
+  } satisfies OpenMailAccountProfile;
+}
+
+function buildProfileForGmail(email: string, password: string): OpenMailAccountProfile {
+  const profile = emptyAccountProfile();
+  const label = email.split("@")[0] || "Primary";
+  return {
+    ...profile,
+    id: `acc-${Date.now()}`,
+    label,
+    email,
+    imap: {
+      host: "imap.gmail.com",
+      port: 993,
+      security: "ssl",
+      username: email,
+      password,
+    },
+    smtp: {
+      host: "smtp.gmail.com",
+      port: 587,
+      security: "tls",
+      username: email,
       password,
     },
   } satisfies OpenMailAccountProfile;
@@ -169,6 +198,7 @@ export async function POST(request: Request) {
     }
 
     let account: OpenMailAccountProfile;
+    let optimizedMessage: string | undefined;
     if (mode === "manual") {
       const manual = body.manual;
       if (!manual) {
@@ -198,13 +228,18 @@ export async function POST(request: Request) {
         },
       };
     } else {
-      const auto = await resolveAutoConfig(email);
-      account = buildProfileFromAuto(email, password, auto);
+      if (isGmailAddress(email)) {
+        account = buildProfileForGmail(email, password);
+        optimizedMessage = "Using optimized Gmail connection";
+      } else {
+        const auto = await resolveAutoConfig(email);
+        account = buildProfileFromAuto(email, password, auto);
+      }
     }
 
     await verifyImap(account);
     await verifySmtp(account);
-    return NextResponse.json({ ok: true, account });
+    return NextResponse.json({ ok: true, account, message: optimizedMessage });
   } catch (e) {
     console.error("[connect-account] [redacted]");
     const raw = e instanceof Error ? e.message : "Could not connect";
