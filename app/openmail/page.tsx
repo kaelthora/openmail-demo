@@ -360,6 +360,7 @@ function OpenMailPageContent() {
   const notifyMailId = searchParams.get("mail");
   const modeParam = searchParams.get("mode");
   const { appMode, setAppMode } = useAppMode();
+  const isDemoSession = appMode === "demo" || OPENMAIL_DEMO_MODE;
 
   const {
     mails,
@@ -1997,8 +1998,7 @@ function OpenMailPageContent() {
       ? "Environment (legacy)"
       : scopedAccount?.email ?? "Mailbox";
 
-  const navProfileSecondary =
-    appMode === "demo" || OPENMAIL_DEMO_MODE ? "Demo session" : "Local OpenMail";
+  const navProfileSecondary = isDemoSession ? "Demo session" : "Local OpenMail";
 
   const autoResolvedVisible = useMemo(
     () => autoResolveLog.filter((e) => !e.undone).slice(0, 14),
@@ -2007,12 +2007,13 @@ function OpenMailPageContent() {
 
   const showInboxOnboarding = useMemo(
     () =>
-      !OPENMAIL_DEMO_MODE &&
+      !isDemoSession &&
       activeFolder === "inbox" &&
       (inboxSetupRequired ||
         serverMailAccounts.length === 0 ||
         isInboxOnboardingFetchMessage(mailsFetchError ?? "")),
     [
+      isDemoSession,
       activeFolder,
       inboxSetupRequired,
       serverMailAccounts.length,
@@ -2037,7 +2038,7 @@ function OpenMailPageContent() {
       sidebarImapSync={handleImapSyncAction}
       sidebarImapSyncing={isSyncing}
       sidebarAccountConnected={accountConnected}
-      showSidebarMailboxActions={!OPENMAIL_DEMO_MODE}
+      showSidebarMailboxActions={!isDemoSession}
       sidebarServerMailAccounts={serverMailAccounts}
       sidebarInboxScope={inboxScope}
       onSidebarInboxScopeChange={setInboxScopePersist}
@@ -2058,14 +2059,14 @@ function OpenMailPageContent() {
         if (r.ok) toast.success("Inbox loaded");
         else if (r.error) toast.error(r.error);
       }}
-      inboxEmptyHintDb={!OPENMAIL_DEMO_MODE}
+      inboxEmptyHintDb={!isDemoSession}
       imapSyncError={activeFolder === "inbox" ? syncError : null}
       imapSyncing={isSyncing}
       onDismissImapSyncError={clearSyncError}
       onRetryImapSync={handleImapSyncAction}
       onRefreshInbox={handleRefreshInbox}
       inboxRefreshing={inboxRefreshing}
-      showInboxRefresh={!OPENMAIL_DEMO_MODE}
+      showInboxRefresh={!isDemoSession}
       listToolbar={{
         onRefresh: () => void handleRefreshInbox(),
         refreshBusy: inboxRefreshing,

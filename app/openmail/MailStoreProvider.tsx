@@ -393,7 +393,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     } finally {
       if (!silent) setMailsLoading(false);
     }
-  }, [inboxScope]);
+  }, [effectiveDemoMode, inboxScope]);
 
   const setInboxScopePersist = useCallback((scope: ServerInboxScope) => {
     try {
@@ -424,7 +424,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     } catch {
       return { ok: false, error: "Could not reach sync endpoint" };
     }
-  }, [inboxScope]);
+  }, [effectiveDemoMode, inboxScope]);
 
   const refreshServerAccounts = useCallback(async () => {
     if (effectiveDemoMode) return { ok: true };
@@ -564,12 +564,17 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   }, [effectiveDemoMode]);
 
   useEffect(() => {
+    console.log("MODE:", effectiveDemoMode ? "demo" : "real");
+    console.log("EMAILS:", mails);
+  }, [effectiveDemoMode, mails]);
+
+  useEffect(() => {
     if (effectiveDemoMode) return;
     inboxDiag("mail-store", "effect:inboxScopeChanged→refresh", {
       inboxScope,
     });
     void refreshMailsFromApi();
-  }, [inboxScope, refreshMailsFromApi]);
+  }, [effectiveDemoMode, inboxScope, refreshMailsFromApi]);
 
   /** Persist current inbox/session snapshot so remounts (e.g. opening settings) rehydrate instantly. */
   useEffect(() => {
