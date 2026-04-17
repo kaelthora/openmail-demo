@@ -238,7 +238,13 @@ export async function POST(request: Request) {
     }
 
     await verifyImap(account);
-    await verifySmtp(account);
+    try {
+      await verifySmtp(account);
+    } catch {
+      console.warn(
+        "[connect] SMTP verification failed but IMAP succeeded — allowing connection"
+      );
+    }
     return NextResponse.json({ ok: true, account, message: optimizedMessage });
   } catch (e) {
     console.error("[connect-account] [redacted]");
