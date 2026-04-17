@@ -34,6 +34,7 @@ import {
   type MailTransportSecurity,
   type OpenMailAccountProfile,
 } from "@/lib/mailAccountConfig";
+import { apiUrl } from "@/lib/config";
 
 type OpenmailSettingsPanelProps = {
   open: boolean;
@@ -420,8 +421,9 @@ function SettingsAccountsServer({
 
   const persistConnectedAccount = useCallback(
     async (profile: OpenMailAccountProfile) => {
-      const save = await fetch("/api/accounts", {
+      const save = await fetch(apiUrl("/api/accounts"), {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: profile.email.trim().toLowerCase(),
@@ -474,8 +476,9 @@ function SettingsAccountsServer({
         try {
           let res: Response;
           if (addMode === "quick") {
-            res = await fetch("/api/mail/connect-account", {
+            res = await fetch(apiUrl("/api/mail/connect-account"), {
               method: "POST",
+              credentials: "include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ mode: "auto", email, password }),
             });
@@ -501,8 +504,9 @@ function SettingsAccountsServer({
                 security: smtpSec,
               },
             };
-            res = await fetch("/api/mail/connect-account", {
+            res = await fetch(apiUrl("/api/mail/connect-account"), {
               method: "POST",
+              credentials: "include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 mode: "manual",

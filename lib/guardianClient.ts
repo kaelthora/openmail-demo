@@ -2,6 +2,7 @@
 
 import type { GuardianAction, GuardianEvaluateResult } from "@/lib/guardianEngine";
 import type { GuardianTraceEntry } from "@/lib/guardianTrace";
+import { apiUrl } from "@/lib/config";
 
 type ApiOk = { ok: true } & GuardianEvaluateResult & { trace?: GuardianTraceEntry };
 type ApiErr = { ok: false; error?: string };
@@ -19,8 +20,9 @@ export async function fetchGuardianEvaluate(
   action: GuardianAction,
   payload: unknown
 ): Promise<FetchGuardianEvaluateResult> {
-  const res = await fetch("/api/guardian/evaluate", {
+  const res = await fetch(apiUrl("/api/guardian/evaluate"), {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action, payload }),
   });

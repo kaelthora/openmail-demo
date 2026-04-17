@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { apiUrl } from "@/lib/config";
 
 type SecurityApiResult = Record<string, unknown> & {
   error?: string;
@@ -15,8 +16,9 @@ export default function SecurityDemo() {
   async function analyzeEmail() {
     setLoading(true);
 
-    const res = await fetch("/api/security", {
+    const res = await fetch(apiUrl("/api/security"), {
       method: "POST",
+      credentials: "include",
       body: JSON.stringify({ email }),
     });
 

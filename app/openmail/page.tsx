@@ -59,6 +59,7 @@ import {
 } from "@/lib/smartFolderSuggestion";
 import { matchCustomFolderNameToSmartTag } from "@/lib/smartFolderKeys";
 import { guardianSafeReplyFallback } from "@/lib/ai";
+import { apiUrl } from "@/lib/config";
 
 const USER_FOLDERS_STORAGE_KEY = "openmail-user-folders-v1";
 
@@ -901,8 +902,9 @@ function OpenMailPageContent() {
       setSendError(null);
       setSendSuccess(null);
       try {
-        const res = await fetch("/api/ai-reply", {
+        const res = await fetch(apiUrl("/api/ai-reply"), {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           signal,
           body: JSON.stringify({
@@ -1766,8 +1768,9 @@ function OpenMailPageContent() {
         return;
       }
 
-      const res = await fetch("/api/ai-reply", {
+      const res = await fetch(apiUrl("/api/ai-reply"), {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: "guardian",

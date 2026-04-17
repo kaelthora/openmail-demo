@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getContactProfile, updateContactProfile } from "@/lib/relationshipEngine";
 import { getContext, resetAllContext, updateContext } from "@/lib/contextEngine";
 import ComposeControlPanel from "./ComposeControlPanel";
+import { apiUrl } from "@/lib/config";
 
 type ContactProfile = { preferredTone?: string } | null;
 
@@ -352,8 +353,9 @@ function ComposeContent() {
           setIsDebouncingSuggestions(false);
           setIsFetchingSuggestions(true);
           try {
-            const res = await fetch("/api/compose", {
+            const res = await fetch(apiUrl("/api/compose"), {
               method: "POST",
+              credentials: "include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 action: "draft_suggestions",

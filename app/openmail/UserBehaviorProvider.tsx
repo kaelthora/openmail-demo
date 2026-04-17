@@ -30,6 +30,7 @@ import {
   type UserBehaviorMemoryV1,
 } from "@/lib/userBehaviorMemory";
 import type { OpenmailSmartFolderId } from "@/lib/mailTypes";
+import { apiUrl } from "@/lib/config";
 
 export type UserBehaviorContextValue = {
   hydrated: boolean;
@@ -105,8 +106,9 @@ export function UserBehaviorProvider({ children }: { children: ReactNode }) {
 
   const flushRemote = useCallback((m: UserBehaviorMemoryV1, key: string) => {
     if (!key) return;
-    void fetch("/api/user-behavior", {
+    void fetch(apiUrl("/api/user-behavior"), {
       method: "PUT",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ profileKey: key, memory: m }),
     }).catch(() => {});
@@ -149,7 +151,8 @@ export function UserBehaviorProvider({ children }: { children: ReactNode }) {
     void (async () => {
       try {
         const r = await fetch(
-          `/api/user-behavior?profileKey=${encodeURIComponent(pk)}`
+          apiUrl(`/api/user-behavior?profileKey=${encodeURIComponent(pk)}`),
+          { credentials: "include" }
         );
         if (!r.ok) return;
         const j: { memory?: unknown; updatedAt?: string } = await r.json();

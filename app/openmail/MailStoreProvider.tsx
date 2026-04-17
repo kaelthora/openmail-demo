@@ -42,6 +42,7 @@ import {
 import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
 import { inboxDiag } from "@/lib/openmailInboxDiag";
 import { useAppMode } from "../AppModeProvider";
+import { apiUrl } from "@/lib/config";
 
 const INBOX_SCOPE_KEY = "openmail-inbox-scope-v1";
 const INBOX_CACHE_KEY = "openmail-inbox-cache-v1";
@@ -295,8 +296,9 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         scope === "legacy"
           ? "?legacy=1"
           : `?accountId=${encodeURIComponent(scope)}`;
-      const res = await fetch(`/api/mail/fetch${q}`, {
+      const res = await fetch(apiUrl(`/api/mail/fetch${q}`), {
         cache: "no-store",
+        credentials: "include",
         signal,
       });
       const data = (await res.json()) as {
@@ -424,8 +426,9 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     try {
       const scope = opts?.accountId ?? inboxScope;
       const body = scope === "legacy" ? {} : { accountId: scope };
-      const res = await fetch("/api/emails/sync", {
+      const res = await fetch(apiUrl("/api/emails/sync"), {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
@@ -442,7 +445,10 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   const refreshServerAccounts = useCallback(async () => {
     if (effectiveDemoMode) return { ok: true };
     try {
-      const r = await fetch("/api/accounts", { cache: "no-store" });
+      const r = await fetch(apiUrl("/api/accounts"), {
+        cache: "no-store",
+        credentials: "include",
+      });
       const j = (await r.json()) as {
         accounts?: ServerMailAccountSummary[];
         error?: string;
@@ -488,14 +494,21 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     async (id: string) => {
       if (effectiveDemoMode) return { ok: true };
       try {
-        const res = await fetch(`/api/accounts/${encodeURIComponent(id)}`, {
+        const res = await fetch(
+          apiUrl(`/api/accounts/${encodeURIComponent(id)}`),
+          {
           method: "DELETE",
-        });
+            credentials: "include",
+          }
+        );
         if (!res.ok) {
           const j = (await res.json().catch(() => ({}))) as { error?: string };
           return { ok: false, error: j.error || "Could not remove account" };
         }
-        const r2 = await fetch("/api/accounts", { cache: "no-store" });
+        const r2 = await fetch(apiUrl("/api/accounts"), {
+          cache: "no-store",
+          credentials: "include",
+        });
         const j2 = (await r2.json()) as {
           accounts?: ServerMailAccountSummary[];
         };
@@ -537,7 +550,9 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     });
     void (async () => {
       try {
-        const r = await fetch("/api/accounts");
+        const r = await fetch(apiUrl("/api/accounts"), {
+          credentials: "include",
+        });
         const j = (await r.json()) as {
           accounts?: ServerMailAccountSummary[];
         };
@@ -608,7 +623,9 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   /** Server push when IMAP watcher ingests new mail (SSE). Ingest already ran analyzeEmail; rAF-coalesced silent fetch runs full client pipeline same frame. */
   useEffect(() => {
     if (effectiveDemoMode) return;
-    const es = new EventSource("/api/emails/events");
+    const es = new EventSource(apiUrl("/api/emails/events"), {
+      withCredentials: true,
+    });
     es.onmessage = (ev) => {
       try {
         const data = JSON.parse(ev.data as string) as {
@@ -758,8 +775,9 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const res = await fetch("/api/mail/imap-sync", {
+      const res = await fetch(apiUrl("/api/mail/imap-sync"), {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ account }),
       });
@@ -860,8 +878,9 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         if (gReply.decision === "warn") {
           payload.guardianWarnAcknowledged = true;
         }
-        const res = await fetch("/api/emails/send", {
+        const res = await fetch(apiUrl("/api/emails/send"), {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
@@ -972,8 +991,9 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         if (gNew.decision === "warn") {
           payload.guardianWarnAcknowledged = true;
         }
-        const res = await fetch("/api/emails/send", {
+        const res = await fetch(apiUrl("/api/emails/send"), {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
