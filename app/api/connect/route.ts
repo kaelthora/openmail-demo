@@ -4,34 +4,23 @@ import { testImap } from "@/lib/testImap";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  return NextResponse.json(
-    { ok: false, error: "Use POST with JSON body for credentials" },
-    { status: 405 }
-  );
-}
-
 export async function POST(request: Request) {
   let body: { email?: string; password?: string };
   try {
     body = (await request.json()) as { email?: string; password?: string };
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "Invalid request body" },
-      { status: 400 }
-    );
-  }
-  const email = (body.email ?? "").trim();
-  const password = (body.password ?? "").replace(/\s/g, "");
-  if (!email || !password) {
-    return NextResponse.json(
-      { ok: false, error: "Email and password are required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
+  const email = (body.email ?? "").trim();
+  const password = body.password ?? "";
+  if (!email || !password) {
+    return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
+  }
+  const cleanPassword = password.replace(/\s/g, "");
+
   try {
-    await testImap(email, password, 2);
+    await testImap(email, cleanPassword, 2);
     return NextResponse.json({ ok: true });
   } catch (err) {
     const message =
