@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useAppMode } from "./AppModeProvider";
 
 export default function Page() {
+  const { setAppMode } = useAppMode();
+
   return (
     <div
       className="flex min-h-screen h-screen w-full flex-col items-center justify-center overflow-hidden px-6 py-8"
@@ -22,12 +27,31 @@ export default function Page() {
           </div>
 
           <Link
-            href="/openmail"
+            href="/openmail?mode=real"
             prefetch={false}
+            onClick={() => setAppMode("real")}
             className="mt-2 inline-block rounded-[10px] border border-[#5c3535]/80 bg-[#3d2222] px-6 py-3 text-[15px] font-semibold leading-tight text-[#fffefd] no-underline shadow-[0_0_0_1px_rgba(90,45,45,0.4),0_0_40px_rgba(110,40,40,0.18)] transition-[background-color,box-shadow,transform] duration-200 ease-out hover:bg-[#351d1d] hover:shadow-[0_0_0_1px_rgba(120,55,55,0.45),0_0_48px_rgba(130,45,45,0.22)] active:scale-[0.99]"
           >
             Secure my inbox
           </Link>
+          <div className="mt-2 flex flex-col items-center gap-1 text-[13px]">
+            <Link
+              href="/openmail?mode=demo"
+              prefetch={false}
+              onClick={() => setAppMode("demo")}
+              className="text-[#8f8783]/80 no-underline transition-opacity duration-200 hover:opacity-100"
+            >
+              Try demo (pre-loaded threats)
+            </Link>
+            <Link
+              href="/openmail?mode=real"
+              prefetch={false}
+              onClick={() => setAppMode("real")}
+              className="text-[#8f8783]/80 no-underline transition-opacity duration-200 hover:opacity-100"
+            >
+              Connect your Gmail — live the experience
+            </Link>
+          </div>
 
           <p className="mt-2 text-[12px] font-medium leading-tight tracking-wide text-[#6e6763]">
             No tracking. No data. Ever.

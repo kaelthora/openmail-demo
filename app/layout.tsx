@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { getOpenmailThemeBootScript } from "@/lib/openmailThemeBootScript";
+import { AppModeProvider } from "./AppModeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export default function RootLayout({
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: getOpenmailThemeBootScript() }}
         />
-        {children}
+        <AppModeProvider>{children}</AppModeProvider>
       </body>
     </html>
   );

@@ -62,6 +62,7 @@ import {
   type OpenmailSmartListTabId,
 } from "@/lib/openmailListSmartTabs";
 import { MailAnalysisOverlay } from "./MailAnalysisOverlay";
+import { useAppMode } from "@/app/AppModeProvider";
 
 const SMART_INBOX_TAB_ICON: Record<OpenmailSmartListTabId, LucideIcon> = {
   inbox: Inbox,
@@ -737,6 +738,8 @@ export function MailPanel({
   onInboxManualSetup,
   onReadingAnalysisChange,
 }: MailPanelProps) {
+  const { appMode } = useAppMode();
+  const demoMode = appMode === "demo";
   const { mailsFetchError: storeMailsFetchError } = useMailStore();
   const listErrorCombined = (listFetchError ?? storeMailsFetchError ?? "").trim();
   const inboxOnboardingUiActive =
@@ -994,6 +997,10 @@ export function MailPanel({
   const mailAnalysisHighRisk = useMemo(
     () => (readingMail ? getMailAiRiskBand(readingMail) === "high" : false),
     [readingMail]
+  );
+  const mailAnalysisDemoMode = useMemo(
+    () => demoMode && !!readingMail?.demoClassification,
+    [demoMode, readingMail]
   );
 
   useEffect(() => {
@@ -1612,6 +1619,20 @@ export function MailPanel({
                         <RiskBadge level={riskLevel} size="sm" />
                       </div>
                     </div>
+                    {demoMode && mail.demoClassification ? (
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        {mail.demoClassification.label === "BLOCKED" && mail.linkQuarantine ? (
+                          <span className="rounded-md border border-amber-500/30 bg-amber-500/12 px-1.5 py-0.5 text-[9px] font-semibold text-amber-200/90">
+                            Most users click this
+                          </span>
+                        ) : null}
+                        {mail.demoClassification.label === "BLOCKED" ? (
+                          <span className="rounded-md border border-red-500/30 bg-red-500/12 px-1.5 py-0.5 text-[9px] font-semibold text-red-200/90">
+                            High pressure detected
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </button>
                   <SmartFolderListRowHint mail={mail} enabled={smartFolderEnabled} />
                   </div>
@@ -1685,6 +1706,7 @@ export function MailPanel({
                     <MailAnalysisOverlay
                       key={readingMail.id}
                       highRisk={mailAnalysisHighRisk}
+                      demoMode={mailAnalysisDemoMode}
                       onComplete={handleMailAnalysisComplete}
                     />
                   ) : null}

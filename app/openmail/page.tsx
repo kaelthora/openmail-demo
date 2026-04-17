@@ -30,6 +30,7 @@ import { useAttentionEngine } from "./AttentionEngineProvider";
 import type { BehaviorCoreAction, BehaviorTone } from "@/lib/userBehaviorMemory";
 import { SecurityModal } from "./components/security/SecurityModal";
 import { MainLayout } from "./components/MainLayout";
+import { useAppMode, type AppMode } from "../AppModeProvider";
 import type { ComposeEmailDraft } from "./components/ComposeEmailModal";
 import type { ReplyState, ReplyTone } from "./components/types";
 import {
@@ -357,6 +358,8 @@ function OpenMailPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const notifyMailId = searchParams.get("mail");
+  const modeParam = searchParams.get("mode");
+  const { appMode, setAppMode } = useAppMode();
 
   const {
     mails,
@@ -494,6 +497,12 @@ function OpenMailPageContent() {
     setActiveFolder("inbox");
     setActiveInboxSubfolder(name);
   }, []);
+
+  useEffect(() => {
+    if (modeParam === "demo" || modeParam === "real") {
+      setAppMode(modeParam as AppMode);
+    }
+  }, [modeParam, setAppMode]);
 
   useEffect(() => {
     const id = notifyMailId?.trim();
@@ -1988,9 +1997,8 @@ function OpenMailPageContent() {
       ? "Environment (legacy)"
       : scopedAccount?.email ?? "Mailbox";
 
-  const navProfileSecondary = OPENMAIL_DEMO_MODE
-    ? "Demo session"
-    : "Local OpenMail";
+  const navProfileSecondary =
+    appMode === "demo" || OPENMAIL_DEMO_MODE ? "Demo session" : "Local OpenMail";
 
   const autoResolvedVisible = useMemo(
     () => autoResolveLog.filter((e) => !e.undone).slice(0, 14),

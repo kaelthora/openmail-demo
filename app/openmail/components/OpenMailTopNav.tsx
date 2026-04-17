@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useOpenmailTheme } from "@/app/openmail/OpenmailThemeProvider";
+import { useAppMode } from "@/app/AppModeProvider";
 
 type OpenMailTopNavProps = {
   /** Mailbox / session label (email or legacy env). */
@@ -129,6 +130,7 @@ export function OpenMailTopNav({
   profilePrimary,
   profileSecondary,
 }: OpenMailTopNavProps) {
+  const { appMode } = useAppMode();
   const { theme, setTheme } = useOpenmailTheme();
   const identity = accountIdentity.trim() || "OpenMail";
   const folder = folderLabel.trim() || "Inbox";
@@ -140,6 +142,7 @@ export function OpenMailTopNav({
   const [profileOpen, setProfileOpen] = useState(false);
   const profileWrapRef = useRef<HTMLDivElement>(null);
   const darkMode = theme === "soft-dark";
+  const modeBadgeDemo = appMode === "demo";
 
   useEffect(() => {
     if (!profileOpen) return;
@@ -201,6 +204,16 @@ export function OpenMailTopNav({
               </span>
               <span className="font-medium text-[color:var(--text-soft)]">{folder}</span>
             </p>
+            <span
+              className={`inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${
+                modeBadgeDemo
+                  ? "border-amber-500/40 bg-amber-500/15 text-amber-200 shadow-[0_0_14px_rgba(245,158,11,0.18)]"
+                  : "border-emerald-500/35 bg-emerald-500/12 text-emerald-200/90"
+              }`}
+              title={modeBadgeDemo ? "Demo inbox (static threats)" : "Live inbox"}
+            >
+              {modeBadgeDemo ? "DEMO MODE" : "LIVE INBOX"}
+            </span>
           </div>
         </div>
 

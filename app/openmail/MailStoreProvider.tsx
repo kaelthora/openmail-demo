@@ -27,7 +27,7 @@ import { extractEmail } from "@/lib/mailAddress";
 import type { EmailListItem } from "@/lib/emailListTypes";
 import { emailApiItemToMailItem } from "@/lib/mapEmailApiToMailItem";
 import { OPENMAIL_DEMO_MODE } from "@/lib/openmailDemo";
-import { OPENMAIL_DEMO_MAIL_ITEMS } from "@/lib/openmailDemoMails";
+import { demoEmails } from "@/data/demoEmails";
 import { guardianEvaluate } from "@/lib/guardianEngine";
 import { useGuardianIntercept } from "./GuardianInterceptProvider";
 import { useGuardianTrace } from "./GuardianTraceProvider";
@@ -41,6 +41,7 @@ import {
 } from "@/lib/legacyImapEnvMissing";
 import { useOpenmailPreferences } from "./OpenmailPreferencesProvider";
 import { inboxDiag } from "@/lib/openmailInboxDiag";
+import { useAppMode } from "../AppModeProvider";
 
 const INBOX_SCOPE_KEY = "openmail-inbox-scope-v1";
 const INBOX_CACHE_KEY = "openmail-inbox-cache-v1";
@@ -56,6 +57,41 @@ type InboxSessionCache = {
   selectedMailId: string;
   inboxScope: ServerInboxScope;
 };
+
+function demoEmailItems(): MailItem[] {
+  return demoEmails.map((d, idx) => ({
+    id: d.id,
+    title: d.from,
+    sender: d.from,
+    subject: d.subject,
+    preview: d.preview,
+    content: `${d.preview}\n\nSignals: ${d.tags.join(", ")}`,
+    aiPreview: d.risk === "high" ? "High-risk phishing pattern detected" : "Elevated risk detected",
+    confidence: d.risk === "high" ? 94 : 72,
+    needsReply: false,
+    deleted: false,
+    archived: false,
+    folder: "inbox",
+    read: false,
+    important: d.risk === "high",
+    date: new Date(Date.now() - idx * 60 * 60 * 1000).toISOString(),
+    attachments: d.hasAttachment
+      ? [
+          {
+            id: `att-${d.id}`,
+            name: "invoice.pdf",
+            mimeType: "application/pdf",
+            riskLevel: d.risk === "high" ? "blocked" : "suspicious",
+          },
+        ]
+      : [],
+    demoClassification: {
+      label: d.risk === "high" ? "BLOCKED" : "SUSPICIOUS",
+      score: d.risk === "high" ? 96 : 68,
+    },
+    linkQuarantine: d.hasLink,
+  }));
+}
 
 function loadInboxSessionCache(): InboxSessionCache | null {
   if (typeof window === "undefined") return null;
@@ -152,43 +188,45 @@ export type MailStoreValue = {
 const MailStoreContext = createContext<MailStoreValue | null>(null);
 
 export default function MailStoreProvider({ children }: { children: ReactNode }) {
+  const { appMode } = useAppMode();
+  const effectiveDemoMode = OPENMAIL_DEMO_MODE || appMode === "demo";
   const { record: recordGuardianTrace } = useGuardianTrace();
   const { present: presentGuardianIntercept } = useGuardianIntercept();
   const { display } = useOpenmailPreferences();
   const smartNotificationsEnabledRef = useRef(display.smartNotifications);
   smartNotificationsEnabledRef.current = display.smartNotifications;
   const cached = useMemo(
-    () => (OPENMAIL_DEMO_MODE ? null : loadInboxSessionCache()),
-    []
+    () => (effectiveDemoMode ? null : loadInboxSessionCache()),
+    [effectiveDemoMode]
   );
   const [mails, setMails] = useState<MailItem[]>(() =>
-    OPENMAIL_DEMO_MODE ? [] : cached?.mails ?? []
+    effectiveDemoMode ? demoEmailItems() : cached?.mails ?? []
   );
   const [selectedMailId, setSelectedMailId] = useState(
-    OPENMAIL_DEMO_MODE ? "" : cached?.selectedMailId ?? ""
+    effectiveDemoMode ? "" : cached?.selectedMailId ?? ""
   );
   const [mailsHydrated] = useState(true);
   const [account, setAccount] = useState<OpenMailAccountProfile | null>(() =>
-    OPENMAIL_DEMO_MODE ? null : loadStoredAccount() ?? loadAccountSession()
+    effectiveDemoMode ? null : loadStoredAccount() ?? loadAccountSession()
   );
   const [accountHydrated] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
-  const [mailsLoading, setMailsLoading] = useState(!OPENMAIL_DEMO_MODE);
+  const [mailsLoading, setMailsLoading] = useState(!effectiveDemoMode);
   const [mailsFetchError, setMailsFetchError] = useState<string | null>(null);
   const [inboxSetupRequired, setInboxSetupRequired] = useState(false);
   const [serverMailAccounts, setServerMailAccounts] = useState<
     ServerMailAccountSummary[]
   >([]);
   const [inboxScope, setInboxScope] = useState<ServerInboxScope>(
-    OPENMAIL_DEMO_MODE ? "legacy" : cached?.inboxScope ?? "legacy"
+    effectiveDemoMode ? "legacy" : cached?.inboxScope ?? "legacy"
   );
 
   const mailsRef = useRef(mails);
   mailsRef.current = mails;
 
   useLayoutEffect(() => {
-    if (OPENMAIL_DEMO_MODE || inboxHydrateDiagModuleLogged) return;
+    if (effectiveDemoMode || inboxHydrateDiagModuleLogged) return;
     inboxHydrateDiagModuleLogged = true;
     inboxDiag("mail-store", "hydrate:initialState", {
       mailsCount: mails.length,
@@ -211,7 +249,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     silent?: boolean;
     accountId?: ServerInboxScope;
   }) => {
-    if (OPENMAIL_DEMO_MODE) return { ok: true };
+    if (effectiveDemoMode) return { ok: true };
     const requestId = Date.now();
     latestRequestId = requestId;
     const silent = opts?.silent === true;
@@ -369,7 +407,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   const syncServerInbox = useCallback(async (opts?: {
     accountId?: ServerInboxScope;
   }) => {
-    if (OPENMAIL_DEMO_MODE) return { ok: true };
+    if (effectiveDemoMode) return { ok: true };
     try {
       const scope = opts?.accountId ?? inboxScope;
       const body = scope === "legacy" ? {} : { accountId: scope };
@@ -389,7 +427,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   }, [inboxScope]);
 
   const refreshServerAccounts = useCallback(async () => {
-    if (OPENMAIL_DEMO_MODE) return { ok: true };
+    if (effectiveDemoMode) return { ok: true };
     try {
       const r = await fetch("/api/accounts", { cache: "no-store" });
       const j = (await r.json()) as {
@@ -435,7 +473,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
 
   const removeServerAccount = useCallback(
     async (id: string) => {
-      if (OPENMAIL_DEMO_MODE) return { ok: true };
+      if (effectiveDemoMode) return { ok: true };
       try {
         const res = await fetch(`/api/accounts/${encodeURIComponent(id)}`, {
           method: "DELETE",
@@ -471,15 +509,18 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     setSyncError(null);
     setMailsFetchError(null);
     setInboxSetupRequired(false);
-    if (OPENMAIL_DEMO_MODE) {
+    if (effectiveDemoMode) {
       setMailsLoading(false);
-      setMails(OPENMAIL_DEMO_MAIL_ITEMS);
+      setMails(demoEmailItems());
       setSelectedMailId("");
       return;
     }
+    setMails([]);
+    setSelectedMailId("");
+    setMailsLoading(true);
     inboxDiag("mail-store", "boot:accountsFetchStart", {
       initialMailsCount: mailsRef.current.length,
-      initialInboxScope: inboxScope,
+      initialInboxScope: null,
     });
     void (async () => {
       try {
@@ -520,10 +561,10 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
         setInboxScope("legacy");
       }
     })();
-  }, []);
+  }, [effectiveDemoMode]);
 
   useEffect(() => {
-    if (OPENMAIL_DEMO_MODE) return;
+    if (effectiveDemoMode) return;
     inboxDiag("mail-store", "effect:inboxScopeChanged→refresh", {
       inboxScope,
     });
@@ -532,7 +573,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
 
   /** Persist current inbox/session snapshot so remounts (e.g. opening settings) rehydrate instantly. */
   useEffect(() => {
-    if (OPENMAIL_DEMO_MODE) return;
+    if (effectiveDemoMode) return;
     try {
       const payload = JSON.stringify({
         mails,
@@ -548,7 +589,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
 
   /** Server push when IMAP watcher ingests new mail (SSE). Ingest already ran analyzeEmail; rAF-coalesced silent fetch runs full client pipeline same frame. */
   useEffect(() => {
-    if (OPENMAIL_DEMO_MODE) return;
+    if (effectiveDemoMode) return;
     const es = new EventSource("/api/emails/events");
     es.onmessage = (ev) => {
       try {
@@ -604,8 +645,8 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
     saveAccountSession(null);
     setAccount(null);
     setSyncError(null);
-    if (OPENMAIL_DEMO_MODE) {
-      setMails(OPENMAIL_DEMO_MAIL_ITEMS);
+    if (effectiveDemoMode) {
+      setMails(demoEmailItems());
       setSelectedMailId("");
       return;
     }
@@ -613,7 +654,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   }, [refreshMailsFromApi]);
 
   useEffect(() => {
-    if (OPENMAIL_DEMO_MODE) return;
+    if (effectiveDemoMode) return;
     saveAccountSession(account);
   }, [account]);
 
@@ -687,7 +728,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
   }, []);
 
   const syncFromImap = useCallback(async () => {
-    if (OPENMAIL_DEMO_MODE) {
+    if (effectiveDemoMode) {
       setSyncError(null);
       return { ok: true };
     }
@@ -787,7 +828,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       }
 
       const sendOverNetwork =
-        !OPENMAIL_DEMO_MODE || isAccountConfigured(account);
+        !effectiveDemoMode || isAccountConfigured(account);
       let imapReadOnly = true;
       if (sendOverNetwork) {
         const payload: Record<string, string | boolean> = {
@@ -899,7 +940,7 @@ export default function MailStoreProvider({ children }: { children: ReactNode })
       }
 
       const sendOverNetwork =
-        !OPENMAIL_DEMO_MODE || isAccountConfigured(account);
+        !effectiveDemoMode || isAccountConfigured(account);
       let imapReadOnly = true;
       if (sendOverNetwork) {
         const payload: Record<string, string | boolean> = {

@@ -17,6 +17,8 @@ const STEPS = [
 export type MailAnalysisOverlayProps = {
   /** When true, overlay uses a stronger red pulse before release (high-risk mail). */
   highRisk?: boolean;
+  /** Demo-only: faster perception loop with synthetic checks. */
+  demoMode?: boolean;
   /** Called after the exit fade completes — parent should set `isAnalyzing` false. */
   onComplete: () => void;
 };
@@ -25,7 +27,11 @@ export type MailAnalysisOverlayProps = {
  * Mandatory visual “AI security scan” gate before the reading pane is usable.
  * Timing only; does not call backend or change AI data.
  */
-export function MailAnalysisOverlay({ highRisk = false, onComplete }: MailAnalysisOverlayProps) {
+export function MailAnalysisOverlay({
+  highRisk = false,
+  demoMode = false,
+  onComplete,
+}: MailAnalysisOverlayProps) {
   const [shownSteps, setShownSteps] = useState(1);
   const [riskFlash, setRiskFlash] = useState(false);
   const [exiting, setExiting] = useState(false);
@@ -63,26 +69,30 @@ export function MailAnalysisOverlay({ highRisk = false, onComplete }: MailAnalys
       };
     }
 
+    const stepMs = demoMode ? 120 : STEP_MS;
+    const pauseAfterStepsMs = demoMode ? 80 : PAUSE_AFTER_STEPS_MS;
+    const fadeOutMs = demoMode ? 140 : FADE_OUT_MS;
+
     for (let i = 1; i < STEPS.length; i++) {
-      schedule(() => setShownSteps(i + 1), STEP_MS * i);
+      schedule(() => setShownSteps(i + 1), stepMs * i);
     }
 
-    const exitAt = STEP_MS * (STEPS.length - 1) + PAUSE_AFTER_STEPS_MS;
+    const exitAt = stepMs * (STEPS.length - 1) + pauseAfterStepsMs;
 
     if (highRisk) {
-      const flashAt = STEP_MS * (STEPS.length - 1) + 40;
+      const flashAt = stepMs * (STEPS.length - 1) + 40;
       schedule(() => setRiskFlash(true), flashAt);
       schedule(() => setRiskFlash(false), flashAt + HIGH_RISK_FLASH_MS);
     }
 
     schedule(() => setExiting(true), exitAt);
-    schedule(() => onCompleteRef.current(), exitAt + FADE_OUT_MS);
+    schedule(() => onCompleteRef.current(), exitAt + fadeOutMs);
 
     return () => {
       cancelled = true;
       ids.forEach(clearTimeout);
     };
-  }, [highRisk]);
+  }, [highRisk, demoMode]);
 
   return (
     <div
