@@ -130,31 +130,68 @@ function buildProfileForGmail(email: string, password: string): OpenMailAccountP
 }
 
 async function verifyImap(account: OpenMailAccountProfile) {
-  const client = guardImapFlowClient(
-    new ImapFlow({
-      host: account.imap.host.trim(),
-      port: account.imap.port,
-      secure: account.imap.security === "ssl",
-      connectionTimeout: 10000,
-      socketTimeout: 10000,
-      tls: account.imap.security === "tls" ? {} : undefined,
-      logger: false,
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const maxAttempts = 2;
+  let lastErr: Error | null = null;
+  const useGmailConfig = isGmailAddress(account.email);
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const imapConfig = {
+      host: useGmailConfig ? "imap.gmail.com" : account.imap.host.trim(),
+      port: useGmailConfig ? 993 : account.imap.port,
+      secure: useGmailConfig ? true : account.imap.security === "ssl",
       auth: {
         user: account.imap.username.trim(),
         pass: account.imap.password,
       },
-    })
-  );
-  try {
-    await client.connect();
-    await client.mailboxOpen("INBOX", imapMailboxOpenOptions());
-  } finally {
+      tls: true,
+      tlsOptions: {
+        rejectUnauthorized: false,
+      },
+      connTimeout: 10000,
+      authTimeout: 10000,
+    };
+    console.log("IMAP: starting connection", imapConfig.auth.user);
+    const client = guardImapFlowClient(
+      new ImapFlow({
+        host: imapConfig.host,
+        port: imapConfig.port,
+        secure: imapConfig.secure,
+        connectionTimeout: imapConfig.connTimeout,
+        greetingTimeout: imapConfig.authTimeout,
+        socketTimeout: imapConfig.authTimeout,
+        tls: {
+          rejectUnauthorized: imapConfig.tlsOptions.rejectUnauthorized,
+          servername: imapConfig.host,
+        },
+        logger: false,
+        auth: imapConfig.auth,
+      })
+    );
     try {
-      await client.logout();
-    } catch {
-      // ignore logout failures; connection test already concluded
+      await client.connect();
+      await client.mailboxOpen("INBOX", imapMailboxOpenOptions());
+      console.log("IMAP: SUCCESS");
+      return;
+    } catch (err) {
+      console.error("IMAP: ERROR", err);
+      lastErr =
+        err instanceof Error
+          ? err
+          : new Error("Unknown IMAP connection error");
+      if (attempt < maxAttempts) {
+        await sleep(1000);
+      }
+    } finally {
+      try {
+        await client.logout();
+      } catch {
+        // ignore logout failures; connection test already concluded
+      }
     }
   }
+  throw new Error(
+    `IMAP connection failed: ${lastErr?.message || "Unknown error"}`
+  );
 }
 
 async function verifySmtp(account: OpenMailAccountProfile) {
@@ -172,6 +209,27 @@ async function verifySmtp(account: OpenMailAccountProfile) {
     },
   });
   await transporter.verify();
+}
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const email = (url.searchParams.get("email") ?? "").trim();
+  const password = (url.searchParams.get("password") ?? "").trim();
+  if (!email || !password) {
+    return NextResponse.json(
+      { ok: false, error: "Email and password are required" },
+      { status: 400 }
+    );
+  }
+  try {
+    const profile = buildProfileForGmail(email, password);
+    await verifyImap(profile);
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    const message =
+      e instanceof Error ? e.message : "IMAP connection failed: Unknown error";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -247,17 +305,9 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ ok: true, account, message: optimizedMessage });
   } catch (e) {
-    console.error("[connect-account] [redacted]");
     const raw = e instanceof Error ? e.message : "Could not connect";
-    const lower = raw.toLowerCase();
-    const friendly = lower.includes("auth")
-      ? "Authentication failed. Check your email and password."
-      : lower.includes("timeout")
-        ? "Server timeout. Check host/port and network."
-        : lower.includes("certificate") || lower.includes("tls")
-          ? "Secure connection failed. Verify security mode and ports."
-          : "Connection failed. Verify your provider settings.";
-    return NextResponse.json({ ok: false, error: friendly }, { status: 500 });
+    console.error("IMAP: ERROR", raw);
+    return NextResponse.json({ ok: false, error: raw }, { status: 500 });
   }
 }
 
