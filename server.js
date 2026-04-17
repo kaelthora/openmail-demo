@@ -90,18 +90,22 @@ async function verifyImapWithRetry(email, password, maxAttempts = 2) {
   );
 }
 
+async function testImap(email, password, maxAttempts = 1) {
+  const cleanEmail = String(email).trim();
+  const cleanPassword = String(password).replace(/\s/g, "");
+  console.log("IMAP TEST:", cleanEmail);
+  await verifyImapWithRetry(cleanEmail, cleanPassword, maxAttempts);
+}
+
 async function handleConnect(req, res) {
   const { email, password } = req.body || {};
   if (!email || !password) {
-    res.status(400).json({ ok: false, error: "Missing credentials" });
+    res.status(400).json({ error: "Missing credentials" });
     return;
   }
-  const cleanPassword = String(password).replace(/\s/g, "");
-  const cleanEmail = String(email).trim();
-  console.log("CONNECT:", cleanEmail);
 
   try {
-    await verifyImapWithRetry(cleanEmail, cleanPassword, 1);
+    await testImap(email, password, 1);
     res.json({ ok: true });
   } catch (err) {
     const message =
@@ -114,18 +118,16 @@ app.post("/connect", handleConnect);
 app.post("/api/connect", handleConnect);
 
 app.get("/api/debug-imap", async (req, res) => {
-  const email = String(process.env.EMAIL_USER ?? "").trim();
-  const password = String(process.env.EMAIL_PASS ?? "").trim();
+  const email = String(req.query.email ?? "").trim();
+  const password = String(req.query.password ?? "");
 
   if (!email || !password) {
-    res
-      .status(400)
-      .json({ ok: false, error: "Missing email/password env vars" });
+    res.json({ ok: false, error: "Missing email/password (query)" });
     return;
   }
 
   try {
-    await verifyImapWithRetry(email, password, 2);
+    await testImap(email, password, 1);
     res.json({ ok: true });
   } catch (err) {
     const message =
